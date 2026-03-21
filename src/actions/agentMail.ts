@@ -4,6 +4,8 @@ import { logger } from '@elizaos/core';
 const AGENTMAIL_BASE = 'https://api.agentmail.to/v0';
 const INBOX_ID = 'dryad@agentmail.to';
 
+const EMAIL_FOOTER = `\n\n---\nThis email was sent by Dryad, an autonomous AI agent managing native habitat restoration on 25th Street, Detroit. Dryad is part of The Forest That Owns Itself project. For questions or concerns, contact Nick George at powahgen@gmail.com.`;
+
 function getApiKey(): string {
   const key = process.env.AGENTMAIL_API_KEY;
   if (!key) throw new Error('AGENTMAIL_API_KEY not configured');
@@ -26,6 +28,14 @@ async function agentMailFetch(path: string, options: RequestInit = {}): Promise<
   }
 
   return res.json();
+}
+
+/** Send an email programmatically (used by decision loop). */
+export async function sendDryadEmail(to: string, subject: string, body: string): Promise<any> {
+  return agentMailFetch(`/inboxes/${encodeURIComponent(INBOX_ID)}/messages/send`, {
+    method: 'POST',
+    body: JSON.stringify({ to: [to], subject, text: body + EMAIL_FOOTER }),
+  });
 }
 
 function parseEmailFromMessage(text: string): { to: string | null; subject: string | null; body: string } {
@@ -79,7 +89,7 @@ export const sendEmailAction: Action = {
         body: JSON.stringify({
           to: [to],
           subject: emailSubject,
-          text: emailBody || `This is an automated message from Dryad, an autonomous land management AI agent managing 9 vacant lots on 25th Street in Detroit, MI.`,
+          text: (emailBody || `This is an automated message from Dryad, an autonomous land management AI agent managing 9 vacant lots on 25th Street in Detroit, MI.`) + EMAIL_FOOTER,
         }),
       });
 

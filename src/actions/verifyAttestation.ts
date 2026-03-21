@@ -1,44 +1,24 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
 import { keccak256, toHex } from 'viem';
+import { PARCELS, haversineDistance, isWithinParcels, findNearestParcel, MAX_PARCEL_DISTANCE_METERS } from '../parcels.ts';
 
-// Parcel coordinates (approximate centers for each lot on 25th Street)
-const PARCEL_COORDS: Record<string, { lat: number; lng: number }> = {
-  '3904 25th St': { lat: 42.3308, lng: -83.0465 },
-  '3908 25th St': { lat: 42.3309, lng: -83.0465 },
-  '3912 25th St': { lat: 42.3310, lng: -83.0465 },
-  '3916 25th St': { lat: 42.3311, lng: -83.0465 },
-  '3920 25th St': { lat: 42.3312, lng: -83.0465 },
-  '3924 25th St': { lat: 42.3313, lng: -83.0465 },
-  '3928 25th St': { lat: 42.3314, lng: -83.0465 },
-  '3932 25th St': { lat: 42.3315, lng: -83.0465 },
-  '3936 25th St': { lat: 42.3316, lng: -83.0465 },
-};
+// Build PARCEL_COORDS from shared parcels module
+const PARCEL_COORDS: Record<string, { lat: number; lng: number }> = {};
+for (const p of PARCELS) {
+  PARCEL_COORDS[p.address] = { lat: p.lat, lng: p.lng };
+}
 
-// Maximum distance in meters for GPS match
-const MAX_DISTANCE_METERS = 100;
-
-// Maximum age in hours for timestamp validity
+const MAX_DISTANCE_METERS = MAX_PARCEL_DISTANCE_METERS;
 const MAX_AGE_HOURS = 72;
 
 interface AttestationData {
   lat?: number;
   lng?: number;
-  timestamp?: number; // Unix timestamp
+  timestamp?: number;
   imageHash?: string;
   parcel?: string;
   description?: string;
-}
-
-function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371e3; // Earth radius in meters
-  const phi1 = (lat1 * Math.PI) / 180;
-  const phi2 = (lat2 * Math.PI) / 180;
-  const dphi = ((lat2 - lat1) * Math.PI) / 180;
-  const dlambda = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dphi / 2) ** 2 + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dlambda / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
 }
 
 function parseAttestationFromMessage(text: string): AttestationData {

@@ -8,15 +8,19 @@ import { recordMilestoneAction } from './actions/recordMilestone.ts';
 import { payContractorAction } from './actions/payContractor.ts';
 import { verifyAttestationAction } from './actions/verifyAttestation.ts';
 import { sendEmailAction, checkEmailAction } from './actions/agentMail.ts';
+import { dryadRoutes } from './routes.ts';
+import { DecisionLoopService } from './services/decisionLoop.ts';
 
 const dryadPlugin: Plugin = {
   name: 'dryad',
   description:
-    'Autonomous land management plugin for Dryad. Manages biodiversity monitoring, DIEM tokens, stETH treasury, onchain milestones, contractor payments, attestation verification, and email communication.',
+    'Autonomous land management plugin for Dryad. Manages biodiversity monitoring, DIEM tokens, stETH treasury, onchain milestones, contractor payments, attestation verification, email, photo submissions, and autonomous decision loop.',
 
   async init(_config: Record<string, string>) {
     logger.info('Initializing Dryad plugin');
-    logger.info('Actions: checkBiodiversity, manageDIEM, manageStETH, recordMilestone, payContractor, verifyAttestation');
+    logger.info('Actions: checkBiodiversity, manageDIEM, manageStETH, recordMilestone, payContractor, verifyAttestation, sendEmail, checkEmail');
+    logger.info('Routes: /submit, /dashboard, /api/*');
+    logger.info('Services: DecisionLoopService (4-hour cycle)');
   },
 
   actions: [
@@ -29,6 +33,10 @@ const dryadPlugin: Plugin = {
     sendEmailAction,
     checkEmailAction,
   ],
+
+  routes: dryadRoutes,
+
+  services: [DecisionLoopService],
 };
 
 export default dryadPlugin;
