@@ -2,21 +2,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dryad — The Forest That Owns Itself</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Manrope:wght@300;400;500&display=swap');
-
         :root {
-            --bg: #e8e8e4;
-            --text-main: #141414;
-            --text-body: #2a2a2a;
-            --text-muted: #4a4a4a;
-            --accent: #1a5c2a;
-            --accent-light: #2d8a44;
-            --card-bg: #f0f0ec;
-            --card-border: #d0d0c8;
-            --danger: #8b2020;
+            --bg: #1A1C14;
+            --bg-alt: #24261B;
+            --text-main: #D2D6C1;
+            --text-body: #D2D6C1;
+            --text-muted: rgba(210, 214, 193, 0.5);
+            --accent: #8DA667;
+            --accent-light: #a8c47a;
+            --accent-amber: #E29E4B;
+            --card-bg: #24261B;
+            --card-border: rgba(141, 166, 103, 0.25);
+            --danger: #c44;
             --space-unit: max(2vw, 20px);
+            --font-display: 'Instrument Serif', serif;
+            --font-mono: 'Space Mono', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,215 +30,156 @@
         body {
             background-color: var(--bg);
             color: var(--text-body);
-            font-family: 'Manrope', sans-serif;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
             width: 100%;
             -webkit-font-smoothing: antialiased;
         }
 
+        ::selection { background: var(--accent-amber); color: var(--bg); }
+
         a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
         a:hover { border-bottom-color: var(--accent); }
 
-        /* ── HERO SECTION ── */
+        /* ── HERO — Terminal split panel ── */
         .hero {
-            position: relative;
-            width: 100vw;
+            width: 100%;
             height: 100vh;
-            overflow: hidden;
-        }
-
-        #canvas-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .geometric-intervention {
-            position: absolute;
-            top: 42%; left: 56%;
-            width: 24vw; height: 34vh;
-            background-color: var(--accent);
-            transform: translate(-50%, -50%);
-            z-index: 0;
-            mix-blend-mode: multiply;
-            opacity: 0.7;
-            animation: float-plane 20s ease-in-out infinite alternate;
-        }
-
-        @keyframes float-plane {
-            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-            100% { transform: translate(-48%, -49%) rotate(1deg) scale(1.02); }
-        }
-
-        .ui-layer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 10;
-            padding: calc(var(--space-unit) * 2);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            pointer-events: none;
-        }
-        .ui-layer > * { pointer-events: auto; }
-
-        .hero header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            font-weight: 500;
-        }
-
-        .logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-            text-transform: none;
-            font-style: italic;
-            color: var(--text-main);
-        }
-
-        .hero .nav-links {
-            display: flex;
-            gap: calc(var(--space-unit) * 2);
-        }
-
-        .hero .nav-link {
-            cursor: pointer;
-            position: relative;
             overflow: hidden;
-            padding-bottom: 4px;
-            text-decoration: none;
-            color: var(--text-main);
-            border-bottom: none;
         }
-        .hero .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100%; height: 1px;
-            background-color: var(--text-main);
-            transform: translateX(-101%);
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .hero .nav-link:hover::after { transform: translateX(0); }
-        .hero .nav-link:hover { border-bottom: none; }
 
-        .hero main {
+        .hero-header {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 200px 1fr auto;
             align-items: center;
-            flex-grow: 1;
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: linear-gradient(to bottom, var(--bg-alt), var(--bg));
+            flex-shrink: 0;
         }
 
-        .content-left {
-            max-width: 50vw;
-            padding-left: calc(var(--space-unit) * 2);
-            transform-style: preserve-3d;
-        }
-
-        .hero h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(3rem, 5.5vw, 6.5rem);
-            font-weight: 600;
-            line-height: 0.9;
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            text-transform: lowercase;
+            font-size: 1.2rem;
             letter-spacing: -0.02em;
-            margin-bottom: calc(var(--space-unit) * 1.2);
-            color: #0a0a0a;
-            max-width: 70%;
-            text-shadow: 0 2px 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4);
-            position: relative; z-index: 20;
-        }
-
-        .subhead-container {
-            position: relative;
-            padding-left: 20px;
-        }
-        .subhead-container::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 6px; bottom: 6px;
-            width: 1px;
-            background-color: var(--accent);
-        }
-
-        p.subhead {
-            font-size: clamp(0.85rem, 1.05vw, 1.15rem);
-            font-weight: 400;
-            line-height: 1.65;
-            color: var(--text-muted);
-            max-width: 340px;
-        }
-
-        .hero footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            font-size: 0.7rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-        .hero footer a { color: var(--text-muted); border-bottom: none; }
-        .hero footer a:hover { color: var(--accent); }
-
-        .meta-data { display: flex; flex-direction: column; gap: 4px; }
-
-        .scroll-indicator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            color: var(--text-muted);
-            border-bottom: none;
-        }
-        .scroll-indicator:hover { border-bottom: none; }
-
-        .scroll-line {
-            width: 40px; height: 1px;
-            background-color: var(--text-muted);
-            position: relative; overflow: hidden;
-        }
-        .scroll-line::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: var(--accent);
-            transform: translateX(-100%);
-            animation: scroll-progress 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-        }
-        @keyframes scroll-progress {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(0); }
-            100% { transform: translateX(100%); }
-        }
-
-        .glitch-hover:hover {
-            animation: text-glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
             color: var(--accent);
         }
-        @keyframes text-glitch {
-            0% { transform: translate(0) }
-            20% { transform: translate(-2px, 1px) }
-            40% { transform: translate(-1px, -1px) }
-            60% { transform: translate(2px, 1px) }
-            80% { transform: translate(1px, -1px) }
-            100% { transform: translate(0) }
+
+        .logo-area svg { width: 20px; height: 20px; fill: var(--accent-amber); animation: logo-spin 30s linear infinite; }
+        @keyframes logo-spin { to { transform: rotate(360deg); } }
+
+        .hero-nav { display: flex; justify-content: center; gap: 2.5rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .hero-nav a { color: var(--text-muted); border-bottom: none; }
+        .hero-nav a:hover { color: var(--accent-amber); text-decoration: underline; text-underline-offset: 4px; }
+
+        .pill-btn { border: 1px solid var(--accent-amber); padding: 0.4rem 1rem; border-radius: 50px; font-family: inherit; font-size: 0.7rem; background: transparent; color: var(--accent-amber); cursor: pointer; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; transition: all 0.2s; }
+        .pill-btn:hover { background: var(--accent-amber); color: var(--bg); border-bottom: none; }
+
+        .hero-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex-grow: 1;
+            overflow: hidden;
         }
+
+        .hero-left {
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(3.5rem, 7vw, 7rem);
+            line-height: 0.85;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: -0.03em;
+            color: var(--accent-amber);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-display);
+            font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+            line-height: 1.2;
+            text-transform: none;
+            color: var(--text-main);
+            margin-bottom: 2rem;
+            max-width: 90%;
+        }
+
+        .hero-details {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.8rem 1.5rem;
+            margin-top: auto;
+            border-top: 1px solid var(--card-border);
+            padding-top: 1rem;
+        }
+        .hero-details .hl { color: var(--accent); }
+
+        .hero-right {
+            position: relative;
+            background: #14150F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #ascii-canvas {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            line-height: 10px;
+            white-space: pre;
+            color: var(--accent);
+            text-align: center;
+            user-select: none;
+            filter: drop-shadow(0 0 10px rgba(141,166,103,0.15));
+        }
+
+        .crosshair { position: absolute; background: rgba(141,166,103,0.08); }
+        .ch-h { width: 100%; height: 1px; top: 50%; left: 0; }
+        .ch-v { height: 100%; width: 1px; left: 50%; top: 0; }
+
+        .panel-label { position: absolute; top: 1rem; right: 1rem; font-size: 0.6rem; color: var(--accent-amber); border: 1px solid rgba(226,158,75,0.3); padding: 0.2rem 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+        .hero-footer {
+            border-top: 1px solid var(--card-border);
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .hero-footer a { color: var(--text-muted); border-bottom: none; }
+        .hero-footer a:hover { color: var(--accent-amber); }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
 
         /* ── STICKY NAV ── */
         .sticky-nav {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(232,232,228,0.92);
+            background: rgba(26,28,20,0.95);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--card-border);
             padding: 12px 0;
@@ -254,7 +200,7 @@
         }
         .sticky-nav a { color: var(--text-muted); border-bottom: none; }
         .sticky-nav a:hover { color: var(--accent); }
-        .sticky-nav .logo { font-size: 1.1rem; margin-right: 16px; }
+        .sticky-nav .logo { font-size: 1.1rem; margin-right: 16px; font-family: var(--font-mono); font-weight: 700; color: var(--accent); text-transform: lowercase; font-style: normal; letter-spacing: -0.02em; }
 
         /* ── CONTENT SECTIONS ── */
         .content { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
@@ -265,20 +211,23 @@
         }
 
         section h2 {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: var(--font-display);
             font-size: clamp(2rem, 3.5vw, 3.5rem);
-            font-weight: 600;
-            color: var(--accent);
+            font-weight: 400;
+            color: var(--accent-amber);
             margin-bottom: 32px;
             line-height: 1.1;
+            text-transform: none;
+            letter-spacing: -0.02em;
         }
 
         section h3 {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: var(--font-display);
             font-size: 1.4rem;
-            font-weight: 600;
+            font-weight: 400;
             color: var(--text-main);
             margin-bottom: 12px;
+            text-transform: none;
         }
 
         section p {
@@ -299,12 +248,12 @@
         }
 
         .card-accent {
-            background: var(--accent);
-            color: #fff;
+            background: rgba(141,166,103,0.15);
+            color: var(--text-main);
             border-color: var(--accent);
         }
-        .card-accent a { color: #a8e6b0; }
-        .card-accent h3 { color: #fff; }
+        .card-accent a { color: var(--accent-amber); }
+        .card-accent h3 { color: var(--accent); }
 
         .card-danger {
             border-color: var(--danger);
@@ -313,10 +262,10 @@
         .card-danger h3 { color: var(--danger); }
 
         .stat-big {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: var(--font-display);
             font-size: 2.8rem;
-            font-weight: 600;
-            color: var(--accent);
+            font-weight: 400;
+            color: var(--accent-amber);
             line-height: 1;
         }
         .stat-label {
@@ -368,14 +317,14 @@
         .step-content p { margin-bottom: 8px; }
 
         .email-card {
-            background: #fff;
+            background: var(--bg-alt);
             border: 1px solid var(--card-border);
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 24px;
         }
         .email-header {
-            background: var(--card-bg);
+            background: rgba(20,21,15,0.6);
             padding: 16px 20px;
             font-size: 0.85rem;
             border-bottom: 1px solid var(--card-border);
@@ -396,7 +345,7 @@
         }
 
         .callout {
-            background: var(--card-bg);
+            background: rgba(36,38,27,0.8);
             border-left: 3px solid var(--accent);
             padding: 20px 24px;
             margin: 24px 0;
@@ -421,13 +370,14 @@
         }
 
         .page-footer {
-            background: var(--accent);
-            color: rgba(255,255,255,0.85);
+            background: #14150F;
+            color: var(--text-muted);
             padding: 60px 0;
+            border-top: 1px solid var(--card-border);
         }
-        .page-footer a { color: #a8e6b0; border-bottom-color: transparent; }
-        .page-footer a:hover { border-bottom-color: #a8e6b0; }
-        .page-footer h3 { color: #fff; font-size: 1.1rem; }
+        .page-footer a { color: var(--accent); border-bottom-color: transparent; }
+        .page-footer a:hover { border-bottom-color: var(--accent); }
+        .page-footer h3 { color: var(--accent-amber); font-size: 1.1rem; }
 
         @media (max-width: 768px) {
             .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
@@ -443,37 +393,51 @@
 
 <!-- ═══════════════ HERO ═══════════════ -->
 <div class="hero">
-    <div class="geometric-intervention"></div>
-    <div id="canvas-container"></div>
-    <div class="ui-layer">
-        <header>
-            <div class="logo">Dryad.</div>
-            <div class="nav-links">
-                <a class="nav-link" href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a>
-                <a class="nav-link" href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">Onchain</a>
-                <a class="nav-link glitch-hover" href="http://5.75.225.23:3000" target="_blank">Enter</a>
+    <header class="hero-header">
+        <div class="logo-area">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+            dryad
+        </div>
+        <div class="hero-nav">
+            <a href="#problem">Problem</a>
+            <a href="#parcels">Land</a>
+            <a href="#how">Loop</a>
+            <a href="#treasury">Treasury</a>
+            <a href="#bounties">Bounties</a>
+        </div>
+        <a class="pill-btn" href="http://5.75.225.23:3000" target="_blank">Enter Agent</a>
+    </header>
+
+    <main class="hero-main">
+        <section class="hero-left">
+            <h1 class="hero-title">The Forest<br>That Owns<br>Itself</h1>
+            <h2 class="hero-subtitle">An autonomous AI agent managing native habitat restoration on 9 vacant lots in Detroit — funded by DeFi yield, verified by community science, recorded onchain.</h2>
+
+            <div class="hero-details">
+                <span class="hl">AGENT:</span>
+                <span>dryadforest.eth // ERC-8004 #35293 // Base L2</span>
+                <span class="hl">WALLET:</span>
+                <span>0xf2f7…0880 // ETH + wstETH + USDC + DIEM</span>
+                <span class="hl">GPS:</span>
+                <span>42.3290° N, 83.1058° W // 25th St, Detroit</span>
+                <span class="hl">LOOP:</span>
+                <span>6h cycle // iNaturalist → detect → hire → verify → pay → record</span>
             </div>
-        </header>
-        <main>
-            <div class="content-left" id="parallax-content">
-                <h1>The Forest<br>That Owns<br>Itself</h1>
-                <div class="subhead-container">
-                    <p class="subhead">An autonomous AI agent managing 9 vacant lots on 25th Street in Detroit for native habitat restoration — funded by DeFi yield, verified by community science, recorded onchain.</p>
-                </div>
-            </div>
-        </main>
-        <footer>
-            <div class="meta-data">
-                <span>dryadforest.eth &mdash; ERC-8004 Agent #35293</span>
-                <a href="https://www.google.com/maps?q=42.3290,-83.10575" target="_blank">Coordinates: 42.3290&deg; N, 83.1058&deg; W</a>
-                <span>Base L2 &mdash; Venice.ai &mdash; <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist</a></span>
-            </div>
-            <a class="scroll-indicator" href="#problem">
-                <span>Discover</span>
-                <div class="scroll-line"></div>
-            </a>
-        </footer>
-    </div>
+        </section>
+
+        <section class="hero-right">
+            <div class="crosshair ch-h"></div>
+            <div class="crosshair ch-v"></div>
+            <div class="panel-label">Live // Bioscan</div>
+            <div id="ascii-canvas"></div>
+        </section>
+    </main>
+
+    <footer class="hero-footer">
+        <div>STATUS: ACTIVE <span class="blink">_</span></div>
+        <div><a href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a> &bull; <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">BaseScan</a> &bull; <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist</a></div>
+        <div>LAT: 42.329 // LONG: -83.106</div>
+    </footer>
 </div>
 
 <!-- ═══════════════ STICKY NAV ═══════════════ -->
@@ -1026,17 +990,17 @@ Would you be able to review the species list and planting density for this site?
 <div class="page-footer">
 <div class="content">
     <div class="tag-row" style="margin-bottom:24px">
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">elizaOS</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Venice.ai</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Base L2</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Lido stETH</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">ERC-8004</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">DIEM</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">iNaturalist</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">AgentMail</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Uniswap</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">viem</span>
-        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">dryadforest.eth</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">elizaOS</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">Venice.ai</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">Base L2</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">Lido stETH</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">ERC-8004</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">DIEM</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">iNaturalist</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">AgentMail</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">Uniswap</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">viem</span>
+        <span class="tag" style="background:rgba(141,166,103,0.15);border-color:rgba(141,166,103,0.25);color:var(--accent)">dryadforest.eth</span>
     </div>
     <div class="grid-2" style="gap:40px">
         <div>
@@ -1052,92 +1016,43 @@ Would you be able to review the species list and planting density for this site?
 </div>
 </div>
 
-<!-- ═══════════════ THREE.JS ═══════════════ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- ═══════════════ ASCII TREE ═══════════════ -->
 <script>
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0xe8e8e4, 0.025);
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 25; camera.position.x = 5;
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-
-    const noiseShader = `
-        vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
-        vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
-        vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
-        vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
-        float snoise(vec3 v){
-            const vec2 C=vec2(1.0/6.0,1.0/3.0);const vec4 D=vec4(0.0,0.5,1.0,2.0);
-            vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);
-            vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.0-g;
-            vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);
-            vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;
-            i=mod289(i);
-            vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
-            float n_=0.142857142857;vec3 ns=n_*D.wyz-D.xzx;
-            vec4 j=p-49.0*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.0*x_);
-            vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.0-abs(x)-abs(y);
-            vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);
-            vec4 s0=floor(b0)*2.0+1.0;vec4 s1=floor(b1)*2.0+1.0;
-            vec4 sh=-step(h,vec4(0.0));
-            vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
-            vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);
-            vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
-            p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
-            vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);m=m*m;
-            return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
-        }`;
-
-    const vertexShader = `${noiseShader}
-        uniform float uTime;varying float vNoise;
-        void main(){
-            float noise=snoise(vec3(position.x*0.2,position.y*0.2,position.z*0.2+uTime*0.1));
-            vNoise=noise;vec3 np=position+normal*(noise*2.0);
-            vec4 mv=modelViewMatrix*vec4(np,1.0);
-            gl_PointSize=(12.0*(1.0+noise))*(10.0/-mv.z);gl_Position=projectionMatrix*mv;
-        }`;
-
-    const fragmentShader = `varying float vNoise;
-        void main(){
-            vec2 xy=gl_PointCoord.xy-vec2(0.5);float ll=length(xy);if(ll>0.5)discard;
-            vec3 c1=vec3(0.92,0.96,0.90);vec3 c2=vec3(0.6,0.75,0.55);
-            vec3 fc=mix(c2,c1,vNoise+0.5);float a=(0.5-ll)*2.0;a*=smoothstep(-1.0,0.5,vNoise);
-            gl_FragColor=vec4(fc,a*0.8);
-        }`;
-
-    const geometry = new THREE.TorusKnotGeometry(4,1.5,300,64);
-    geometry.scale(1,1.5,0.7);
-    const material = new THREE.ShaderMaterial({vertexShader,fragmentShader,uniforms:{uTime:{value:0.0}},transparent:true,depthWrite:false,blending:THREE.NormalBlending});
-    const pointCloud = new THREE.Points(geometry,material);
-    pointCloud.position.set(2,0,0);scene.add(pointCloud);
-
-    const dg = new THREE.BufferGeometry();const dc=1200;const pos=new Float32Array(dc*3);
-    for(let i=0;i<dc*3;i++)pos[i]=(Math.random()-0.5)*30;
-    dg.setAttribute('position',new THREE.BufferAttribute(pos,3));
-    const dm=new THREE.PointsMaterial({color:0x4caf50,size:0.04,transparent:true,opacity:0.35});
-    const debris=new THREE.Points(dg,dm);scene.add(debris);
-
-    let mouseX=0,mouseY=0;
-    const whx=window.innerWidth/2,why=window.innerHeight/2;
-    document.addEventListener('mousemove',e=>{mouseX=(e.clientX-whx)*0.001;mouseY=(e.clientY-why)*0.001;});
-
-    const clock=new THREE.Clock();
-    const pc=document.getElementById('parallax-content');
-    function animate(){
-        requestAnimationFrame(animate);
-        material.uniforms.uTime.value=clock.getElapsedTime()*0.5;
-        pointCloud.rotation.y+=0.05*(mouseX*0.5-pointCloud.rotation.y);
-        pointCloud.rotation.x+=0.05*(mouseY*0.5-pointCloud.rotation.x);
-        pointCloud.rotation.y+=0.001;debris.rotation.y-=0.0005;debris.rotation.x-=0.0002;
-        if(pc)pc.style.transform=`translate3d(${mouseX*-20}px,${mouseY*-20}px,0)`;
-        renderer.render(scene,camera);
+(function(){
+    var canvas = document.getElementById('ascii-canvas');
+    if(!canvas) return;
+    var rows = 50, width = 64;
+    var canopyChars = ['#','\u2593','\u2592','\u2588'];
+    var fallingChars = ['.','\u00b7','\u25cb'];
+    var time = 0, mouseX = 0.5, mouseY = 0.5;
+    var falling = [];
+    for(var i=0;i<15;i++) falling.push({x:Math.random()*width,y:Math.random()*rows,speed:0.15+Math.random()*0.25,drift:(Math.random()-0.5)*0.15});
+    document.addEventListener('mousemove',function(e){mouseX=e.clientX/window.innerWidth;mouseY=e.clientY/window.innerHeight;});
+    function renderFrame(){
+        var grid=[];for(var r=0;r<rows;r++){grid[r]=[];for(var c=0;c<width;c++)grid[r][c]=' ';}
+        var cx=width/2,wind=(mouseX-0.5)*4;
+        var crownStart=5,crownEnd=30;
+        for(var y=crownStart;y<crownEnd;y++){
+            var lp=(y-crownStart)/(crownEnd-crownStart);
+            var cw;if(lp<0.25)cw=8+lp*40;else if(lp<0.7)cw=18-(lp-0.25)*10;else cw=14-(lp-0.7)*20;
+            var sway=Math.sin(time*0.04+y*0.08)*(0.8+wind*0.5);
+            for(var x=-Math.floor(cw);x<=Math.floor(cw);x++){
+                var en=Math.sin(x*0.3+y*0.2+time*0.05)*2;
+                if(Math.abs(x)<=cw+en){var tx=Math.floor(cx+x+sway);if(tx>=0&&tx<width){var d=Math.abs(x)/cw;grid[y][tx]=canopyChars[Math.min(Math.floor(d*canopyChars.length),canopyChars.length-1)];}}
+            }
+        }
+        for(var y2=crownEnd-2;y2<rows;y2++){
+            var tt=1.8-(y2-crownEnd+2)*0.02;var sw=Math.sin(time*0.04+y2*0.06)*(0.3+wind*0.3);var tw=Math.max(0.8,tt);
+            for(var x2=-tw;x2<=tw;x2++){var tx2=Math.floor(cx+x2+sw);if(tx2>=0&&tx2<width)grid[y2][tx2]=(Math.abs(x2)<0.5&&y2%3===0)?'+':'|';}
+        }
+        var ry=rows-5;
+        for(var side=-1;side<=1;side+=2)for(var i2=0;i2<6;i2++){var rx=Math.floor(cx+(side*(2+i2)));var ry2=Math.floor(ry+i2*0.6);if(rx>=0&&rx<width&&ry2<rows)grid[ry2][rx]=side<0?'\\':'/';}
+        falling.forEach(function(p){p.y+=p.speed*(1+mouseY*0.5);p.x+=p.drift+(wind*0.15);if(p.y>=rows){p.y=0;p.x=Math.random()*width;}var py=Math.floor(p.y),px=Math.floor(p.x);if(py>=0&&py<rows&&px>=0&&px<width&&grid[py][px]===' ')grid[py][px]=fallingChars[Math.floor((p.y+time)%fallingChars.length)];});
+        canvas.textContent=grid.map(function(row){return row.join('');}).join('\n');
+        time++;requestAnimationFrame(renderFrame);
     }
-    animate();
-    window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+    renderFrame();
+})();
 </script>
 
 <!-- Leaflet Parcel Map -->
@@ -1188,7 +1103,7 @@ Would you be able to review the species list and planting density for this site?
     var legend = L.control({position: 'bottomright'});
     legend.onAdd = function() {
         var div = L.DomUtil.create('div');
-        div.style.cssText = 'background:rgba(232,232,228,0.9);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Manrope,sans-serif';
+        div.style.cssText = 'background:rgba(26,28,20,0.9);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Space Mono,monospace;color:#D2D6C1';
         div.innerHTML = '<span style="display:inline-block;width:12px;height:12px;background:#2d8a3e;opacity:0.6;border:1px solid #1a5c2a;margin-right:4px;vertical-align:middle"></span> Dryad Parcels<br><span style="display:inline-block;width:12px;height:12px;border:1px dashed #6abf5e;margin-right:4px;vertical-align:middle"></span> iNaturalist Area';
         return div;
     };
