@@ -2,6 +2,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dryad — The Forest That Owns Itself</title>
+    <meta name="description" content="An autonomous AI agent managing native habitat restoration on 9 vacant lots in Detroit — funded by DeFi yield, verified by community science, recorded onchain.">
+    <meta property="og:title" content="Dryad — The Forest That Owns Itself">
+    <meta property="og:description" content="Autonomous AI agent restoring native ecosystems on Detroit vacant land. dryadforest.eth • ERC-8004 #35293 on Base.">
+    <meta property="og:image" content="public/images/lots/street-view-main.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -384,7 +390,9 @@
             border: 1px solid var(--card-border);
             transition: transform 0.3s;
             display: block;
+            aspect-ratio: 16/10;
         }
+        .photo-grid .photo-main img { aspect-ratio: auto; }
         .photo-grid img:hover { transform: scale(1.02); }
         .photo-scroll {
             display: flex;
@@ -425,10 +433,10 @@
 
         .hero-footer {
             border-top: 1px solid var(--card-border);
-            padding: 0.4rem 2rem;
+            padding: 0.5rem 2rem;
             display: flex;
             justify-content: space-between;
-            font-size: 0.55rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
             background: var(--bg);
             flex-shrink: 0;
@@ -598,14 +606,16 @@
         }
 
         /* ── Collapsible toggles ── */
-        details { margin: 20px 0; }
+        details { margin: 24px 0; }
         details summary {
             cursor: pointer;
             font-family: var(--font-display);
             font-size: 1.3rem;
             color: var(--text-main);
-            padding: 12px 0;
-            border-bottom: 1px solid var(--card-border);
+            padding: 14px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: rgba(34,36,26,0.3);
             list-style: none;
             display: flex;
             justify-content: space-between;
@@ -620,7 +630,7 @@
             transition: transform 0.2s;
         }
         details[open] summary::after { content: '−'; }
-        details[open] summary { border-bottom-color: var(--accent); margin-bottom: 16px; }
+        details[open] summary { border-color: var(--accent); margin-bottom: 16px; background: rgba(141,166,103,0.08); }
         details > div { padding-bottom: 8px; }
 
         .callout {
@@ -663,10 +673,18 @@
             .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
             .hero-main { grid-template-columns: 1fr; }
             .hero-right { min-height: 50vh; max-height: 500px; }
-            .hero-header { grid-template-columns: 1fr; gap: 12px; }
-            .hero-nav { justify-content: flex-start; gap: 1.5rem; }
+            .hero-header { grid-template-columns: auto 1fr auto; }
+            .hero-nav { gap: 1rem; font-size: 0.65rem; overflow-x: auto; }
+            .hero-title { font-size: 2.4rem; }
             .content { padding: 0 20px; }
             section { padding: 48px 0; }
+            .photo-grid { grid-template-rows: auto; }
+            .photo-grid img { aspect-ratio: 16/9; }
+        }
+        @media (max-width: 480px) {
+            .hero-nav { gap: 0.8rem; font-size: 0.6rem; }
+            .pill-btn { padding: 0.3rem 0.7rem; font-size: 0.6rem; }
+            .hero-footer { flex-direction: column; gap: 4px; align-items: center; }
         }
     </style>
 </head>
@@ -680,13 +698,10 @@
         </div>
         <div class="hero-nav">
             <a href="#problem">Problem</a>
-            <a href="#architecture">Arch</a>
-            <a href="#parcels">Land</a>
-            <a href="#ecology">Ecology</a>
-            <a href="#how">Loop</a>
-            <a href="#invasives">Invasives</a>
+            <a href="#parcels">The Land</a>
+            <a href="#how">How It Works</a>
             <a href="#treasury">Treasury</a>
-            <a href="#finance">Finance</a>
+            <a href="#finance">Costs</a>
             <a href="#scaling">Scale</a>
             <a href="#v2">V2</a>
         </div>
@@ -1466,11 +1481,14 @@ Would you be able to review the species list and planting density for this site?
 <div class="content">
     <div class="grid-2" style="gap:40px">
         <div>
-            <p>Built by <strong>Nick George</strong> — <a href="https://www.canr.msu.edu/conservation_stewards/" target="_blank">Michigan Conservation Steward</a></p>
+            <p>Built by <strong>Nick George</strong></p>
+            <p><a href="https://www.canr.msu.edu/conservation_stewards/" target="_blank">Michigan Conservation Steward</a></p>
+            <p style="margin-top:8px"><a href="mailto:powahgen@gmail.com">powahgen@gmail.com</a></p>
         </div>
         <div style="text-align:right">
-            <p><a href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a> &bull; <a href="mailto:dryad@agentmail.to">dryad@agentmail.to</a> &bull; <a href="mailto:powahgen@gmail.com">powahgen@gmail.com</a></p>
-            <p><a href="http://5.75.225.23:3000" target="_blank">Agent UI</a> &bull; <a href="http://5.75.225.23:3000/Dryad/dashboard" target="_blank">Dashboard</a> &bull; <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">BaseScan</a></p>
+            <p><a href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a> &bull; <a href="mailto:dryad@agentmail.to">dryad@agentmail.to</a></p>
+            <p><a href="http://5.75.225.23:3000" target="_blank">Agent UI</a> &bull; <a href="http://5.75.225.23:3000/Dryad/dashboard" target="_blank">Dashboard</a></p>
+            <p><a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">BaseScan</a> &bull; dryadforest.eth</p>
         </div>
     </div>
 </div>
