@@ -691,8 +691,39 @@
 <div class="content">
     <h2>System Architecture</h2>
     <p>A mycelial network of autonomous services — the agent at the center, connecting ecological data, onchain contracts, treasury, and community.</p>
-    <div style="margin:32px 0">
-        <img src="exc.svg" alt="Dryad System Architecture — hub-and-spoke diagram showing Dryad Agent connected to Venice.ai, Base Contracts, iNaturalist, AgentMail, Treasury, DLBA, Contractors, and Dashboard" style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(141,166,103,0.15)">
+    <div style="position:relative;margin:32px 0">
+        <img src="exc.svg" alt="Dryad System Architecture" style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(141,166,103,0.15);display:block">
+        <!-- Animated connection overlay -->
+        <svg viewBox="0 0 1020 710" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:12px">
+            <defs><style>
+                @keyframes flow { to { stroke-dashoffset: -40; } }
+                @keyframes flow-fast { to { stroke-dashoffset: -28; } }
+                @keyframes flow-slow { to { stroke-dashoffset: -56; } }
+                .anim { fill:none; stroke:rgba(141,166,103,0.35); stroke-width:3; stroke-linecap:round; }
+                .anim-grn { stroke-dasharray:8,14; animation: flow 2.5s linear infinite; }
+                .anim-fast { stroke-dasharray:6,12; animation: flow-fast 1.2s linear infinite; }
+                .anim-gold { stroke:rgba(196,168,77,0.35); stroke-dasharray:10,16; animation: flow-slow 4s linear infinite; }
+                .anim-org { stroke:rgba(212,120,90,0.4); stroke-dasharray:8,14; animation: flow 3s linear infinite; }
+            </style></defs>
+            <!-- Agent ↔ Venice (top-left) -->
+            <path class="anim anim-fast" d="M500,380 Q340,280 180,130"/>
+            <!-- Agent ↔ Base Contracts (top-right) -->
+            <path class="anim anim-grn" d="M560,320 Q700,230 870,120"/>
+            <!-- Agent ← iNaturalist (left) -->
+            <path class="anim anim-grn" d="M430,430 Q280,420 130,410"/>
+            <!-- Agent ↔ AgentMail (right) -->
+            <path class="anim anim-org" d="M600,430 Q740,420 890,400"/>
+            <!-- Agent → DLBA (top) -->
+            <path class="anim anim-grn" d="M520,320 Q530,230 560,80"/>
+            <!-- Agent ↔ Treasury (bottom) -->
+            <path class="anim anim-gold" d="M520,490 Q520,560 520,610"/>
+            <!-- Agent → Dashboard (bottom-left) -->
+            <path class="anim anim-grn" d="M440,480 Q340,530 250,570"/>
+            <!-- Treasury → Contractors (bottom-right, USDC) -->
+            <path class="anim anim-gold" d="M620,670 Q740,680 870,680"/>
+            <!-- AgentMail → Contractors (hire via email) -->
+            <path class="anim anim-org" d="M940,460 Q950,560 930,620"/>
+        </svg>
     </div>
 </div>
 </section>
