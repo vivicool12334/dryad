@@ -43,8 +43,8 @@ export function isInjectionAttempt(input: string): { detected: boolean; pattern?
 }
 
 export function containsUnknownWalletAddress(input: string): { found: boolean; addresses: string[] } {
-  const matches = input.match(/0x[a-fA-F0-9]{40}/g) || [];
-  const unknown = matches.filter(addr => !KNOWN_ADDRESSES.includes(addr.toLowerCase()));
+  const matches: string[] = input.match(/0x[a-fA-F0-9]{40}/g) || [];
+  const unknown = matches.filter((addr: string) => !KNOWN_ADDRESSES.includes(addr.toLowerCase()));
   return { found: unknown.length > 0, addresses: unknown };
 }
 

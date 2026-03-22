@@ -9,6 +9,8 @@ import { payContractorAction } from './actions/payContractor.ts';
 import { verifyAttestationAction } from './actions/verifyAttestation.ts';
 import { sendEmailAction, checkEmailAction } from './actions/agentMail.ts';
 import { checkWeatherAction } from './actions/checkWeather.ts';
+import { findContractorAction } from './actions/findContractor.ts';
+import contractorReputationProvider from './providers/contractorReputation.ts';
 import { dryadRoutes } from './routes.ts';
 import { DecisionLoopService } from './services/decisionLoop.ts';
 import knowledgeProvider from './providers/knowledgeProvider.ts';
@@ -35,9 +37,10 @@ const dryadPlugin: Plugin = {
     sendEmailAction,
     checkEmailAction,
     checkWeatherAction,
+    findContractorAction,
   ],
 
-  providers: [knowledgeProvider],
+  providers: [knowledgeProvider, contractorReputationProvider],
 
   routes: dryadRoutes,
 

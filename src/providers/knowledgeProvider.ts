@@ -29,7 +29,10 @@ const knowledgeProvider: Provider = {
       if (filename === 'detroit' && /detroit|vacant|lot|dlba|land bank|neighborhood|chadsey|community|tax|conservancy|equity|mow/.test(messageText)) {
         relevantKnowledge.push(content);
       }
-      if (filename === 'operations' && /treasury|wallet|contract|milestone|payment|contractor|decision|loop|how|work|steth|diem|uniswap|email|submit/.test(messageText)) {
+      if (filename === 'operations' && /treasury|wallet|contract|milestone|payment|decision|loop|how|work|steth|diem|uniswap|email|submit/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'contractors' && /contractor|hire|worker|removal|planting|mow|onboard|discovery/.test(messageText)) {
         relevantKnowledge.push(content);
       }
     }
