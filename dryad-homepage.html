@@ -488,6 +488,7 @@
         <a href="#contractors">Contractors</a>
         <a href="#finance">Financial Model</a>
         <a href="#scaling">Scaling</a>
+        <a href="#v2">V2</a>
         <a href="#bounties">Bounties</a>
         <a href="#tech">Tech Stack</a>
     </div>
@@ -805,10 +806,59 @@ Would you be able to review the species list and planting density for this site?
 
     <h3 style="margin-top:40px">Roadmap</h3>
     <div class="grid-4" style="margin-top:16px">
-        <div class="card"><h3>Q2 2026</h3><p style="font-size:0.85rem">Pilot on 9 lots. Real contractors, USFWS plantings, soil baseline, onchain milestones, <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist project</a> + QR signage.</p></div>
-        <div class="card"><h3>Q3-Q4 2026</h3><p style="font-size:0.85rem">Ecological credits: carbon + biodiversity. Voluntary market registration.</p></div>
-        <div class="card"><h3>2027</h3><p style="font-size:0.85rem">Open source agent factory. Expand to Flint, Cleveland, Baltimore. City-specific ecology adaptation.</p></div>
-        <div class="card"><h3>2028+</h3><p style="font-size:0.85rem">Network of autonomous land agents. Inter-agent contractor sharing. Academic data partnerships.</p></div>
+        <div class="card"><h3>Q2 2026</h3><p style="font-size:0.85rem">Pilot on 9 lots. Real contractors, USFWS plantings, soil baseline, onchain milestones, <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist project</a> + QR signage. Evaluate <a href="https://github.com/livonianerd/real-estate-nft" target="_blank">PropertyDeedNFT.sol</a> for Base mainnet fork.</p></div>
+        <div class="card"><h3>Q3-Q4 2026</h3><p style="font-size:0.85rem">Ecological credits: carbon + biodiversity. Deploy tokenized deed NFTs for 9 lots. Launch <a href="https://snapshot.org/" target="_blank">Snapshot</a> governance (dryadforest.eth).</p></div>
+        <div class="card"><h3>2027</h3><p style="font-size:0.85rem">DAO-governed lot acquisitions via DLBA. Geohash stewardship tokens. Open source agent factory. Expand to Flint, Cleveland, Baltimore.</p></div>
+        <div class="card"><h3>2028+</h3><p style="font-size:0.85rem">Multi-city agent DAO network with shared ecological data layer. Inter-agent contractor sharing. Academic data partnerships.</p></div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ 9.5 V2 ROADMAP ═══════════════ -->
+<section id="v2">
+<div class="content">
+    <h2>V2: The Forest That Truly Owns Itself</h2>
+    <p>Dryad v1 proves an AI agent can autonomously manage land. V2 asks: what if the land itself was collectively owned onchain — with tokenized property deeds, DAO governance, and no single point of failure? We're building on two models: <a href="https://autonomousforest.org/" target="_blank">Autonomous Forest</a>'s hybrid legal-DAO framework and a <a href="https://github.com/livonianerd/real-estate-nft" target="_blank">forkable PropertyDeedNFT contract</a> for Base — while learning from <a href="https://outliermedia.org/crypto-real-estate-realt-cryptocurrency-detroit/" target="_blank">RealT's failures</a> in Detroit.</p>
+
+    <div class="grid-2" style="margin-top:32px">
+        <div class="card">
+            <h3>Layer 1: Legal Entity (LLC)</h3>
+            <p style="font-size:0.9rem">Michigan LLC holds legal title to the land (filed with Wayne County Register of Deeds). Operating agreement encodes that the DAO governs land use decisions. Modeled on <a href="https://autonomousforest.org/about" target="_blank">Autonomous Forest's Verein structure</a> — legal entity is bound to carry out DAO resolutions. Dissolving the LLC transfers assets to a conservation land trust (failsafe).</p>
+        </div>
+        <div class="card">
+            <h3>Layer 2: Tokenized Property Deeds</h3>
+            <p style="font-size:0.9rem">Fork of <a href="https://github.com/livonianerd/real-estate-nft/blob/master/src/PropertyDeedNFT.sol" target="_blank">PropertyDeedNFT.sol</a> — ERC721 with ISSUER/NOTARY/ADMIN roles and regulated transfer mode. Each lot = 1 NFT minted by the LLC. Onchain: parcel ID hash + recorded deed hash. <a href="https://sepolia.basescan.org/tx/0xa6dfa4230dfb34b7d67ff8bd0c1b8896f6820c2441ed618b14df201023533360" target="_blank">Already tested on Base Sepolia</a>. Geohash subdivision possible (~30 grid cells per lot).</p>
+        </div>
+        <div class="card">
+            <h3>Layer 3: DAO Governance</h3>
+            <p style="font-size:0.9rem">NFT holders stake deed tokens to gain voting rights (staked = non-transferable, like <a href="https://autonomousforest.org/" target="_blank">Autonomous Forest</a>). Community Council votes on planting plans, contractor selection, treasury allocation, new acquisitions. Voting on <a href="https://snapshot.org/" target="_blank">Snapshot</a> (dryadforest.eth). <strong>DAO governs WHAT to do. Agent governs HOW.</strong></p>
+        </div>
+        <div class="card card-accent">
+            <h3>Layer 4: Autonomous Agent (Dryad)</h3>
+            <p style="font-size:0.9rem">Already built. Monitors biodiversity, hires contractors, verifies work, pays in USDC, records milestones onchain. Self-funded from stETH yield — no dependency on token sales. Reports to the DAO via onchain milestones and treasury alerts.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="border-left-color:var(--danger);margin-top:24px">
+        <h3 style="color:var(--danger)">The RealT Lesson</h3>
+        <p><a href="https://outliermedia.org/crypto-real-estate-realt-cryptocurrency-detroit/" target="_blank">RealT tokenized ~1,000 Detroit properties</a> and promised 10% returns to overseas investors. Today they owe Detroit <a href="https://tokenizedliving.com/index.php/2025/08/04/detroit-realt-tokenization-lawsuit/" target="_blank">$2M+ in unpaid taxes</a>, face foreclosure on 200+ properties, and have accumulated 1,000+ blight tickets. The City of Detroit has sued them.</p>
+        <p style="margin-top:8px"><strong>Tokenization without operational accountability is worse than no tokenization at all.</strong></p>
+        <p style="margin-top:8px">Dryad is the opposite model. The agent <strong>pays property taxes autonomously</strong> from DeFi yield. It <strong>maintains the land</strong> by hiring contractors and verifying their work. Every action is <strong>recorded onchain</strong> on <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">DryadMilestones.sol</a>. The DAO provides collective governance. The agent provides operational accountability. Neither exists without the other.</p>
+    </div>
+
+    <h3 style="margin-top:32px">V2 Timeline</h3>
+    <table>
+        <tr><th>Phase</th><th>When</th><th>What</th></tr>
+        <tr><td>V2.0</td><td>Q3 2026</td><td>Fork PropertyDeedNFT.sol to Base mainnet. Mint 9 deed NFTs. Regulated mode ON (notary = LLC admin).</td></tr>
+        <tr><td>V2.1</td><td>Q4 2026</td><td>Deploy Snapshot space (dryadforest.eth). Staking mechanism for deed NFTs. First community vote on Spring 2027 planting plan.</td></tr>
+        <tr><td>V2.2</td><td>2027</td><td>LLC acquires 9 additional DLBA lots ($250/lot). Mint new deed NFTs. Geohash grid subdivision for stewardship tokens.</td></tr>
+        <tr><td>V2.3</td><td>2027–28</td><td>Publish replicable toolkit: LLC template + PropertyDeedNFT fork + Dryad agent config. Other cities fork for their own programs.</td></tr>
+        <tr><td>V2.4</td><td>2028+</td><td>Inter-agent DAO: multiple Dryad agents across cities, governed by local DAOs, sharing contractor networks and ecological data.</td></tr>
+    </table>
+
+    <div class="callout" style="margin-top:24px">
+        <h3>Legal Note</h3>
+        <p style="font-size:0.85rem">U.S. property law does not yet recognize NFTs as legal title. Dryad uses a "dual ledger" model: the <strong>LLC holds legal title</strong> (county records), the <strong>NFT represents a membership interest</strong> in the LLC (similar to RealT's series LLC but with operational accountability), and the <strong>DAO governs</strong> via the operating agreement. Over time, as states adopt blockchain-friendly title legislation, the onchain record becomes authoritative. Sources: <a href="https://blogs.law.ox.ac.uk/oblb/blog-post/2025/10/tokenization-mirage-why-nft-real-estate-cant-deliver-its-promises" target="_blank">Oxford Law Blog</a>, <a href="https://scholarship.law.umn.edu/cgi/viewcontent.cgi?article=1544&context=mjlst" target="_blank">Minnesota Journal of Law</a>, <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5401703" target="_blank">SSRN</a>.</p>
     </div>
 </div>
 </section>
@@ -881,6 +931,34 @@ Would you be able to review the species list and planting density for this site?
             <a href="https://www.hetzner.com/cloud/" target="_blank">Hetzner VPS</a> CX22 — Ubuntu 24.04<br>
             Node.js 23 + <a href="https://bun.sh" target="_blank">Bun</a><br>
             <a href="https://app.uniswap.org" target="_blank">Uniswap V3</a> — DIEM swaps on Base</p>
+        </div>
+    </div>
+    <h3 style="margin-top:24px">V2 (Planned)</h3>
+    <div class="grid-2">
+        <div>
+            <p style="font-size:0.9rem"><a href="https://github.com/livonianerd/real-estate-nft" target="_blank">PropertyDeedNFT.sol</a> fork — ERC721 with ISSUER/NOTARY roles, regulated transfers on Base<br>
+            <a href="https://snapshot.org/" target="_blank">Snapshot</a> via dryadforest.eth — gasless DAO voting<br>
+            Michigan LLC with DAO-bound operating agreement</p>
+        </div>
+        <div>
+            <p style="font-size:0.9rem"><strong>Inspiration:</strong> <a href="https://autonomousforest.org/" target="_blank">Autonomous Forest</a> (terra0) — hybrid legal-DAO for collective land stewardship<br>
+            <a href="https://networkcultures.org/moneylab/2016/09/29/terra0-the-self-owning-augmented-forest/" target="_blank">terra0 whitepaper (2016)</a> — the self-owning augmented forest</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top:24px">Prior Art</h3>
+    <div class="grid-3">
+        <div class="card">
+            <h3><a href="https://autonomousforest.org/" target="_blank">Autonomous Forest</a></h3>
+            <p style="font-size:0.85rem">terra0 collective. Pioneered self-owning forests (2016). Germany — nonprofit + DAO hybrid for collective forest stewardship. Dryad adds the missing operational autonomy layer. <a href="https://www.bankless.com/read/autonomous-forest-experiment-ethereum" target="_blank">Bankless</a> &bull; <a href="https://www.las-art.foundation/programme/terra0-autonomous-forest" target="_blank">LAS</a></p>
+        </div>
+        <div class="card">
+            <h3><a href="https://github.com/livonianerd/real-estate-nft" target="_blank">PropertyDeedNFT</a></h3>
+            <p style="font-size:0.85rem">Open-source ERC721 for property deeds with notary compliance on Base. Foundry-based, MIT licensed. Dryad V2 will fork this for tokenized lot ownership.</p>
+        </div>
+        <div class="card card-danger">
+            <h3><a href="https://outliermedia.org/crypto-real-estate-realt-cryptocurrency-detroit/" target="_blank">RealT</a></h3>
+            <p style="font-size:0.85rem">Tokenized 1,000+ Detroit properties. <a href="https://tokenizedliving.com/index.php/2025/08/04/detroit-realt-tokenization-lawsuit/" target="_blank">$2M+ unpaid taxes, 200+ foreclosures</a>. Demonstrated that tokenization without autonomous maintenance fails. Dryad solves this failure mode.</p>
         </div>
     </div>
 </div>
