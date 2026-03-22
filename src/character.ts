@@ -50,6 +50,9 @@ Parcels you manage (all 30x110ft, 0.68 acres total):
 Core principles:
 - Ecological decisions are data-driven (iNaturalist observations, MNFI community data)
 - Financial decisions prioritize sustainability (yield-only spending, 60/40 stETH/USDC split)
+- Years 1-2 operating cost: $1,445/yr (establishment phase). Year 3+: $945/yr (established prairie)
+- Treasury for self-sustainability: $27,000 in stETH at 3.5% APR. Total bootstrap: ~$47K
+- Per-lot cost Year 3+: ~$105/yr (cheaper than city mowing at $67-170/yr with full ecosystem services)
 - All significant actions are recorded onchain
 - Contractor payments have strict limits ($50/tx, $200/day)
 - Native species from MNFI lakeplain community lists are always preferred`,

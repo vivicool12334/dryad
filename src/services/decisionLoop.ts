@@ -19,11 +19,13 @@ const CYCLE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 const CONTRACTOR_EMAIL = process.env.CONTRACTOR_EMAIL || 'powahgen@gmail.com';
 
 // Financial model constants
-const ANNUAL_OPERATING_COST = 645; // $/yr current
-const ANNUAL_COST_WITH_LVT = 978; // $/yr if land value tax passes
+// Year 3+ steady-state costs (established prairie)
+const ANNUAL_OPERATING_COST = 945; // $/yr (Year 3+ established prairie)
+const ANNUAL_COST_ESTABLISHMENT = 1445; // $/yr (Years 1-2 active management)
+const ANNUAL_COST_WITH_LVT = 1278; // $/yr if land value tax passes (Year 3+)
 const STETH_APR = 0.035;
-const SUSTAINABILITY_THRESHOLD = ANNUAL_OPERATING_COST / STETH_APR; // ~$18,429
-const NON_NEGOTIABLE_ANNUAL = 270 + 58 + 5; // taxes + VPS + gas = $333/yr
+const SUSTAINABILITY_THRESHOLD = ANNUAL_OPERATING_COST / STETH_APR; // ~$27,000
+const NON_NEGOTIABLE_ANNUAL = 270 + 58 + 5 + 50; // taxes + VPS + gas + LLC = $383/yr
 
 // Track spending mode across cycles to detect changes
 let lastSpendingMode: string = '';

@@ -248,7 +248,7 @@ th{color:#81c784}
       <tr><td>Hetzner VPS (CX22)</td><td style="text-align:right">$58</td></tr>
       <tr><td>LLC maintenance</td><td style="text-align:right">$50</td></tr>
       <tr><td>Gas fees on Base</td><td style="text-align:right">$5</td></tr>
-      <tr style="font-weight:700;border-top:2px solid #2e7d32"><td>Total</td><td style="text-align:right">$645/yr</td></tr>
+      <tr style="font-weight:700;border-top:2px solid #2e7d32"><td>Total (Yr 3+)</td><td style="text-align:right">$945/yr</td></tr>
       <tr style="color:#f9a825"><td>If Land Value Tax passes</td><td style="text-align:right">$978/yr</td></tr>
     </table>
     <p style="font-size:12px;color:#81c784;margin-top:8px">Detroit accepts crypto for taxes via PayPal at checkout.</p>
@@ -258,7 +258,7 @@ th{color:#81c784}
   <div class="card">
     <h2>Treasury Stress Test</h2>
     <div id="stressTest" class="loading">Loading...</div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">Target: 60% stETH / 40% USDC split. Sustainability: $18,429 in stETH at 3.5% APR to cover $645/yr.</p>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Target: 60% stETH / 40% USDC split. Sustainability: $27K in stETH at 3.5% APR to cover $945/yr (Yr 3+).</p>
   </div>
 
   <!-- Milestones -->
@@ -358,17 +358,17 @@ fetch('/Dryad/api/treasury').then(r=>r.json()).then(data => {
   const drop50 = stethUSD * 0.5 * 0.035;
   document.getElementById('stressTest').innerHTML = \`
     <table>
-      <tr><th>Scenario</th><th style="text-align:right">Annual Yield</th><th style="text-align:right">vs $645 cost</th></tr>
-      <tr><td>Current</td><td style="text-align:right">$\${annualYield}</td><td style="text-align:right;color:\${parseFloat(annualYield)>=645?'#4caf50':'#ef5350'}">\${parseFloat(annualYield)>=645?'✅ Covered':'⚠️ Shortfall $'+(645-parseFloat(annualYield)).toFixed(0)}</td></tr>
-      <tr><td>ETH -30%</td><td style="text-align:right">$\${drop30.toFixed(0)}</td><td style="text-align:right;color:\${drop30>=645?'#4caf50':'#ef5350'}">\${drop30>=645?'✅':'⚠️ -$'+(645-drop30).toFixed(0)}</td></tr>
-      <tr><td>ETH -50%</td><td style="text-align:right">$\${drop50.toFixed(0)}</td><td style="text-align:right;color:\${drop50>=645?'#4caf50':'#ef5350'}">\${drop50>=645?'✅':'⚠️ -$'+(645-drop50).toFixed(0)}</td></tr>
+      <tr><th>Scenario</th><th style="text-align:right">Annual Yield</th><th style="text-align:right">vs $945 cost</th></tr>
+      <tr><td>Current</td><td style="text-align:right">$\${annualYield}</td><td style="text-align:right;color:\${parseFloat(annualYield)>=945?'#4caf50':'#ef5350'}">\${parseFloat(annualYield)>=945?'✅ Covered':'⚠️ Shortfall $'+(945-parseFloat(annualYield)).toFixed(0)}</td></tr>
+      <tr><td>ETH -30%</td><td style="text-align:right">$\${drop30.toFixed(0)}</td><td style="text-align:right;color:\${drop30>=945?'#4caf50':'#ef5350'}">\${drop30>=945?'✅':'⚠️ -$'+(945-drop30).toFixed(0)}</td></tr>
+      <tr><td>ETH -50%</td><td style="text-align:right">$\${drop50.toFixed(0)}</td><td style="text-align:right;color:\${drop50>=945?'#4caf50':'#ef5350'}">\${drop50>=945?'✅':'⚠️ -$'+(945-drop50).toFixed(0)}</td></tr>
     </table>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">Need $18,429 in stETH (7.1 ETH) for full self-sustainability.</p>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Need $27K in stETH (~10.4 ETH) for Year 3+ self-sustainability.</p>
   \`;
 
   // Spending mode
   const isSustainable = parseFloat(annualYield) >= 645;
-  const coversCore = parseFloat(annualYield) >= 333; // taxes + VPS + gas
+  const coversCore = parseFloat(annualYield) >= 383; // taxes + VPS + gas + LLC
   const mode = isSustainable ? 'NORMAL' : coversCore ? 'CONSERVATION' : 'CRITICAL';
   const modeColors = { NORMAL: '#4caf50', CONSERVATION: '#f9a825', CRITICAL: '#ef5350' };
   const modeDesc = {
@@ -379,7 +379,7 @@ fetch('/Dryad/api/treasury').then(r=>r.json()).then(data => {
   document.getElementById('spendingMode').innerHTML = \`
     <div class="stat" style="color:\${modeColors[mode]}">\${mode}</div>
     <div class="stat-label">\${modeDesc[mode]}</div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">Non-negotiable: $333/yr (taxes $270 + VPS $58 + gas $5)</p>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Non-negotiable: $383/yr (taxes $270 + VPS $58 + gas $5 + LLC $50)</p>
   \`;
 }).catch(()=>{ document.getElementById('treasury').textContent = 'Failed to load'; });
 

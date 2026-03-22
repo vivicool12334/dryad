@@ -746,17 +746,26 @@ Would you be able to review the species list and planting density for this site?
             </table>
         </div>
         <div>
-            <h3>Annual Operating Costs</h3>
+            <h3>Annual Operating Costs — Years 1–2 (Establishment)</h3>
             <table>
                 <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
                 <tr><td><a href="https://ipn4.paymentus.com/rotp/dtmi" target="_blank">Property taxes</a> (9 &times; ~$30)</td><td style="text-align:right">$270/yr</td></tr>
                 <tr><td><a href="https://venice.ai/lp/diem" target="_blank">DIEM</a> for inference</td><td style="text-align:right">$62/yr</td></tr>
-                <tr><td>Contractor payments (~4 jobs)</td><td style="text-align:right">$200/yr</td></tr>
+                <tr><td><strong>Lot maintenance &amp; contractor work</strong></td><td style="text-align:right"><strong>$1,000/yr</strong></td></tr>
+                <tr><td colspan="2" style="font-size:0.8rem;color:var(--text-muted);border:none;padding-top:0">Invasive removal, mowing 2–3×/yr at 6", burn prep, replanting gaps</td></tr>
                 <tr><td><a href="https://www.hetzner.com/cloud/" target="_blank">Hetzner VPS</a> CX22</td><td style="text-align:right">$58/yr</td></tr>
                 <tr><td>LLC maintenance</td><td style="text-align:right">$50/yr</td></tr>
                 <tr><td>Base gas fees</td><td style="text-align:right">~$5/yr</td></tr>
-                <tr class="row-total"><td><strong>Total (current)</strong></td><td style="text-align:right"><strong>$645/yr</strong></td></tr>
-                <tr class="row-alt"><td>Total if <a href="https://detroitmi.gov/departments/office-chief-financial-officer/land-value-tax-plan" target="_blank">Land Value Tax</a> passes</td><td style="text-align:right">$978/yr</td></tr>
+                <tr class="row-total"><td><strong>Total (Years 1–2)</strong></td><td style="text-align:right"><strong>$1,445/yr</strong></td></tr>
+                <tr class="row-alt"><td>If <a href="https://detroitmi.gov/departments/office-chief-financial-officer/land-value-tax-plan" target="_blank">LVT</a> passes</td><td style="text-align:right">$1,778/yr</td></tr>
+            </table>
+            <h3 style="margin-top:16px">Year 3+ (Established Prairie)</h3>
+            <table>
+                <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
+                <tr><td>Property taxes + LLC + DIEM + VPS + gas</td><td style="text-align:right">$445/yr</td></tr>
+                <tr><td><strong>Lot maintenance</strong> (1–2 burns/mows, spot removal)</td><td style="text-align:right"><strong>$500/yr</strong></td></tr>
+                <tr class="row-total"><td><strong>Total (Year 3+)</strong></td><td style="text-align:right"><strong>$945/yr</strong></td></tr>
+                <tr class="row-alt"><td>If LVT passes</td><td style="text-align:right">$1,278/yr</td></tr>
             </table>
         </div>
     </div>
@@ -766,18 +775,26 @@ Would you be able to review the species list and planting density for this site?
     </div>
 
     <h3 style="margin-top:40px">Self-Sustainability Threshold</h3>
-    <p>At <a href="https://lido.fi/ethereum" target="_blank">3.5% stETH APR</a>: $645/yr needs <strong>$18,429 in stETH</strong> (~7.1 ETH at $2,600). Total to bootstrap and sustain forever: <strong>~$35K</strong> ($17K setup + $18K treasury).</p>
+    <p>At <a href="https://lido.fi/ethereum" target="_blank">3.5% stETH APR</a>, the Year 3+ cost of <strong>$945/yr</strong> needs <strong>$27,000 in stETH</strong> (~10.4 ETH at $2,600). Setup costs $17K once. The first two years need ~$1,445/yr for active management. By year 3, established prairie drops to $945/yr. <strong>Total to bootstrap and sustain forever: ~$47K.</strong></p>
 
-    <h3 style="margin-top:32px">Treasury Resilience — 60/40 Split</h3>
-    <p>60% <a href="https://lido.fi" target="_blank">stETH</a> / 40% <a href="https://www.circle.com/usdc" target="_blank">USDC</a> on <a href="https://aave.com" target="_blank">Aave</a>/<a href="https://app.morpho.org" target="_blank">Morpho</a> (3-5% APR). USDC portion is immune to ETH price swings.</p>
+    <h3 style="margin-top:32px">Treasury Resilience — 60/40 Split on $27K</h3>
+    <p>60% <a href="https://lido.fi" target="_blank">stETH</a> ($16.2K) / 40% <a href="https://www.circle.com/usdc" target="_blank">USDC</a> ($10.8K) on <a href="https://aave.com" target="_blank">Aave</a>/<a href="https://app.morpho.org" target="_blank">Morpho</a> (4% APR). USDC portion is immune to ETH price swings.</p>
     <table>
-        <tr><th>Scenario</th><th>stETH Yield</th><th>USDC Yield</th><th>Combined</th><th>vs. $645</th></tr>
-        <tr><td>Current</td><td>$387</td><td>$288</td><td>$675</td><td style="color:var(--accent)">&#10003; Covered</td></tr>
-        <tr><td>ETH -30%</td><td>$271</td><td>$288</td><td>$559</td><td style="color:var(--danger)">&minus;$86</td></tr>
-        <tr><td>ETH -50%</td><td>$194</td><td>$288</td><td>$482</td><td style="color:var(--danger)">&minus;$163</td></tr>
+        <tr><th>Scenario</th><th>stETH Yield</th><th>USDC Yield</th><th>Combined</th><th>vs. $945/yr</th></tr>
+        <tr><td>Current</td><td>$567</td><td>$432</td><td>$999</td><td style="color:var(--accent)">&#10003; Covered</td></tr>
+        <tr><td>ETH -30%</td><td>$397</td><td>$432</td><td>$829</td><td style="color:var(--danger)">&minus;$116</td></tr>
+        <tr><td>ETH -50%</td><td>$284</td><td>$432</td><td>$716</td><td style="color:var(--danger)">&minus;$229</td></tr>
     </table>
-    <p><strong>Adaptive spending:</strong> NORMAL &rarr; CONSERVATION (pause contractor jobs) &rarr; CRITICAL (steward intervention). Non-negotiable floor: $333/yr (taxes + VPS + gas).</p>
-    <p>Over-capitalization buffer: 2&times; target (~$36K) weathers a 50% crash with no cuts needed.</p>
+    <p><strong>Adaptive spending:</strong> NORMAL &rarr; CONSERVATION (pause discretionary contractor work) &rarr; CRITICAL (steward intervention). Non-negotiable floor: $383/yr (taxes + VPS + gas + LLC).</p>
+    <p><strong>Even at -50% ETH, yield ($716) covers the non-negotiable floor ($383) with margin.</strong> Pause one contractor job and the land self-maintains through prairie resilience.</p>
+
+    <h3 style="margin-top:32px">Cost Per Lot Comparison</h3>
+    <table>
+        <tr><th>Approach</th><th>Year 1–2/lot</th><th>Year 3+/lot</th><th>Ecological Value</th></tr>
+        <tr><td>City mowing (status quo)</td><td>$67–170/yr</td><td>$67–170/yr forever</td><td>None</td></tr>
+        <tr><td style="color:var(--accent);font-weight:600">Dryad restoration</td><td>~$161/yr</td><td><strong>~$105/yr</strong></td><td>Full ecosystem services</td></tr>
+    </table>
+    <p style="font-size:0.85rem;color:var(--text-muted)">Crossover at Year 2–3: Dryad becomes cheaper than mowing while delivering carbon sequestration, pollinator habitat, stormwater management, and biodiversity.</p>
 
     <h3 style="margin-top:32px">Revenue — Ecological Credits</h3>
     <p>0.3-1.7 tons CO2/acre/yr (<a href="https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references" target="_blank">EPA calculator</a>). At $14/ton (<a href="https://www.ecosystemmarketplace.com/" target="_blank">Ecosystem Marketplace</a>): ~$9.50/yr for 0.68 acres. Biodiversity credits via <a href="https://www.wallaceatrust.org/" target="_blank">Wallacea Trust</a>: $2.50-$230/credit (avg $27). Meaningful at scale — 100 acres = $1,400/yr carbon + up to $27K/yr biodiversity.</p>
@@ -855,6 +872,35 @@ Would you be able to review the species list and planting density for this site?
         <tr><td>V2.3</td><td>2027–28</td><td>Publish replicable toolkit: LLC template + PropertyDeedNFT fork + Dryad agent config. Other cities fork for their own programs.</td></tr>
         <tr><td>V2.4</td><td>2028+</td><td>Inter-agent DAO: multiple Dryad agents across cities, governed by local DAOs, sharing contractor networks and ecological data.</td></tr>
     </table>
+
+    <h3 style="margin-top:40px">Community Stewardship Airdrop</h3>
+    <div class="callout" style="border-left-color:var(--accent)">
+        <em>The forest doesn't belong to investors. It belongs to the community that surrounds it.</em>
+    </div>
+    <p>Dryad V2 introduces a stewardship airdrop — free shares of lot governance distributed to neighbors and active community members. No purchase required. If you live near the land, you have a voice in how it's managed.</p>
+
+    <div class="grid-2" style="margin-top:20px">
+        <div class="card">
+            <h3>Proximity Airdrop — Neighbors First</h3>
+            <p style="font-size:0.9rem">Residents within 500 feet of any Dryad lot get a free stewardship NFT. Mirrors the <a href="https://buildingdetroit.org/sidelots" target="_blank">DLBA Side Lot program</a> which already prioritizes adjacent homeowners. The city <a href="https://buildingdetroit.org/purchase_property" target="_blank">defines "neighbor"</a> at this same radius.</p>
+        </div>
+        <div class="card">
+            <h3>Participation Airdrop — Stewards Earn Shares</h3>
+            <p style="font-size:0.9rem">10+ verified <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist observations</a> &rarr; 1 NFT. Volunteer work day &rarr; 1 NFT. Complete a contractor job &rarr; 1 NFT. Block club endorsement &rarr; NFTs for all members. <strong>Proof-of-stewardship</strong>, not proof-of-capital.</p>
+        </div>
+        <div class="card">
+            <h3>Soulbound by Default</h3>
+            <p style="font-size:0.9rem">Stewardship NFTs are <strong>non-transferable</strong> unless the DAO votes to unlock. Prevents speculation, absentee ownership, and the <a href="https://outliermedia.org/crypto-real-estate-realt-cryptocurrency-detroit/" target="_blank">RealT failure mode</a>. If someone moves, the NFT can be reclaimed by DAO vote and re-airdropped to the new resident.</p>
+        </div>
+        <div class="card">
+            <h3>Equal Governance</h3>
+            <p style="font-size:0.9rem">1 NFT = 1 vote. No whale dynamics. Simple majority for routine maintenance, 75% supermajority for land use changes (matching <a href="https://autonomousforest.org/about" target="_blank">Autonomous Forest</a> thresholds). The agent executes community decisions. The community decides based on agent-provided data.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:20px;border-left-color:var(--accent)">
+        <strong>Why this matters:</strong> Most crypto land projects sell tokens to fund acquisition. Dryad <strong>gives them away</strong> to the people who actually live there. This isn't DeFi extracting value from Detroit — it's DeFi returning ownership to Detroit's communities. The agent handles the complexity. The neighbors make the decisions. The land heals.
+    </div>
 
     <div class="callout" style="margin-top:24px">
         <h3>Legal Note</h3>
