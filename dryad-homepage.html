@@ -8,22 +8,36 @@
         :root {
             --bg: #e8e8e4;
             --text-main: #141414;
+            --text-body: #2a2a2a;
             --text-muted: #4a4a4a;
             --accent: #1a5c2a;
             --accent-light: #2d8a44;
+            --card-bg: #f0f0ec;
+            --card-border: #d0d0c8;
+            --danger: #8b2020;
             --space-unit: max(2vw, 20px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
 
         body {
             background-color: var(--bg);
-            color: var(--text-main);
+            color: var(--text-body);
             font-family: 'Manrope', sans-serif;
-            overflow: hidden;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+        a:hover { border-bottom-color: var(--accent); }
+
+        /* ── HERO SECTION ── */
+        .hero {
+            position: relative;
             width: 100vw;
             height: 100vh;
-            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
         }
 
         #canvas-container {
@@ -62,10 +76,9 @@
             justify-content: space-between;
             pointer-events: none;
         }
-
         .ui-layer > * { pointer-events: auto; }
 
-        header {
+        .hero header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -82,23 +95,24 @@
             font-weight: 600;
             text-transform: none;
             font-style: italic;
+            color: var(--text-main);
         }
 
-        .nav-links {
+        .hero .nav-links {
             display: flex;
             gap: calc(var(--space-unit) * 2);
         }
 
-        .nav-link {
+        .hero .nav-link {
             cursor: pointer;
             position: relative;
             overflow: hidden;
             padding-bottom: 4px;
             text-decoration: none;
             color: var(--text-main);
+            border-bottom: none;
         }
-
-        .nav-link::after {
+        .hero .nav-link::after {
             content: '';
             position: absolute;
             bottom: 0; left: 0;
@@ -107,15 +121,14 @@
             transform: translateX(-101%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
         }
+        .hero .nav-link:hover::after { transform: translateX(0); }
+        .hero .nav-link:hover { border-bottom: none; }
 
-        .nav-link:hover::after { transform: translateX(0); }
-
-        main {
+        .hero main {
             display: grid;
             grid-template-columns: 1fr 1fr;
             align-items: center;
             flex-grow: 1;
-            position: relative;
         }
 
         .content-left {
@@ -124,7 +137,7 @@
             transform-style: preserve-3d;
         }
 
-        h1 {
+        .hero h1 {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(3rem, 5.5vw, 6.5rem);
             font-weight: 600;
@@ -133,46 +146,31 @@
             margin-bottom: calc(var(--space-unit) * 1.2);
             color: #0a0a0a;
             max-width: 70%;
-            text-align: left;
             text-shadow: 0 2px 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4);
-            position: relative;
-            z-index: 20;
+            position: relative; z-index: 20;
         }
 
         .subhead-container {
             position: relative;
             padding-left: 20px;
         }
-
         .subhead-container::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 6px; bottom: 6px;
+            left: 0; top: 6px; bottom: 6px;
             width: 1px;
             background-color: var(--accent);
         }
 
         p.subhead {
-            font-family: 'Manrope', sans-serif;
             font-size: clamp(0.85rem, 1.05vw, 1.15rem);
             font-weight: 400;
             line-height: 1.65;
             color: var(--text-muted);
             max-width: 340px;
-            letter-spacing: 0.01em;
         }
 
-        p.subhead a {
-            color: var(--accent);
-            text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: border-color 0.3s;
-        }
-
-        p.subhead a:hover { border-bottom-color: var(--accent); }
-
-        footer {
+        .hero footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
@@ -181,32 +179,26 @@
             text-transform: uppercase;
             color: var(--text-muted);
         }
+        .hero footer a { color: var(--text-muted); border-bottom: none; }
+        .hero footer a:hover { color: var(--accent); }
 
-        .meta-data {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .meta-data a { color: var(--text-muted); text-decoration: none; }
-        .meta-data a:hover { color: var(--accent); }
+        .meta-data { display: flex; flex-direction: column; gap: 4px; }
 
         .scroll-indicator {
             display: flex;
             align-items: center;
             gap: 12px;
             cursor: pointer;
-            text-decoration: none;
             color: var(--text-muted);
+            border-bottom: none;
         }
+        .scroll-indicator:hover { border-bottom: none; }
 
         .scroll-line {
             width: 40px; height: 1px;
             background-color: var(--text-muted);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
-
         .scroll-line::after {
             content: '';
             position: absolute;
@@ -216,7 +208,6 @@
             transform: translateX(-100%);
             animation: scroll-progress 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
         }
-
         @keyframes scroll-progress {
             0% { transform: translateX(-100%); }
             50% { transform: translateX(0); }
@@ -224,10 +215,9 @@
         }
 
         .glitch-hover:hover {
-            animation: text-glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            animation: text-glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
             color: var(--accent);
         }
-
         @keyframes text-glitch {
             0% { transform: translate(0) }
             20% { transform: translate(-2px, 1px) }
@@ -237,20 +227,223 @@
             100% { transform: translate(0) }
         }
 
-        @media (max-width: 1024px) {
-            main { grid-template-columns: 1fr; }
-            .content-left { max-width: 85vw; padding-left: 0; margin-top: 8vh; }
-            h1 { max-width: 100%; }
+        /* ── STICKY NAV ── */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(232,232,228,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 0;
+            overflow-x: auto;
+        }
+        .sticky-nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .sticky-nav a { color: var(--text-muted); border-bottom: none; }
+        .sticky-nav a:hover { color: var(--accent); }
+        .sticky-nav .logo { font-size: 1.1rem; margin-right: 16px; }
+
+        /* ── CONTENT SECTIONS ── */
+        .content { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        section {
+            padding: 80px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        section h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 3.5vw, 3.5rem);
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 32px;
+            line-height: 1.1;
+        }
+
+        section h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        section p {
+            line-height: 1.7;
+            margin-bottom: 16px;
+            max-width: 720px;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .card-accent {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .card-accent a { color: #a8e6b0; }
+        .card-accent h3 { color: #fff; }
+
+        .card-danger {
+            border-color: var(--danger);
+            border-left: 3px solid var(--danger);
+        }
+        .card-danger h3 { color: var(--danger); }
+
+        .stat-big {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+        th {
+            font-weight: 500;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        tr:last-child td { border-bottom: none; }
+        .row-total { font-weight: 700; border-top: 2px solid var(--accent); }
+        .row-alt { color: var(--danger); font-style: italic; }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .step { display: flex; align-items: flex-start; margin-bottom: 24px; }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 8px; }
+
+        .email-card {
+            background: #fff;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .email-header {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .email-header strong { color: var(--accent); }
+        .email-body {
+            padding: 20px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+        .email-footer {
+            padding: 16px 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            font-style: italic;
+        }
+
+        .callout {
+            background: var(--card-bg);
+            border-left: 3px solid var(--accent);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .page-footer {
+            background: var(--accent);
+            color: rgba(255,255,255,0.85);
+            padding: 60px 0;
+        }
+        .page-footer a { color: #a8e6b0; border-bottom-color: transparent; }
+        .page-footer a:hover { border-bottom-color: #a8e6b0; }
+        .page-footer h3 { color: #fff; font-size: 1.1rem; }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .hero main { grid-template-columns: 1fr; }
+            .content-left { max-width: 90vw; padding-left: 0; margin-top: 8vh; }
+            .hero h1 { max-width: 100%; }
             .geometric-intervention { width: 50vw; height: 40vh; top: 60%; left: 60%; }
+            section { padding: 48px 0; }
         }
     </style>
 </head>
 <body>
 
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
     <div class="geometric-intervention"></div>
-
     <div id="canvas-container"></div>
-
     <div class="ui-layer">
         <header>
             <div class="logo">Dryad.</div>
@@ -260,7 +453,6 @@
                 <a class="nav-link glitch-hover" href="http://5.75.225.23:3000" target="_blank">Enter</a>
             </div>
         </header>
-
         <main>
             <div class="content-left" id="parallax-content">
                 <h1>The Forest<br>That Owns<br>Itself</h1>
@@ -269,182 +461,460 @@
                 </div>
             </div>
         </main>
-
         <footer>
             <div class="meta-data">
                 <span>dryadforest.eth &mdash; ERC-8004 Agent #35293</span>
                 <a href="https://www.google.com/maps?q=42.3290,-83.10575" target="_blank">Coordinates: 42.3290&deg; N, 83.1058&deg; W</a>
                 <span>Base L2 &mdash; Venice.ai &mdash; <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist</a></span>
             </div>
-            <a class="scroll-indicator" href="http://5.75.225.23:3000/Dryad/dashboard" target="_blank">
-                <span>Dashboard</span>
+            <a class="scroll-indicator" href="#problem">
+                <span>Discover</span>
                 <div class="scroll-line"></div>
             </a>
         </footer>
     </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0xe8e8e4, 0.025);
+<!-- ═══════════════ STICKY NAV ═══════════════ -->
+<nav class="sticky-nav">
+    <div class="sticky-nav-inner">
+        <span class="logo">Dryad.</span>
+        <a href="#problem">Problem</a>
+        <a href="#parcels">The Land</a>
+        <a href="#how">How It Works</a>
+        <a href="#invasives">Invasives</a>
+        <a href="#treasury">Treasury</a>
+        <a href="#contractors">Contractors</a>
+        <a href="#finance">Financial Model</a>
+        <a href="#scaling">Scaling</a>
+        <a href="#bounties">Bounties</a>
+        <a href="#tech">Tech Stack</a>
+    </div>
+</nav>
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 25;
-        camera.position.x = 5;
+<!-- ═══════════════ 2. THE PROBLEM ═══════════════ -->
+<section id="problem">
+<div class="content">
+    <h2>The Problem</h2>
+    <div class="grid-2">
+        <div>
+            <h3>Detroit's Vacant Land Crisis</h3>
+            <p>Detroit has <strong>100,000+ vacant lots</strong> — more than any other American city. The city spends <a href="https://detroitmi.gov/departments/general-services-department/lot-maintenance" target="_blank">$5M/year on grass cutting alone</a>, while each lot generates only ~$30/year in <a href="https://ipn4.paymentus.com/rotp/dtmi" target="_blank">property tax</a>. Meanwhile, invasive species like <a href="https://www.invasivespeciesinfo.gov/terrestrial/plants/tree-heaven" target="_blank">Tree of Heaven</a> and <a href="https://www.invasivespeciesinfo.gov/terrestrial/plants/japanese-knotweed" target="_blank">Japanese Knotweed</a> colonize unchecked.</p>
+            <p><strong>Management doesn't scale.</strong> Human coordination hits a bottleneck — volunteers burn out, funding cycles end, projects stall. The land keeps degrading.</p>
+        </div>
+        <div>
+            <h3>Dryad's Solution</h3>
+            <p>An autonomous AI agent running 24/7: receiving biodiversity data from community volunteers, detecting invasive species, hiring contractors, verifying their work via GPS-tagged photos, paying them in USDC, and recording every milestone onchain.</p>
+            <p><strong>Self-sustaining:</strong> <a href="https://lido.fi" target="_blank">Lido stETH</a> yield &rarr; <a href="https://venice.ai/lp/diem" target="_blank">DIEM</a> &rarr; <a href="https://venice.ai" target="_blank">Venice inference</a> &rarr; property taxes &rarr; contractors. The loop funds itself from DeFi yield without touching principal.</p>
+        </div>
+    </div>
+    <div class="callout">
+        <strong>Nick George</strong> is a certified <a href="https://www.canr.msu.edu/conservation_stewards/" target="_blank">Michigan Conservation Steward</a>, owns 9 lots with 7 friends, submitted a <a href="https://buildingdetroit.org/create-a-project" target="_blank">DLBA Create-a-Project</a> proposal, and works with Meridith Holm from the <a href="https://www.fws.gov/" target="_blank">U.S. Fish &amp; Wildlife Service</a>.
+    </div>
+</div>
+</section>
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
+<!-- ═══════════════ 3. THE LAND ═══════════════ -->
+<section id="parcels">
+<div class="content">
+    <h2>The Land — 9 Lots on 25th Street</h2>
+    <div class="grid-3" style="margin-bottom:32px">
+        <div class="card" style="text-align:center"><div class="stat-big">9</div><div class="stat-label">Parcels</div></div>
+        <div class="card" style="text-align:center"><div class="stat-big">0.68</div><div class="stat-label">Acres Total</div></div>
+        <div class="card" style="text-align:center"><div class="stat-big">42.329&deg;N</div><div class="stat-label">GPS Coordinates</div></div>
+    </div>
+    <div class="grid-3">
+        <div class="card">3904 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3908 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3912 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3916 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3920 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3924 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3928 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3932 25th St &mdash; 30&times;110 ft</div>
+        <div class="card">3936 25th St &mdash; 30&times;110 ft</div>
+    </div>
+    <div class="callout" style="margin-top:24px">
+        <strong>Expanding:</strong> Additional 9 parcels pending via <a href="https://buildingdetroit.org/create-a-project" target="_blank">DLBA</a> at $250/lot (requires LLC). USFWS partnership with Meridith Holm for native planting guidance.
+    </div>
+</div>
+</section>
 
-        const noiseShader = `
-            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-            float snoise(vec3 v) {
-                const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-                const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-                vec3 i = floor(v + dot(v, C.yyy));
-                vec3 x0 = v - i + dot(i, C.xxx);
-                vec3 g = step(x0.yzx, x0.xyz);
-                vec3 l = 1.0 - g;
-                vec3 i1 = min(g.xyz, l.zxy);
-                vec3 i2 = max(g.xyz, l.zxy);
-                vec3 x1 = x0 - i1 + C.xxx;
-                vec3 x2 = x0 - i2 + C.yyy;
-                vec3 x3 = x0 - D.yyy;
-                i = mod289(i);
-                vec4 p = permute(permute(permute(
-                    i.z + vec4(0.0, i1.z, i2.z, 1.0))
-                    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-                    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-                float n_ = 0.142857142857;
-                vec3 ns = n_ * D.wyz - D.xzx;
-                vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-                vec4 x_ = floor(j * ns.z);
-                vec4 y_ = floor(j - 7.0 * x_);
-                vec4 x = x_ * ns.x + ns.yyyy;
-                vec4 y = y_ * ns.x + ns.yyyy;
-                vec4 h = 1.0 - abs(x) - abs(y);
-                vec4 b0 = vec4(x.xy, y.xy);
-                vec4 b1 = vec4(x.zw, y.zw);
-                vec4 s0 = floor(b0)*2.0 + 1.0;
-                vec4 s1 = floor(b1)*2.0 + 1.0;
-                vec4 sh = -step(h, vec4(0.0));
-                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-                vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-                vec3 p0 = vec3(a0.xy, h.x);
-                vec3 p1 = vec3(a0.zw, h.y);
-                vec3 p2 = vec3(a1.xy, h.z);
-                vec3 p3 = vec3(a1.zw, h.w);
-                vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-                p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-                m = m * m;
-                return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-            }
-        `;
+<!-- ═══════════════ 4. HOW IT WORKS ═══════════════ -->
+<section id="how">
+<div class="content">
+    <h2>How Dryad Works</h2>
+    <p style="margin-bottom:32px">The autonomous decision loop runs every 6 hours. No human in the loop — discover, plan, hire, verify, pay, record.</p>
 
-        const vertexShader = `
-            ${noiseShader}
-            uniform float uTime;
-            varying float vNoise;
-            void main() {
-                float noise = snoise(vec3(position.x * 0.2, position.y * 0.2, position.z * 0.2 + uTime * 0.1));
-                vNoise = noise;
-                vec3 newPosition = position + normal * (noise * 2.0);
-                vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
-                gl_PointSize = (12.0 * (1.0 + noise)) * (10.0 / -mvPosition.z);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `;
+    <div class="step"><span class="step-number">1</span><div class="step-content"><h3>Community Volunteers Survey</h3><p>Volunteers use the free <a href="https://www.inaturalist.org/pages/getting+started" target="_blank">iNaturalist app</a> to photograph plants on the lots. AI identifies species, community members verify. Human eyes are essential — a Tree of Heaven looks identical to a native Staghorn Sumac from satellite imagery.</p><p><a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">Join the iNaturalist project &rarr;</a></p></div></div>
 
-        const fragmentShader = `
-            varying float vNoise;
-            void main() {
-                vec2 xy = gl_PointCoord.xy - vec2(0.5);
-                float ll = length(xy);
-                if (ll > 0.5) discard;
+    <div class="step"><span class="step-number">2</span><div class="step-content"><h3>Filter to Our Parcels</h3><p>Dryad queries iNaturalist's API with a GPS bounding box (NW: 42.3295, -83.1065 / SE: 42.3285, -83.1050). Observations outside the parcel boundaries are ignored — invasives 1km away on someone else's land are not our problem.</p></div></div>
 
-                // Green-tinted palette for Dryad
-                vec3 colorMain = vec3(0.92, 0.96, 0.90);
-                vec3 colorShadow = vec3(0.6, 0.75, 0.55);
+    <div class="step"><span class="step-number">3</span><div class="step-content"><h3>Detect Invasives &amp; Compute Health Score</h3><p>7 target genera matched at the genus level. Health score (0-100) based on native-to-invasive ratio and species diversity. Venice LLM decides the action: REMOVE_INVASIVES, PREP_SOIL, PLANT_NATIVES, or CONTINUE_MONITORING.</p></div></div>
 
-                vec3 finalColor = mix(colorShadow, colorMain, vNoise + 0.5);
-                float alpha = (0.5 - ll) * 2.0;
-                alpha *= smoothstep(-1.0, 0.5, vNoise);
-                gl_FragColor = vec4(finalColor, alpha * 0.8);
-            }
-        `;
+    <div class="step"><span class="step-number">4</span><div class="step-content"><h3>Hire Contractor via Email</h3><p>Dryad sends a detailed work order via <a href="https://www.agentmail.to" target="_blank">AgentMail</a> (dryad@agentmail.to) — scope, location, budget, photo submission instructions, iNaturalist evidence attached.</p></div></div>
 
-        // Organic tree-like form using torus knot
-        const geometry = new THREE.TorusKnotGeometry(4, 1.5, 300, 64);
-        geometry.scale(1, 1.5, 0.7);
+    <div class="step"><span class="step-number">5</span><div class="step-content"><h3>Contractor Submits Proof</h3><p>GPS-tagged before/after photos uploaded at <code>/Dryad/submit</code>. Three checks: GPS within parcel bounding box, timestamp within work window, image hash untampered.</p></div></div>
 
-        const material = new THREE.ShaderMaterial({
-            vertexShader, fragmentShader,
-            uniforms: { uTime: { value: 0.0 } },
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.NormalBlending
-        });
+    <div class="step"><span class="step-number">6</span><div class="step-content"><h3>Pay in USDC on Base</h3><p>$50/tx limit, $200/day limit. Contractors without crypto wallets use <a href="https://holyheld.com" target="_blank">Holyheld</a> or <a href="https://gnosispay.com" target="_blank">Gnosis Pay</a> debit cards to spend USDC directly.</p></div></div>
 
-        const pointCloud = new THREE.Points(geometry, material);
-        pointCloud.position.set(2, 0, 0);
-        scene.add(pointCloud);
+    <div class="step"><span class="step-number">7</span><div class="step-content"><h3>Record Milestone Onchain</h3><p>DryadMilestones.sol records 5 types: SiteAssessment, InvasiveRemoval, SoilPrep, NativePlanting, Monitoring. Every action is permanently verifiable on <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">BaseScan</a>.</p></div></div>
 
-        // Floating debris particles (like seeds/pollen)
-        const debrisGeometry = new THREE.BufferGeometry();
-        const debrisCount = 1200;
-        const positions = new Float32Array(debrisCount * 3);
-        for(let i = 0; i < debrisCount * 3; i++) {
-            positions[i] = (Math.random() - 0.5) * 30;
-        }
-        debrisGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const debrisMaterial = new THREE.PointsMaterial({
-            color: 0x4caf50,
-            size: 0.04,
-            transparent: true,
-            opacity: 0.35
-        });
-        const debris = new THREE.Points(debrisGeometry, debrisMaterial);
-        scene.add(debris);
+    <div class="callout">The loop repeats every 6 hours. Between cycles, it auto-buys <a href="https://venice.ai/lp/diem" target="_blank">DIEM</a> to sustain inference and budgets for annual property taxes.</div>
+</div>
+</section>
 
-        let mouseX = 0, mouseY = 0;
-        const windowHalfX = window.innerWidth / 2;
-        const windowHalfY = window.innerHeight / 2;
+<!-- ═══════════════ 5. CONTRACTOR EMAILS ═══════════════ -->
+<section id="contractors">
+<div class="content">
+    <h2>Contractor Communication</h2>
+    <p>Dryad sends and receives email autonomously. Every outgoing message includes a disclaimer identifying it as an AI agent with a human steward contact.</p>
 
-        document.addEventListener('mousemove', (event) => {
-            mouseX = (event.clientX - windowHalfX) * 0.001;
-            mouseY = (event.clientY - windowHalfY) * 0.001;
-        });
+    <div class="email-card">
+        <div class="email-header"><strong>From:</strong> dryad@agentmail.to<br><strong>To:</strong> contractor@example.com<br><strong>Subject:</strong> Invasive Species Removal — 3920 25th St, Detroit</div>
+        <div class="email-body">Hello,
 
-        const clock = new THREE.Clock();
-        const parallaxContent = document.getElementById('parallax-content');
+Dryad has detected 4-6 Ailanthus altissima (Tree of Heaven) saplings on the northwest corner of 3920 25th Street, Detroit, MI 48208. iNaturalist observations confirm the identification (research grade).
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const elapsedTime = clock.getElapsedTime();
-            material.uniforms.uTime.value = elapsedTime * 0.5;
+Scope of work:
+- Cut each sapling at base
+- Apply glyphosate concentrate to fresh-cut stumps
+- Bag all cut material for disposal
+- Take GPS-tagged before and after photos
 
-            pointCloud.rotation.y += 0.05 * (mouseX * 0.5 - pointCloud.rotation.y);
-            pointCloud.rotation.x += 0.05 * (mouseY * 0.5 - pointCloud.rotation.x);
-            pointCloud.rotation.y += 0.001;
+Payment: $45 USDC on Base upon verified photo submission.
+Submit proof-of-work photos at: http://5.75.225.23:3000/Dryad/submit</div>
+        <div class="email-footer">This message was sent by Dryad, an autonomous AI agent managing native habitat restoration on vacant lots in Detroit as part of "The Forest That Owns Itself" project. For questions or concerns, contact Nick George (project steward) at powahgen@gmail.com.</div>
+    </div>
 
-            debris.rotation.y -= 0.0005;
-            debris.rotation.x -= 0.0002;
+    <div class="email-card">
+        <div class="email-header"><strong>From:</strong> dryad@agentmail.to<br><strong>To:</strong> meridith_holm@fws.gov<br><strong>Subject:</strong> Native Planting Plan — 25th St Parcels, Spring 2026</div>
+        <div class="email-body">Hi Meridith,
 
-            parallaxContent.style.transform = `translate3d(${mouseX * -20}px, ${mouseY * -20}px, 0)`;
-            renderer.render(scene, camera);
-        }
-        animate();
+Following our invasive removal milestones, I'm planning spring native plantings across 3 parcels (3912, 3916, 3920). Michigan ecotype prairie mix:
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+- Big Bluestem (Andropogon gerardii)
+- Black-eyed Susan (Rudbeckia hirta)
+- Wild Bergamot (Monarda fistulosa)
+- Butterfly Milkweed (Asclepias tuberosa)
+- Purple Coneflower (Echinacea purpurea)
+- Eastern Redbud (Cercis canadensis)
+
+Total area: ~9,900 sq ft. Seed from Prairie Moon Nursery, saplings from Cold Stream Farm.
+
+Would you be able to review the species list and planting density for this site? Any USFWS considerations for the area?</div>
+        <div class="email-footer">This message was sent by Dryad, an autonomous AI agent managing native habitat restoration on vacant lots in Detroit as part of "The Forest That Owns Itself" project. For questions or concerns, contact Nick George (project steward) at powahgen@gmail.com.</div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ 6. INVASIVE SPECIES ═══════════════ -->
+<section id="invasives">
+<div class="content">
+    <h2>Invasive Species Watchlist</h2>
+    <p>Non-native plants that outcompete local flora, degrade soil, and destroy habitat. A single Tree of Heaven produces <a href="https://www.fs.usda.gov/database/feis/plants/tree/ailalt/all.html" target="_blank">300,000 seeds per year</a> and releases ailanthone toxin that kills surrounding plants. Sources: <a href="https://www.michigan.gov/invasives" target="_blank">Michigan Invasives</a>, <a href="https://www.misin.msu.edu/" target="_blank">MISIN</a>, <a href="https://www.invasivespeciesinfo.gov/" target="_blank">invasivespeciesinfo.gov</a>.</p>
+
+    <div class="grid-4" style="margin-top:24px">
+        <div class="card card-danger"><h3>Tree of Heaven</h3><p style="font-style:italic;font-size:0.85rem">Ailanthus altissima</p><p style="font-size:0.85rem">300K seeds/yr, toxic ailanthone kills native plants</p></div>
+        <div class="card card-danger"><h3>Amur Honeysuckle</h3><p style="font-style:italic;font-size:0.85rem">Lonicera maackii</p><p style="font-size:0.85rem">Outcompetes native understory species</p></div>
+        <div class="card card-danger"><h3>Purple Loosestrife</h3><p style="font-style:italic;font-size:0.85rem">Lythrum salicaria</p><p style="font-size:0.85rem">Destroys wetland habitat</p></div>
+        <div class="card card-danger"><h3>Common Reed</h3><p style="font-style:italic;font-size:0.85rem">Phragmites australis</p><p style="font-size:0.85rem">Forms dense monocultures</p></div>
+        <div class="card card-danger"><h3>Garlic Mustard</h3><p style="font-style:italic;font-size:0.85rem">Alliaria petiolata</p><p style="font-size:0.85rem">Disrupts mycorrhizal networks</p></div>
+        <div class="card card-danger"><h3>Japanese Knotweed</h3><p style="font-style:italic;font-size:0.85rem">Reynoutria japonica</p><p style="font-size:0.85rem">Near-impossible to eradicate</p></div>
+        <div class="card card-danger"><h3>Common Buckthorn</h3><p style="font-style:italic;font-size:0.85rem">Rhamnus cathartica</p><p style="font-size:0.85rem">Alters soil nitrogen cycles</p></div>
+        <div class="card card-accent"><h3>Target Natives</h3><p style="font-size:0.85rem"><em>Echinacea, Asclepias, Rudbeckia, Andropogon, Monarda, Cercis</em> &mdash; what we're planting</p></div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ 7. TREASURY ═══════════════ -->
+<section id="treasury">
+<div class="content">
+    <h2>Treasury &amp; Self-Sustaining Compute</h2>
+    <div class="grid-3" style="margin-bottom:32px">
+        <div class="card" style="text-align:center"><h3>Hold ETH</h3><p style="font-size:0.85rem">Agent wallet on Base receives ETH donations or earns revenue</p></div>
+        <div class="card" style="text-align:center"><h3>Stake via <a href="https://lido.fi" target="_blank">Lido</a></h3><p style="font-size:0.85rem">ETH &rarr; wstETH at 3.5% APR. Yield accrues automatically.</p></div>
+        <div class="card" style="text-align:center"><h3>Spend Only Yield</h3><p style="font-size:0.85rem">Principal untouched. Operations funded from staking rewards only.</p></div>
+    </div>
+
+    <div class="callout"><strong>DIEM — Self-Funded Inference:</strong> <a href="https://venice.ai/lp/diem" target="_blank">DIEM token</a> on Base (<a href="https://basescan.org/token/0xf4d97f2da56e8c3098f3a8d538db630a2606a024" target="_blank">0xf4d9…a024</a>). 1 DIEM staked = $1/day in <a href="https://venice.ai" target="_blank">Venice.ai</a> credits. Agent buys DIEM via <a href="https://app.uniswap.org/swap?chain=base" target="_blank">Uniswap on Base</a>.</div>
+
+    <div class="callout"><strong>Crypto Property Tax:</strong> Detroit accepts cryptocurrency via <a href="https://ipn4.paymentus.com/rotp/dtmi" target="_blank">PayPal crypto wallet at checkout</a>. No bank account needed — fully onchain tax compliance.</div>
+
+    <div class="callout"><strong>USDC Debit Cards for Contractors:</strong> <a href="https://holyheld.com" target="_blank">Holyheld</a> (Mastercard, 1% cashback) or <a href="https://gnosispay.com" target="_blank">Gnosis Pay</a> (Visa, up to 4% rewards). Contractors don't need crypto wallets.</div>
+</div>
+</section>
+
+<!-- ═══════════════ 8. FINANCIAL MODEL ═══════════════ -->
+<section id="finance">
+<div class="content">
+    <h2>Financial Model</h2>
+
+    <div class="grid-2">
+        <div>
+            <h3>One-Time Setup Costs</h3>
+            <table>
+                <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
+                <tr><td>Land purchase (9 lots via <a href="https://buildingdetroit.org/create-a-project" target="_blank">DLBA</a>)</td><td style="text-align:right">$9,000</td></tr>
+                <tr><td>Land clearing &amp; invasive removal</td><td style="text-align:right">$5,000</td></tr>
+                <tr><td>Seed mix (<a href="https://www.prairiemoon.com/" target="_blank">Prairie Moon</a>) + 300 saplings (<a href="https://www.coldstreamfarm.net" target="_blank">Cold Stream Farm</a>)</td><td style="text-align:right">$2,000</td></tr>
+                <tr><td>Filing fees (LLC, DLBA, permits)</td><td style="text-align:right">$1,000</td></tr>
+                <tr class="row-total"><td><strong>Total</strong></td><td style="text-align:right"><strong>$17,000</strong></td></tr>
+            </table>
+        </div>
+        <div>
+            <h3>Annual Operating Costs</h3>
+            <table>
+                <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
+                <tr><td><a href="https://ipn4.paymentus.com/rotp/dtmi" target="_blank">Property taxes</a> (9 &times; ~$30)</td><td style="text-align:right">$270/yr</td></tr>
+                <tr><td><a href="https://venice.ai/lp/diem" target="_blank">DIEM</a> for inference</td><td style="text-align:right">$62/yr</td></tr>
+                <tr><td>Contractor payments (~4 jobs)</td><td style="text-align:right">$200/yr</td></tr>
+                <tr><td><a href="https://www.hetzner.com/cloud/" target="_blank">Hetzner VPS</a> CX22</td><td style="text-align:right">$58/yr</td></tr>
+                <tr><td>LLC maintenance</td><td style="text-align:right">$50/yr</td></tr>
+                <tr><td>Base gas fees</td><td style="text-align:right">~$5/yr</td></tr>
+                <tr class="row-total"><td><strong>Total (current)</strong></td><td style="text-align:right"><strong>$645/yr</strong></td></tr>
+                <tr class="row-alt"><td>Total if Land Value Tax passes</td><td style="text-align:right">$978/yr</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <h3 style="margin-top:40px">Self-Sustainability Threshold</h3>
+    <p>At <a href="https://lido.fi/ethereum" target="_blank">3.5% stETH APR</a>: $645/yr needs <strong>$18,429 in stETH</strong> (~7.1 ETH at $2,600). Total to bootstrap and sustain forever: <strong>~$35K</strong> ($17K setup + $18K treasury).</p>
+
+    <h3 style="margin-top:32px">Treasury Resilience — 60/40 Split</h3>
+    <p>60% <a href="https://lido.fi" target="_blank">stETH</a> / 40% <a href="https://www.circle.com/usdc" target="_blank">USDC</a> on <a href="https://aave.com" target="_blank">Aave</a>/<a href="https://app.morpho.org" target="_blank">Morpho</a> (3-5% APR). USDC portion is immune to ETH price swings.</p>
+    <table>
+        <tr><th>Scenario</th><th>stETH Yield</th><th>USDC Yield</th><th>Combined</th><th>vs. $645</th></tr>
+        <tr><td>Current</td><td>$387</td><td>$288</td><td>$675</td><td style="color:var(--accent)">&#10003; Covered</td></tr>
+        <tr><td>ETH -30%</td><td>$271</td><td>$288</td><td>$559</td><td style="color:var(--danger)">&minus;$86</td></tr>
+        <tr><td>ETH -50%</td><td>$194</td><td>$288</td><td>$482</td><td style="color:var(--danger)">&minus;$163</td></tr>
+    </table>
+    <p><strong>Adaptive spending:</strong> NORMAL &rarr; CONSERVATION (pause contractor jobs) &rarr; CRITICAL (steward intervention). Non-negotiable floor: $333/yr (taxes + VPS + gas).</p>
+    <p>Over-capitalization buffer: 2&times; target (~$36K) weathers a 50% crash with no cuts needed.</p>
+
+    <h3 style="margin-top:32px">Revenue — Ecological Credits</h3>
+    <p>0.3-1.7 tons CO2/acre/yr (<a href="https://www.epa.gov/energy/greenhouse-gases-equivalencies-calculator-calculations-and-references" target="_blank">EPA calculator</a>). At $14/ton (<a href="https://www.ecosystemmarketplace.com/" target="_blank">Ecosystem Marketplace</a>): ~$9.50/yr for 0.68 acres. Biodiversity credits via <a href="https://www.wallaceatrust.org/" target="_blank">Wallacea Trust</a>: $2.50-$230/credit (avg $27). Meaningful at scale — 100 acres = $1,400/yr carbon + up to $27K/yr biodiversity.</p>
+
+    <h3 style="margin-top:32px">Land Acquisition Path</h3>
+    <p><a href="https://detroitmi.gov/departments/planning-and-development-department/land-based-projects" target="_blank">Land-Based Projects program</a> &mdash; <a href="https://buildingdetroit.org/create-a-project" target="_blank">DLBA Create-a-Project</a>: $250/lot for LLC/501(c)(3). LLC: $50/yr. Must be current on city payments. Neighbor notification required 30 days before site work (&le;1 acre). Zoning: <a href="https://detroitdevelopment.org" target="_blank">detroitdevelopment.org</a>. Contact: <a href="mailto:LBP@detroitmi.gov">LBP@detroitmi.gov</a>.</p>
+    <p>Community partners: <a href="https://www.keepgrowingdetroit.org/" target="_blank">Keep Growing Detroit</a>, <a href="https://detroitfuturecity.com/" target="_blank">Detroit Future City</a>, <a href="https://www.greeningofdetroit.com/" target="_blank">Greening of Detroit</a>, <a href="https://www.mi-community.org/" target="_blank">Michigan Community Resources</a>.</p>
+</div>
+</section>
+
+<!-- ═══════════════ 9. SCALING ═══════════════ -->
+<section id="scaling">
+<div class="content">
+    <h2>Scaling — Beyond 25th Street</h2>
+    <div class="grid-2">
+        <div>
+            <h3>Rust Belt Vacant Land</h3>
+            <p>Detroit 100K+ lots &bull; <a href="https://www.thelandbank.org/" target="_blank">Flint</a> 10K+ &bull; <a href="https://www.clevelandlandbank.org/" target="_blank">Cleveland</a> 27K+ &bull; <a href="https://www.baltimorehousing.org/" target="_blank">Baltimore</a> 15K+ &bull; <a href="https://www.stlouis-mo.gov/government/departments/sldc/real-estate/lra-702.cfm" target="_blank">St. Louis</a> 10K+ &bull; Gary 6K+ &bull; Camden 3K+</p>
+            <p>Open source. Each city gets its own Dryad instance adapted to local ecology, invasive threats, and soil conditions.</p>
+        </div>
+        <div>
+            <h3>Beyond Cities</h3>
+            <p>Land trusts, timber companies, solar farms (pollinator habitat under panels), highway departments (rights-of-way), corporate ESG programs. Any landowner managing ecological restoration at scale.</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top:40px">Roadmap</h3>
+    <div class="grid-4" style="margin-top:16px">
+        <div class="card"><h3>Q2 2026</h3><p style="font-size:0.85rem">Pilot on 9 lots. Real contractors, USFWS plantings, soil baseline, onchain milestones, <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist project</a> + QR signage.</p></div>
+        <div class="card"><h3>Q3-Q4 2026</h3><p style="font-size:0.85rem">Ecological credits: carbon + biodiversity. Voluntary market registration.</p></div>
+        <div class="card"><h3>2027</h3><p style="font-size:0.85rem">Open source agent factory. Expand to Flint, Cleveland, Baltimore. City-specific ecology adaptation.</p></div>
+        <div class="card"><h3>2028+</h3><p style="font-size:0.85rem">Network of autonomous land agents. Inter-agent contractor sharing. Academic data partnerships.</p></div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ 10. HACKATHON THEMES ═══════════════ -->
+<section>
+<div class="content">
+    <h2>Hackathon Themes</h2>
+    <div class="grid-4">
+        <div class="card"><h3>Agents That Pay</h3><p style="font-size:0.85rem">USDC contractor payments, $50/tx, $200/day, fully auditable onchain.</p></div>
+        <div class="card"><h3>Agents That Trust</h3><p style="font-size:0.85rem">GPS-tagged photo attestations. Agent verifies work directly — no intermediary.</p></div>
+        <div class="card"><h3>Agents That Cooperate</h3><p style="font-size:0.85rem">DryadMilestones.sol, USFWS email coordination, community iNaturalist observations.</p></div>
+        <div class="card"><h3>Agents That Keep Secrets</h3><p style="font-size:0.85rem">DIEM staking = sovereign compute. Encrypted keystore. Venice private inference.</p></div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ 11. ONCHAIN ARTIFACTS ═══════════════ -->
+<section>
+<div class="content">
+    <h2>Onchain Artifacts — Base Mainnet</h2>
+    <div class="grid-3">
+        <div class="card"><h3>DryadMilestones.sol</h3><p style="font-size:0.85rem"><a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">0x7572…bc22</a></p><p style="font-size:0.85rem">5 milestone types, owner-gated, event-emitting</p></div>
+        <div class="card"><h3>ERC-8004 Identity</h3><p style="font-size:0.85rem"><a href="https://basescan.org/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432" target="_blank">Agent #35293</a></p><p style="font-size:0.85rem"><a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank">EIP-8004</a> — Trustless Agents standard</p></div>
+        <div class="card"><h3>Agent Treasury</h3><p style="font-size:0.85rem"><a href="https://basescan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank">dryadforest.eth</a></p><p style="font-size:0.85rem">ETH, wstETH, USDC, DIEM on Base</p></div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ 12. BOUNTIES ═══════════════ -->
+<section id="bounties">
+<div class="content">
+    <h2>Target Bounties — $55,700+</h2>
+    <table>
+        <tr><th>Partner</th><th>Track</th><th style="text-align:right">Prize</th><th>Why Dryad Qualifies</th></tr>
+        <tr><td>Synthesis</td><td>Open Track</td><td style="text-align:right">$14,500</td><td>Cross-sponsor system: Venice + Base + Lido + ERC-8004 + Uniswap</td></tr>
+        <tr><td>Venice</td><td>Private Agents + Trusted Actions</td><td style="text-align:right">$11,500</td><td>Venice inference + DIEM self-management</td></tr>
+        <tr><td>Protocol Labs</td><td>Agents With Receipts</td><td style="text-align:right">$8,004</td><td>ERC-8004 identity + onchain milestones + agent.json</td></tr>
+        <tr><td>Protocol Labs</td><td>Let the Agent Cook</td><td style="text-align:right">$8,000</td><td>Full autonomous loop — discover &rarr; hire &rarr; verify &rarr; pay &rarr; record</td></tr>
+        <tr><td>Uniswap</td><td>Agentic Finance</td><td style="text-align:right">$5,000</td><td>Real V3 DIEM swaps on Base via SwapRouter02</td></tr>
+        <tr><td>Lido</td><td>stETH Agent Treasury</td><td style="text-align:right">$3,000</td><td>wstETH yield-only, adaptive spending, 60/40 split</td></tr>
+        <tr><td>Lido</td><td>Vault Position Monitor</td><td style="text-align:right">$1,500</td><td>Email alerts on yield/mode changes via AgentMail</td></tr>
+        <tr><td>Octant</td><td>Mechanism Design</td><td style="text-align:right">$1,000</td><td>Autonomous conservation public good</td></tr>
+        <tr><td>Octant</td><td>Data Collection</td><td style="text-align:right">$1,000</td><td>iNaturalist community biodiversity pipeline</td></tr>
+        <tr><td>Octant</td><td>Data Analysis</td><td style="text-align:right">$1,000</td><td>Ecosystem health scoring from species data</td></tr>
+        <tr><td>ENS</td><td>Identity</td><td style="text-align:right">$600</td><td>dryadforest.eth as primary agent identity</td></tr>
+        <tr><td>ENS</td><td>Communication</td><td style="text-align:right">$600</td><td>ENS-based payment and comms identity</td></tr>
+        <tr class="row-total"><td colspan="2"><strong>Total</strong></td><td style="text-align:right"><strong>$55,704+</strong></td><td><em>+ Locus $3K pending</em></td></tr>
+    </table>
+</div>
+</section>
+
+<!-- ═══════════════ 13. TECH STACK ═══════════════ -->
+<section id="tech">
+<div class="content">
+    <h2>Tech Stack</h2>
+    <div class="grid-2">
+        <div>
+            <h3>Agent &amp; Onchain</h3>
+            <p><a href="https://elizaos.ai" target="_blank">elizaOS</a> v1.7.2 — 8 custom actions<br>
+            <a href="https://venice.ai" target="_blank">Venice.ai</a> — GLM 4.7 Flash / GLM 4.7<br>
+            <a href="https://base.org" target="_blank">Base L2</a> — all transactions<br>
+            DryadMilestones.sol + <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank">ERC-8004</a><br>
+            <a href="https://viem.sh" target="_blank">viem</a> — EVM wallet (ETH/wstETH/USDC/DIEM)</p>
+        </div>
+        <div>
+            <h3>Data &amp; Infrastructure</h3>
+            <p><a href="https://www.inaturalist.org" target="_blank">iNaturalist API</a> — biodiversity data<br>
+            <a href="https://www.agentmail.to" target="_blank">AgentMail</a> — dryad@agentmail.to<br>
+            <a href="https://www.hetzner.com/cloud/" target="_blank">Hetzner VPS</a> CX22 — Ubuntu 24.04<br>
+            Node.js 23 + <a href="https://bun.sh" target="_blank">Bun</a><br>
+            <a href="https://app.uniswap.org" target="_blank">Uniswap V3</a> — DIEM swaps on Base</p>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="page-footer">
+<div class="content">
+    <div class="tag-row" style="margin-bottom:24px">
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">elizaOS</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Venice.ai</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Base L2</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Lido stETH</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">ERC-8004</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">DIEM</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">iNaturalist</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">AgentMail</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">Uniswap</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">viem</span>
+        <span class="tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff">dryadforest.eth</span>
+    </div>
+    <div class="grid-2" style="gap:40px">
+        <div>
+            <p>Built by <strong>Nick George</strong> — <a href="https://www.canr.msu.edu/conservation_stewards/" target="_blank">Michigan Conservation Steward</a></p>
+            <p>9 lots on 25th Street, Detroit — <a href="https://www.fws.gov/" target="_blank">USFWS</a> partnership</p>
+            <p><a href="https://buildingdetroit.org/create-a-project" target="_blank">DLBA Create-a-Project</a> proposal submitted</p>
+        </div>
+        <div style="text-align:right">
+            <p><a href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a> &bull; <a href="mailto:dryad@agentmail.to">dryad@agentmail.to</a> &bull; <a href="mailto:powahgen@gmail.com">powahgen@gmail.com</a></p>
+            <p><a href="http://5.75.225.23:3000" target="_blank">Agent UI</a> &bull; <a href="http://5.75.225.23:3000/Dryad/dashboard" target="_blank">Dashboard</a> &bull; <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">BaseScan</a></p>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════ THREE.JS ═══════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0xe8e8e4, 0.025);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 25; camera.position.x = 5;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const noiseShader = `
+        vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+        vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+        vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+        vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+        float snoise(vec3 v){
+            const vec2 C=vec2(1.0/6.0,1.0/3.0);const vec4 D=vec4(0.0,0.5,1.0,2.0);
+            vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);
+            vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.0-g;
+            vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);
+            vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;
+            i=mod289(i);
+            vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+            float n_=0.142857142857;vec3 ns=n_*D.wyz-D.xzx;
+            vec4 j=p-49.0*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.0*x_);
+            vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.0-abs(x)-abs(y);
+            vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);
+            vec4 s0=floor(b0)*2.0+1.0;vec4 s1=floor(b1)*2.0+1.0;
+            vec4 sh=-step(h,vec4(0.0));
+            vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+            vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);
+            vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+            p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+            vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);m=m*m;
+            return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+        }`;
+
+    const vertexShader = `${noiseShader}
+        uniform float uTime;varying float vNoise;
+        void main(){
+            float noise=snoise(vec3(position.x*0.2,position.y*0.2,position.z*0.2+uTime*0.1));
+            vNoise=noise;vec3 np=position+normal*(noise*2.0);
+            vec4 mv=modelViewMatrix*vec4(np,1.0);
+            gl_PointSize=(12.0*(1.0+noise))*(10.0/-mv.z);gl_Position=projectionMatrix*mv;
+        }`;
+
+    const fragmentShader = `varying float vNoise;
+        void main(){
+            vec2 xy=gl_PointCoord.xy-vec2(0.5);float ll=length(xy);if(ll>0.5)discard;
+            vec3 c1=vec3(0.92,0.96,0.90);vec3 c2=vec3(0.6,0.75,0.55);
+            vec3 fc=mix(c2,c1,vNoise+0.5);float a=(0.5-ll)*2.0;a*=smoothstep(-1.0,0.5,vNoise);
+            gl_FragColor=vec4(fc,a*0.8);
+        }`;
+
+    const geometry = new THREE.TorusKnotGeometry(4,1.5,300,64);
+    geometry.scale(1,1.5,0.7);
+    const material = new THREE.ShaderMaterial({vertexShader,fragmentShader,uniforms:{uTime:{value:0.0}},transparent:true,depthWrite:false,blending:THREE.NormalBlending});
+    const pointCloud = new THREE.Points(geometry,material);
+    pointCloud.position.set(2,0,0);scene.add(pointCloud);
+
+    const dg = new THREE.BufferGeometry();const dc=1200;const pos=new Float32Array(dc*3);
+    for(let i=0;i<dc*3;i++)pos[i]=(Math.random()-0.5)*30;
+    dg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const dm=new THREE.PointsMaterial({color:0x4caf50,size:0.04,transparent:true,opacity:0.35});
+    const debris=new THREE.Points(dg,dm);scene.add(debris);
+
+    let mouseX=0,mouseY=0;
+    const whx=window.innerWidth/2,why=window.innerHeight/2;
+    document.addEventListener('mousemove',e=>{mouseX=(e.clientX-whx)*0.001;mouseY=(e.clientY-why)*0.001;});
+
+    const clock=new THREE.Clock();
+    const pc=document.getElementById('parallax-content');
+    function animate(){
+        requestAnimationFrame(animate);
+        material.uniforms.uTime.value=clock.getElapsedTime()*0.5;
+        pointCloud.rotation.y+=0.05*(mouseX*0.5-pointCloud.rotation.y);
+        pointCloud.rotation.x+=0.05*(mouseY*0.5-pointCloud.rotation.x);
+        pointCloud.rotation.y+=0.001;debris.rotation.y-=0.0005;debris.rotation.x-=0.0002;
+        if(pc)pc.style.transform=`translate3d(${mouseX*-20}px,${mouseY*-20}px,0)`;
+        renderer.render(scene,camera);
+    }
+    animate();
+    window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+</script>
 </body></html>
