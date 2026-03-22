@@ -187,20 +187,40 @@ th{color:#81c784}
     <div id="treasury" class="loading">Loading...</div>
   </div>
 
-  <!-- Property Tax -->
+  <!-- Annual Cost Breakdown -->
   <div class="card">
-    <h2>Property Tax Estimate</h2>
-    <div class="stat-row">
-      <div class="stat-item"><div class="stat">~$180</div><div class="stat-label">Annual (9 lots)</div></div>
-      <div class="stat-item"><div class="stat">~$20</div><div class="stat-label">Per lot/year</div></div>
-    </div>
-    <p style="font-size:13px;color:#81c784">Detroit vacant land: ~$500-2000 SEV × 2 × 42.4 mills. Vacant lots typically assessed at minimal value ($200-500 SEV), resulting in ~$15-25/lot/year.</p>
+    <h2>Annual Operating Costs</h2>
+    <table>
+      <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
+      <tr><td>Property taxes (9 × $30/lot)</td><td style="text-align:right">$270</td></tr>
+      <tr><td>DIEM for inference (0.17 staked)</td><td style="text-align:right">$62</td></tr>
+      <tr><td>Contractor payments (~4 jobs)</td><td style="text-align:right">$200</td></tr>
+      <tr><td>Hetzner VPS (CX22)</td><td style="text-align:right">$58</td></tr>
+      <tr><td>LLC maintenance</td><td style="text-align:right">$50</td></tr>
+      <tr><td>Gas fees on Base</td><td style="text-align:right">$5</td></tr>
+      <tr style="font-weight:700;border-top:2px solid #2e7d32"><td>Total</td><td style="text-align:right">$645/yr</td></tr>
+      <tr style="color:#f9a825"><td>If Land Value Tax passes</td><td style="text-align:right">$978/yr</td></tr>
+    </table>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Detroit accepts crypto for taxes via PayPal at checkout.</p>
+  </div>
+
+  <!-- Stress Test -->
+  <div class="card">
+    <h2>Treasury Stress Test</h2>
+    <div id="stressTest" class="loading">Loading...</div>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Target: 60% stETH / 40% USDC split. Sustainability: $18,429 in stETH at 3.5% APR to cover $645/yr.</p>
   </div>
 
   <!-- Milestones -->
   <div class="card">
     <h2>Onchain Milestones</h2>
     <div id="milestones" class="loading">Loading...</div>
+  </div>
+
+  <!-- Spending Mode -->
+  <div class="card">
+    <h2>Adaptive Spending Mode</h2>
+    <div id="spendingMode" class="loading">Loading...</div>
   </div>
 
   <!-- Recent Submissions -->
@@ -213,12 +233,14 @@ th{color:#81c784}
   <div class="card full">
     <h2>Agent Identity</h2>
     <table>
-      <tr><th>Name</th><td>Dryad</td></tr>
+      <tr><th>Name</th><td>Dryad — "The Forest That Owns Itself"</td></tr>
       <tr><th>Email</th><td>dryad@agentmail.to</td></tr>
       <tr><th>Wallet</th><td><code id="walletAddr">Loading...</code></td></tr>
       <tr><th>ERC-8004 Agent ID</th><td>#${process.env.ERC8004_AGENT_ID || '35293'} on Base</td></tr>
-      <tr><th>Milestones Contract</th><td><code>${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}</code></td></tr>
+      <tr><th>Milestones Contract</th><td><a href="https://basescan.org/address/${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}" style="color:#81c784"><code>${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}</code></a></td></tr>
       <tr><th>Registry</th><td><code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code></td></tr>
+      <tr><th>Steward</th><td>Nick George (powahgen@gmail.com)</td></tr>
+      <tr><th>Decision Loop</th><td>Every 6 hours</td></tr>
     </table>
   </div>
 </div>
@@ -250,20 +272,57 @@ mapScript.onload = () => {
 };
 document.head.appendChild(mapScript);
 
-// Load treasury data
+// Load treasury data + stress test + spending mode
 fetch('/api/treasury').then(r=>r.json()).then(data => {
+  const ethPrice = 2600;
+  const ethN = parseFloat(data.ethBalance || '0');
+  const wstN = parseFloat(data.wstethBalance || '0');
+  const totalUSD = ((ethN + wstN) * ethPrice).toFixed(0);
+  const annualYield = (wstN * ethPrice * 0.035).toFixed(2);
+
   document.getElementById('treasury').innerHTML = \`
     <div class="stat-row">
-      <div class="stat-item"><div class="stat">\${data.ethBalance || '—'}</div><div class="stat-label">ETH</div></div>
-      <div class="stat-item"><div class="stat">\${data.wstethBalance || '—'}</div><div class="stat-label">wstETH</div></div>
+      <div class="stat-item"><div class="stat">\${data.ethBalance || '0'}</div><div class="stat-label">ETH</div></div>
+      <div class="stat-item"><div class="stat">\${data.wstethBalance || '0'}</div><div class="stat-label">wstETH</div></div>
     </div>
     <div class="stat-row">
-      <div class="stat-item"><div class="stat">\${data.dailyYieldUSD || '—'}</div><div class="stat-label">Daily Yield (USD)</div></div>
-      <div class="stat-item"><div class="stat">\${data.monthlyYieldUSD || '—'}</div><div class="stat-label">Monthly Yield</div></div>
+      <div class="stat-item"><div class="stat">~$\${totalUSD}</div><div class="stat-label">Total USD value</div></div>
+      <div class="stat-item"><div class="stat">\${data.dailyYieldUSD || '$0'}</div><div class="stat-label">Daily Yield</div></div>
     </div>
-    <p style="font-size:13px;color:#81c784">Wallet: <code>\${data.wallet || '—'}</code></p>
+    <p style="font-size:12px;color:#81c784">Annual yield: ~$\${annualYield} | Target: 60% stETH / 40% USDC</p>
+    <p style="font-size:12px;color:#81c784">Wallet: <code>\${data.wallet || '—'}</code></p>
   \`;
   document.getElementById('walletAddr').textContent = data.wallet || '—';
+
+  // Stress test
+  const stethUSD = wstN * ethPrice;
+  const drop30 = stethUSD * 0.7 * 0.035;
+  const drop50 = stethUSD * 0.5 * 0.035;
+  document.getElementById('stressTest').innerHTML = \`
+    <table>
+      <tr><th>Scenario</th><th style="text-align:right">Annual Yield</th><th style="text-align:right">vs $645 cost</th></tr>
+      <tr><td>Current</td><td style="text-align:right">$\${annualYield}</td><td style="text-align:right;color:\${parseFloat(annualYield)>=645?'#4caf50':'#ef5350'}">\${parseFloat(annualYield)>=645?'✅ Covered':'⚠️ Shortfall $'+(645-parseFloat(annualYield)).toFixed(0)}</td></tr>
+      <tr><td>ETH -30%</td><td style="text-align:right">$\${drop30.toFixed(0)}</td><td style="text-align:right;color:\${drop30>=645?'#4caf50':'#ef5350'}">\${drop30>=645?'✅':'⚠️ -$'+(645-drop30).toFixed(0)}</td></tr>
+      <tr><td>ETH -50%</td><td style="text-align:right">$\${drop50.toFixed(0)}</td><td style="text-align:right;color:\${drop50>=645?'#4caf50':'#ef5350'}">\${drop50>=645?'✅':'⚠️ -$'+(645-drop50).toFixed(0)}</td></tr>
+    </table>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Need $18,429 in stETH (7.1 ETH) for full self-sustainability.</p>
+  \`;
+
+  // Spending mode
+  const isSustainable = parseFloat(annualYield) >= 645;
+  const coversCore = parseFloat(annualYield) >= 333; // taxes + VPS + gas
+  const mode = isSustainable ? 'NORMAL' : coversCore ? 'CONSERVATION' : 'CRITICAL';
+  const modeColors = { NORMAL: '#4caf50', CONSERVATION: '#f9a825', CRITICAL: '#ef5350' };
+  const modeDesc = {
+    NORMAL: 'All operations active. Yield covers full annual costs.',
+    CONSERVATION: 'Discretionary contractor jobs paused. Monitoring + taxes + VPS continue.',
+    CRITICAL: 'Yield insufficient for core costs. Steward intervention needed.',
+  };
+  document.getElementById('spendingMode').innerHTML = \`
+    <div class="stat" style="color:\${modeColors[mode]}">\${mode}</div>
+    <div class="stat-label">\${modeDesc[mode]}</div>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">Non-negotiable: $333/yr (taxes $270 + VPS $58 + gas $5)</p>
+  \`;
 }).catch(()=>{ document.getElementById('treasury').textContent = 'Failed to load'; });
 
 // Load health score

@@ -1,6 +1,6 @@
 /**
- * Parcel data for the 9 vacant lots on 25th Street, Detroit, MI.
- * GPS coordinates from U.S. Census Bureau Geocoder.
+ * Parcel data for the 9 vacant lots on 25th Street between Ash and Beech, Detroit, MI.
+ * Corrected GPS coordinates from landowner.
  * Each lot is 30x110ft.
  */
 
@@ -10,25 +10,27 @@ export interface Parcel {
   lng: number;
 }
 
-// Individual lot coordinates (Census Bureau geocoded)
-export const PARCELS: Parcel[] = [
-  { address: '3904 25th St', lat: 42.337704, lng: -83.097127 },
-  { address: '3908 25th St', lat: 42.337724, lng: -83.097133 },
-  { address: '3912 25th St', lat: 42.337744, lng: -83.097145 },
-  { address: '3916 25th St', lat: 42.337778, lng: -83.097175 },
-  { address: '3920 25th St', lat: 42.337803, lng: -83.097191 },
-  { address: '3924 25th St', lat: 42.337828, lng: -83.097207 },
-  { address: '3928 25th St', lat: 42.337853, lng: -83.097223 },
-  { address: '3932 25th St', lat: 42.337878, lng: -83.097239 },
-  { address: '3936 25th St', lat: 42.337902, lng: -83.097254 },
-];
-
-// Bounding box covering all 9 lots with ~30ft buffer
+// Bounding box covering all 9 lots (corrected coordinates from landowner)
+// NW corner: 42.3295, -83.1065
+// SE corner: 42.3285, -83.1050
 export const PARCEL_BOUNDS = {
-  sw: { lat: 42.33725, lng: -83.09782 },
-  ne: { lat: 42.33836, lng: -83.09658 },
-  center: { lat: 42.337803, lng: -83.097191 },
+  sw: { lat: 42.3285, lng: -83.1065 },
+  ne: { lat: 42.3295, lng: -83.1050 },
+  center: { lat: 42.3290, lng: -83.10575 },
 };
+
+// Individual lot coordinates (interpolated evenly across the block, north to south)
+export const PARCELS: Parcel[] = [
+  { address: '3904 25th St', lat: 42.32855, lng: -83.10575 },
+  { address: '3908 25th St', lat: 42.32867, lng: -83.10575 },
+  { address: '3912 25th St', lat: 42.32879, lng: -83.10575 },
+  { address: '3916 25th St', lat: 42.32891, lng: -83.10575 },
+  { address: '3920 25th St', lat: 42.32900, lng: -83.10575 },
+  { address: '3924 25th St', lat: 42.32912, lng: -83.10575 },
+  { address: '3928 25th St', lat: 42.32924, lng: -83.10575 },
+  { address: '3932 25th St', lat: 42.32936, lng: -83.10575 },
+  { address: '3936 25th St', lat: 42.32945, lng: -83.10575 },
+];
 
 // Maximum distance in meters for a point to be "on our parcels"
 export const MAX_PARCEL_DISTANCE_METERS = 50;

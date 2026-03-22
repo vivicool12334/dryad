@@ -4,7 +4,7 @@ import { logger } from '@elizaos/core';
 const AGENTMAIL_BASE = 'https://api.agentmail.to/v0';
 const INBOX_ID = 'dryad@agentmail.to';
 
-const EMAIL_FOOTER = `\n\n---\nThis email was sent by Dryad, an autonomous AI agent managing native habitat restoration on 25th Street, Detroit. Dryad is part of The Forest That Owns Itself project. For questions or concerns, contact Nick George at powahgen@gmail.com.`;
+const EMAIL_FOOTER = `\n\n---\nThis message was sent by Dryad, an autonomous AI agent managing native habitat restoration on vacant lots in Detroit as part of "The Forest That Owns Itself" project. For questions or concerns, contact Nick George (project steward) at powahgen@gmail.com.`;
 
 function getApiKey(): string {
   const key = process.env.AGENTMAIL_API_KEY;
