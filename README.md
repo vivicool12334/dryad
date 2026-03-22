@@ -89,9 +89,9 @@ via iNaturalist app on the lots           and submit GPS-tagged proof photos
 ## Parcels
 
 9 vacant lots on 25th Street between Ash and Beech, Detroit, MI (each 30x110 ft, 0.68 acres total):
-3904, 3908, 3912, 3916, 3920, 3924, 3928, 3932, 3936
+4475, 4481, 4487, 4493, 4501, 4509, 4513, 4521, 4523
 
-GPS bounding box: NW 42.3295,-83.1065 / SE 42.3285,-83.1050
+GPS bounding box: SW 42.3411,-83.1007 / NE 42.3424,-83.0994
 
 ## iNaturalist Project
 

@@ -1,35 +1,34 @@
 /**
- * Parcel data for the 9 vacant lots on 25th Street between Ash and Beech, Detroit, MI.
- * Corrected GPS coordinates from landowner.
- * Each lot is 30x110ft.
+ * Parcel data for the 9 vacant lots on 25th Street, Detroit, MI.
+ * EXACT coordinates from Detroit ArcGIS Parcels API (FeatureServer/0).
+ * Parcel numbers 12009482–12009490, addresses 4475–4523 25th Street.
  */
 
 export interface Parcel {
   address: string;
+  parcelNumber: string;
   lat: number;
   lng: number;
 }
 
-// Bounding box covering all 9 lots — from ArcGIS parcel API (tax parcels 12009264–12009267)
-// with buffer for iNaturalist observation capture
+// Bounding box for iNaturalist API queries (wider than parcels for observation capture)
 export const PARCEL_BOUNDS = {
-  sw: { lat: 42.3374, lng: -83.09769 },
-  ne: { lat: 42.33857, lng: -83.09645 },
-  center: { lat: 42.33799, lng: -83.09707 },
+  sw: { lat: 42.3411, lng: -83.1007 },
+  ne: { lat: 42.3424, lng: -83.0994 },
+  center: { lat: 42.34174, lng: -83.10007 },
 };
 
-// Individual lot centers — interpolated from ArcGIS parcel API (tax parcels 12009264–12009267)
-// Block runs SW→NE along 25th St. Each lot center is the midpoint of its polygon.
+// Individual lot centers — from ArcGIS parcel polygons (centroids)
 export const PARCELS: Parcel[] = [
-  { address: '3904 25th St', lat: 42.33775, lng: -83.09693 },
-  { address: '3908 25th St', lat: 42.33785, lng: -83.09699 },
-  { address: '3912 25th St', lat: 42.33788, lng: -83.09701 },
-  { address: '3916 25th St', lat: 42.33793, lng: -83.09705 },
-  { address: '3920 25th St', lat: 42.33799, lng: -83.09709 },
-  { address: '3924 25th St', lat: 42.33805, lng: -83.09712 },
-  { address: '3928 25th St', lat: 42.33811, lng: -83.09715 },
-  { address: '3932 25th St', lat: 42.33817, lng: -83.09719 },
-  { address: '3936 25th St', lat: 42.33822, lng: -83.09722 },
+  { address: '4475 25th St', parcelNumber: '12009490', lat: 42.34143, lng: -83.09995 },
+  { address: '4481 25th St', parcelNumber: '12009489', lat: 42.34150, lng: -83.09999 },
+  { address: '4487 25th St', parcelNumber: '12009488', lat: 42.34158, lng: -83.10003 },
+  { address: '4493 25th St', parcelNumber: '12009487', lat: 42.34166, lng: -83.10007 },
+  { address: '4501 25th St', parcelNumber: '12009486', lat: 42.34176, lng: -83.10012 },
+  { address: '4509 25th St', parcelNumber: '12009485', lat: 42.34184, lng: -83.10016 },
+  { address: '4513 25th St', parcelNumber: '12009484', lat: 42.34192, lng: -83.10020 },
+  { address: '4521 25th St', parcelNumber: '12009483', lat: 42.34199, lng: -83.10024 },
+  { address: '4523 25th St', parcelNumber: '12009482', lat: 42.34207, lng: -83.10028 },
 ];
 
 // Maximum distance in meters for a point to be "on our parcels"

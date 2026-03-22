@@ -526,7 +526,7 @@
                 <span class="hl">WALLET:</span>
                 <span>0xf2f7…0880 // ETH + wstETH + USDC + DIEM</span>
                 <span class="hl">GPS:</span>
-                <span>42.3290° N, 83.1058° W // 25th St, Detroit</span>
+                <span>42.3417° N, 83.1001° W // 25th St, Detroit</span>
                 <span class="hl">LOOP:</span>
                 <span>6h cycle // iNaturalist → detect → hire → verify → pay → record</span>
             </div>
@@ -546,7 +546,7 @@
     <footer class="hero-footer">
         <div>STATUS: ACTIVE <span class="blink">_</span></div>
         <div><a href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a> &bull; <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank">BaseScan</a> &bull; <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist</a></div>
-        <div>LAT: 42.329 // LONG: -83.106</div>
+        <div>LAT: 42.342 // LONG: -83.100</div>
     </footer>
 </div>
 
@@ -595,20 +595,20 @@
     <div class="grid-3" style="margin-bottom:32px">
         <div class="card" style="text-align:center"><div class="stat-big">9</div><div class="stat-label">Parcels</div></div>
         <div class="card" style="text-align:center"><div class="stat-big">0.68</div><div class="stat-label">Acres Total</div></div>
-        <div class="card" style="text-align:center"><div class="stat-big">42.329&deg;N</div><div class="stat-label">GPS Coordinates</div></div>
+        <div class="card" style="text-align:center"><div class="stat-big">42.342&deg;N</div><div class="stat-label">GPS Coordinates</div></div>
     </div>
     <div id="parcel-map" style="width:100%;height:400px;border-radius:12px;margin:20px 0;border:1px solid var(--card-border);z-index:0;position:relative"></div>
     <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:24px">
         View on <a href="https://data.detroitmi.gov/pages/parcel-viewer/" target="_blank">Detroit Parcel Viewer</a> &bull;
-        <a href="https://www.google.com/maps/place/42.33799,-83.09707" target="_blank">Google Maps</a> &bull;
+        <a href="https://www.google.com/maps/place/42.34174,-83.10007" target="_blank">Google Maps</a> &bull;
         <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">iNaturalist Project</a> &bull;
         <a href="https://www.treeequityscore.org/map#11.17/42.3373/-83.0959" target="_blank">Tree Equity Score Map</a>
     </p>
 
     <div class="grid-3" style="margin-bottom:20px">
-        <div class="card" style="font-size:0.85rem">3904 &bull; 3908 &bull; 3912 &mdash; 30&times;110 ft each</div>
-        <div class="card" style="font-size:0.85rem">3916 &bull; 3920 &bull; 3924 &mdash; 30&times;110 ft each</div>
-        <div class="card" style="font-size:0.85rem">3928 &bull; 3932 &bull; 3936 &mdash; 30&times;110 ft each</div>
+        <div class="card" style="font-size:0.85rem">4475 &bull; 4481 &bull; 4487 &mdash; 30&times;110 ft each</div>
+        <div class="card" style="font-size:0.85rem">4493 &bull; 4501 &bull; 4509 &mdash; 30&times;110 ft each</div>
+        <div class="card" style="font-size:0.85rem">4513 &bull; 4521 &bull; 4523 &mdash; 30&times;110 ft each</div>
     </div>
 
     <div class="callout">
@@ -703,10 +703,10 @@
     <summary>Example: Invasive Removal Work Order</summary>
     <div>
     <div class="email-card">
-        <div class="email-header"><strong>From:</strong> dryad@agentmail.to<br><strong>To:</strong> contractor@example.com<br><strong>Subject:</strong> Invasive Species Removal — 3920 25th St, Detroit</div>
+        <div class="email-header"><strong>From:</strong> dryad@agentmail.to<br><strong>To:</strong> contractor@example.com<br><strong>Subject:</strong> Invasive Species Removal — 4501 25th St, Detroit</div>
         <div class="email-body">Hello,
 
-Dryad has detected 4-6 Ailanthus altissima (Tree of Heaven) saplings on the northwest corner of 3920 25th Street, Detroit, MI 48208. iNaturalist observations confirm the identification (research grade).
+Dryad has detected 4-6 Ailanthus altissima (Tree of Heaven) saplings on the northwest corner of 4501 25th Street, Detroit, MI 48208. iNaturalist observations confirm the identification (research grade).
 
 Scope of work:
 - Cut each sapling at base
@@ -728,7 +728,7 @@ Submit proof-of-work photos at: http://5.75.225.23:3000/Dryad/submit</div>
         <div class="email-header"><strong>From:</strong> dryad@agentmail.to<br><strong>To:</strong> meridith_holm@fws.gov<br><strong>Subject:</strong> Native Planting Plan — 25th St Parcels, Spring 2026</div>
         <div class="email-body">Hi Meridith,
 
-Following our invasive removal milestones, I'm planning spring native plantings across 3 parcels (3912, 3916, 3920). Michigan ecotype prairie mix:
+Following our invasive removal milestones, I'm planning spring native plantings across 3 parcels (4487, 4493, 4501). Michigan ecotype prairie mix:
 
 - Big Bluestem (Andropogon gerardii)
 - Black-eyed Susan (Rudbeckia hirta)
@@ -1238,47 +1238,38 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const mapEl = document.getElementById('parcel-map');
     if (!mapEl) return;
 
-    const map = L.map('parcel-map', { scrollWheelZoom: false }).setView([42.33799, -83.09707], 18);
+    const map = L.map('parcel-map', { scrollWheelZoom: false }).setView([42.34174, -83.10007], 18);
 
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Detroit Parcels ArcGIS API (tax parcels 12009264–12009267)',
+        attribution: 'Tiles &copy; Esri &mdash; Source: Detroit Parcels ArcGIS API (parcels 12009482–12009490)',
         maxZoom: 20
     }).addTo(map);
 
-    // EXACT tax parcel polygons from Detroit ArcGIS Parcels API
-    // 4 tax parcels (12009264–12009267) containing the 9 original platted lots
-    var taxParcels = [
-        { id: '12009264', addr: '3906 (lots 3904–3910)', coords: [
-            [42.3378193,-83.0971672],[42.3378202,-83.0971635],[42.3379248,-83.0968288],
-            [42.3379256,-83.0968251],[42.3378018,-83.0967453],[42.3376955,-83.0970863]
-        ]},
-        { id: '12009265', addr: '3916 (lots 3912–3922)', coords: [
-            [42.3379431,-83.0972469],[42.3379440,-83.0972432],[42.3380486,-83.0969097],
-            [42.3380495,-83.0969060],[42.3379256,-83.0968251],[42.3379248,-83.0968288],
-            [42.3378202,-83.0971635],[42.3378193,-83.0971672]
-        ]},
-        { id: '12009266', addr: '3924 (lots 3924–3930)', coords: [
-            [42.3380669,-83.0973279],[42.3380678,-83.0973242],[42.3381715,-83.0969894],
-            [42.3381733,-83.0969857],[42.3380495,-83.0969060],[42.3380486,-83.0969097],
-            [42.3379440,-83.0972432],[42.3379431,-83.0972469]
-        ]},
-        { id: '12009267', addr: '3932 (lots 3932–3936)', coords: [
-            [42.3381688,-83.0973933],[42.3382742,-83.0970524],[42.3381733,-83.0969857],
-            [42.3381715,-83.0969894],[42.3380678,-83.0973242],[42.3380669,-83.0973279]
-        ]}
+    // EXACT parcel polygons from Detroit ArcGIS Parcels API
+    // 9 parcels at 4475–4523 25th Street (parcel numbers 12009482–12009490)
+    var parcels = [
+        { addr: '4475', id: '12009490', coords: [[42.3414067,-83.1000727],[42.3415231,-83.099734],[42.3414534,-83.09969],[42.341337,-83.1000287]] },
+        { addr: '4481', id: '12009489', coords: [[42.3414764,-83.1001167],[42.3415928,-83.099778],[42.3415231,-83.099734],[42.3414067,-83.1000727]] },
+        { addr: '4487', id: '12009488', coords: [[42.3415709,-83.1001762],[42.3416864,-83.0998375],[42.3415928,-83.099778],[42.3414764,-83.1001167]] },
+        { addr: '4493', id: '12009487', coords: [[42.3416507,-83.1002273],[42.3417662,-83.0998874],[42.3416864,-83.0998375],[42.3415709,-83.1001762]] },
+        { addr: '4501', id: '12009486', coords: [[42.3417543,-83.1002927],[42.3418707,-83.0999541],[42.3417662,-83.0998874],[42.3416507,-83.1002273]] },
+        { addr: '4509', id: '12009485', coords: [[42.341824,-83.1003367],[42.3419404,-83.0999981],[42.3418707,-83.0999541],[42.3417543,-83.1002927]] },
+        { addr: '4513', id: '12009484', coords: [[42.3418937,-83.1003807],[42.3420092,-83.1000421],[42.3419404,-83.0999981],[42.341824,-83.1003367]] },
+        { addr: '4521', id: '12009483', coords: [[42.3419634,-83.1004247],[42.3420789,-83.1000861],[42.3420092,-83.1000421],[42.3418937,-83.1003807]] },
+        { addr: '4523', id: '12009482', coords: [[42.3420331,-83.1004687],[42.3421486,-83.1001301],[42.3420789,-83.1000861],[42.3419634,-83.1004247]] }
     ];
 
-    taxParcels.forEach(function(p) {
+    parcels.forEach(function(p) {
         L.polygon(p.coords, {
             color: '#8DA667',
             fillColor: '#8DA667',
             fillOpacity: 0.3,
             weight: 2
-        }).addTo(map).bindPopup('<b>' + p.addr + ' 25th St</b><br>Tax parcel ' + p.id + '<br>Dryad-managed');
+        }).addTo(map).bindPopup('<b>' + p.addr + ' 25th St</b><br>Parcel ' + p.id + '<br>Dryad-managed');
     });
 
-    // iNaturalist observation bounding box (wider than parcels)
-    L.rectangle([[42.3374,-83.09769],[42.33857,-83.09645]], {
+    // iNaturalist observation bounding box
+    L.rectangle([[42.3411,-83.1007],[42.3424,-83.0994]], {
         color: '#E29E4B',
         fillOpacity: 0.05,
         weight: 1,
