@@ -16,8 +16,11 @@ export interface PhotoSubmission {
   timestamp: number; // unix ms
   submittedAt: number; // unix ms
   species?: string;
+  workType?: string;
   description: string;
   photoFilename: string;
+  contractorName?: string;
+  contractorEmail?: string;
   verified: boolean;
   verificationErrors: string[];
   processed: boolean; // has the decision loop acted on this?

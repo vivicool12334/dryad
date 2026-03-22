@@ -12,20 +12,27 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 // Ensure uploads dir exists
 try { fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch {}
 
+// iNaturalist observations URL for our parcels
+const INAT_OBS_URL = `https://www.inaturalist.org/observations?nelat=${PARCEL_BOUNDS.ne.lat}&nelng=${PARCEL_BOUNDS.ne.lng}&swlat=${PARCEL_BOUNDS.sw.lat}&swlng=${PARCEL_BOUNDS.sw.lng}`;
+const INAT_API_URL = `https://api.inaturalist.org/v1/observations?nelat=${PARCEL_BOUNDS.ne.lat}&nelng=${PARCEL_BOUNDS.ne.lng}&swlat=${PARCEL_BOUNDS.sw.lat}&swlng=${PARCEL_BOUNDS.sw.lng}`;
+
 // ─── /submit page ───
 function submitPageHTML(): string {
   const parcelOptions = PARCELS.map((p) => `<option value="${p.address}">${p.address}</option>`).join('');
+  const workTypeOptions = ['Invasive Removal', 'Soil Prep', 'Native Planting', 'Monitoring / Survey', 'Debris Cleanup', 'Weed Whacking'].map((t) => `<option value="${t}">${t}</option>`).join('');
   return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dryad — Photo Submission</title>
+<title>Dryad — Submit Proof of Work</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh}
 .container{max-width:640px;margin:0 auto;padding:24px}
-h1{color:#4caf50;margin-bottom:8px;font-size:28px}
+h1{color:#4caf50;margin-bottom:4px;font-size:28px}
+h2{color:#66bb6a;font-size:20px;margin-bottom:12px}
 .subtitle{color:#81c784;margin-bottom:24px}
 .card{background:#1a2e1a;border:1px solid #2e7d32;border-radius:12px;padding:24px;margin-bottom:16px}
+.card-community{background:#0d1f0d;border:1px solid #1b5e20;border-radius:12px;padding:24px;margin-bottom:16px}
 label{display:block;font-weight:600;margin-bottom:6px;color:#a5d6a7}
 input,select,textarea{width:100%;padding:10px;border:1px solid #2e7d32;border-radius:8px;background:#0d1f0d;color:#e0e0e0;margin-bottom:16px;font-size:14px}
 input[type=file]{padding:8px}
@@ -35,71 +42,92 @@ button:hover{background:#388e3c}
 .success{background:#1b5e20;border:1px solid #4caf50;padding:16px;border-radius:8px;margin-top:16px}
 .error{background:#4a1010;border:1px solid #c62828;padding:16px;border-radius:8px;margin-top:16px}
 .info{font-size:13px;color:#81c784;margin-bottom:16px}
-.tabs{display:flex;gap:8px;margin-bottom:16px}
-.tab{padding:8px 16px;border-radius:8px;cursor:pointer;background:#0d1f0d;border:1px solid #2e7d32;color:#a5d6a7}
-.tab.active{background:#2e7d32;color:#fff}
 a{color:#81c784}
+.divider{border:none;border-top:2px solid #2e7d32;margin:32px 0}
+.qr-section{text-align:center;padding:16px 0}
+.qr-placeholder{width:200px;height:200px;margin:16px auto;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:8px}
+.app-links{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.app-links a{background:#1b5e20;padding:8px 16px;border-radius:8px;text-decoration:none;color:#fff;font-size:14px}
+.nav{display:flex;gap:16px;margin-bottom:24px}
+.nav a{color:#81c784;text-decoration:none}
 </style>
 </head><body>
 <div class="container">
-<h1>🌿 Dryad — Photo Submission</h1>
-<p class="subtitle">Submit GPS-tagged photos from 25th Street parcels</p>
+<div class="nav"><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
 
-<div class="tabs">
-  <div class="tab active" onclick="setType('plant_id')">Plant Identification</div>
-  <div class="tab" onclick="setType('proof_of_work')">Proof of Work</div>
-</div>
+<h1>Contractor Proof-of-Work</h1>
+<p class="subtitle">Submit GPS-tagged photos to verify completed work on 25th Street parcels</p>
 
 <form id="submitForm" class="card" enctype="multipart/form-data">
-  <input type="hidden" name="type" id="subType" value="plant_id">
+  <input type="hidden" name="type" value="proof_of_work">
 
-  <label>Photo (GPS-tagged) *</label>
-  <input type="file" name="photo" id="photo" accept="image/*" required>
+  <label>Photo of Completed Work (GPS-tagged) *</label>
+  <input type="file" name="photo" id="photo" accept="image/*" capture="environment" required>
+  <p class="info">Take with location services ON. Shows: cut stumps, cleared areas, new plantings, debris piles, etc.</p>
 
-  <label>Nearest Parcel</label>
+  <label>Parcel *</label>
   <select name="parcel" id="parcel">${parcelOptions}</select>
 
+  <label>Work Type *</label>
+  <select name="workType" id="workType">${workTypeOptions}</select>
+
   <label>GPS Latitude *</label>
-  <input type="number" name="lat" id="lat" step="any" placeholder="42.3378" required>
+  <input type="number" name="lat" id="lat" step="any" placeholder="42.3290" required>
 
   <label>GPS Longitude *</label>
-  <input type="number" name="lng" id="lng" step="any" placeholder="-83.0972" required>
+  <input type="number" name="lng" id="lng" step="any" placeholder="-83.1058" required>
 
-  <label>Photo Timestamp (auto-filled from EXIF if available)</label>
+  <label>Photo Timestamp</label>
   <input type="datetime-local" name="timestamp" id="timestamp">
 
-  <div id="plantFields">
-    <label>Species Identified</label>
-    <input type="text" name="species" id="species" placeholder="e.g. Ailanthus altissima (Tree of Heaven)">
-  </div>
+  <label>Description of Work *</label>
+  <textarea name="description" id="description" placeholder="e.g. Removed 3 Tree of Heaven saplings at NW corner, applied glyphosate to stumps, bagged debris" required></textarea>
 
-  <label>Description *</label>
-  <textarea name="description" id="description" placeholder="What did you observe? What work was done?" required></textarea>
+  <label>Your Name *</label>
+  <input type="text" name="contractorName" id="contractorName" placeholder="Full name" required>
 
-  <p class="info">GPS must be within parcel boundaries. Photos older than 72 hours will be rejected.</p>
+  <label>Your Email (for payment confirmation) *</label>
+  <input type="email" name="contractorEmail" id="contractorEmail" placeholder="you@example.com" required>
 
-  <button type="submit">Submit Photo</button>
+  <p class="info">GPS must be within parcel boundaries (25th St between Ash & Beech). Photos older than 72 hours will be rejected. Payment up to $50/job in USDC on Base.</p>
+
+  <button type="submit">Submit Proof of Work</button>
 </form>
 <div id="result"></div>
+
+<hr class="divider">
+
+<div class="card-community">
+  <h2>Visiting the forest? Help us catalog species!</h2>
+  <p style="margin-bottom:16px">Download the <strong>iNaturalist</strong> app (free) and photograph any plants you find on our lots at 25th Street between Ash and Beech. Your observations automatically feed into Dryad's ecosystem monitoring — no account with us needed.</p>
+
+  <div class="qr-section">
+    <div class="qr-placeholder">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(INAT_OBS_URL)}" alt="QR Code — iNaturalist observations near our parcels" width="180" height="180">
+    </div>
+    <p style="font-size:13px;color:#81c784;margin-top:8px">Scan to view observations near our parcels</p>
+  </div>
+
+  <div class="app-links">
+    <a href="https://apps.apple.com/app/inaturalist/id421397028" target="_blank">iNaturalist for iOS</a>
+    <a href="https://play.google.com/store/apps/details?id=org.inaturalist.android" target="_blank">iNaturalist for Android</a>
+    <a href="${INAT_OBS_URL}" target="_blank">View Observations</a>
+  </div>
+
+  <p style="font-size:13px;color:#81c784;margin-top:16px;text-align:center">iNaturalist's AI identifies species from photos. Community members verify. Research-grade observations feed directly into Dryad's health score.</p>
+</div>
+
 </div>
 
 <script>
-function setType(t) {
-  document.getElementById('subType').value = t;
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('plantFields').style.display = t === 'plant_id' ? 'block' : 'none';
-}
-
-// Try to get GPS from device
+// Auto-fill GPS from device
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(pos => {
     document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
     document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
-  });
+  }, () => {}, { enableHighAccuracy: true });
 }
 
-// Default timestamp to now
 document.getElementById('timestamp').value = new Date().toISOString().slice(0,16);
 
 document.getElementById('submitForm').addEventListener('submit', async (e) => {
@@ -107,16 +135,21 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
   const form = new FormData(e.target);
   const res = document.getElementById('result');
 
+  // Build JSON payload from form
+  const payload = {};
+  form.forEach((v, k) => { if (k !== 'photo') payload[k] = v; });
+
   try {
-    const resp = await fetch('/api/submissions', {
+    const resp = await fetch('/Dryad/api/submissions', {
       method: 'POST',
-      body: form,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
     const data = await resp.json();
     if (data.verified) {
-      res.innerHTML = '<div class="success">✅ <strong>Submission verified!</strong><br>Nearest parcel: ' + data.nearestParcel + '<br>Distance: ' + data.distanceMeters.toFixed(0) + 'm<br>ID: ' + data.id + '</div>';
+      res.innerHTML = '<div class="success"><strong>Submission verified!</strong><br>Parcel: ' + data.nearestParcel + '<br>Distance: ' + data.distanceMeters.toFixed(0) + 'm from parcel center<br>ID: ' + data.id + '<br><br>Dryad will review your submission and process payment if approved.</div>';
     } else {
-      res.innerHTML = '<div class="error">⚠️ <strong>Verification failed:</strong><br>' + data.verificationErrors.join('<br>') + '</div>';
+      res.innerHTML = '<div class="error"><strong>Verification failed:</strong><br>' + data.verificationErrors.join('<br>') + '</div>';
     }
   } catch (err) {
     res.innerHTML = '<div class="error">Error: ' + err.message + '</div>';
@@ -165,7 +198,7 @@ th{color:#81c784}
 </head><body>
 <div class="header">
   <h1>🌿 Dryad Dashboard</h1>
-  <nav><a href="/">Chat</a><a href="/submit">Submit Photos</a><a href="/dashboard">Dashboard</a></nav>
+  <nav><a href="/">Chat</a><a href="/Dryad/submit">Submit Work</a><a href="/Dryad/dashboard">Dashboard</a></nav>
 </div>
 
 <div class="grid">
@@ -223,9 +256,16 @@ th{color:#81c784}
     <div id="spendingMode" class="loading">Loading...</div>
   </div>
 
-  <!-- Recent Submissions -->
+  <!-- iNaturalist Observations -->
   <div class="card full">
-    <h2>Recent Photo Submissions</h2>
+    <h2>iNaturalist Observations on Parcels</h2>
+    <div id="inatObs" class="loading">Loading from iNaturalist API...</div>
+    <p style="font-size:12px;color:#81c784;margin-top:8px"><a href="${INAT_OBS_URL}" target="_blank">View all observations</a> | <a href="/Dryad/submit">Help catalog species with iNaturalist</a> | <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(INAT_OBS_URL)}" alt="QR" width="40" height="40" style="vertical-align:middle;margin-left:8px;border-radius:4px"></p>
+  </div>
+
+  <!-- Recent Contractor Submissions -->
+  <div class="card full">
+    <h2>Contractor Proof-of-Work Submissions</h2>
     <div id="submissions" class="loading">Loading...</div>
   </div>
 
@@ -273,7 +313,7 @@ mapScript.onload = () => {
 document.head.appendChild(mapScript);
 
 // Load treasury data + stress test + spending mode
-fetch('/api/treasury').then(r=>r.json()).then(data => {
+fetch('/Dryad/api/treasury').then(r=>r.json()).then(data => {
   const ethPrice = 2600;
   const ethN = parseFloat(data.ethBalance || '0');
   const wstN = parseFloat(data.wstethBalance || '0');
@@ -326,7 +366,7 @@ fetch('/api/treasury').then(r=>r.json()).then(data => {
 }).catch(()=>{ document.getElementById('treasury').textContent = 'Failed to load'; });
 
 // Load health score
-fetch('/api/health-score').then(r=>r.json()).then(data => {
+fetch('/Dryad/api/health-score').then(r=>r.json()).then(data => {
   document.getElementById('healthScore').innerHTML = \`
     <div class="stat">\${data.healthScore}/100</div>
     <div class="stat-label">On-parcel observations: \${data.onParcelObservations}</div>
@@ -336,7 +376,7 @@ fetch('/api/health-score').then(r=>r.json()).then(data => {
 }).catch(()=>{ document.getElementById('healthScore').textContent = 'Failed to load'; });
 
 // Load milestones
-fetch('/api/milestones').then(r=>r.json()).then(data => {
+fetch('/Dryad/api/milestones').then(r=>r.json()).then(data => {
   const types = ['SiteAssessment','InvasiveRemoval','SoilPrep','NativePlanting','Monitoring'];
   const tags = ['assessment','removal','soil','planting','monitoring'];
   if (!data.milestones || data.milestones.length === 0) {
@@ -348,8 +388,23 @@ fetch('/api/milestones').then(r=>r.json()).then(data => {
   ).join('');
 }).catch(()=>{ document.getElementById('milestones').textContent = 'Failed to load'; });
 
+// Load iNaturalist observations
+fetch('${INAT_API_URL}&per_page=10&order_by=observed_on&taxon_name=Plantae').then(r=>r.json()).then(data => {
+  const obs = data.results || [];
+  if (!obs.length) { document.getElementById('inatObs').innerHTML = '<p>No observations on parcels yet. <a href="${INAT_OBS_URL}">Be the first to contribute!</a></p>'; return; }
+  document.getElementById('inatObs').innerHTML = '<table><tr><th>Species</th><th>Observer</th><th>Date</th><th>Grade</th></tr>' + obs.map(o => {
+    const name = o.taxon?.preferred_common_name || o.taxon?.name || o.species_guess || 'Unknown';
+    const sci = o.taxon?.name || '';
+    const observer = o.user?.login || '?';
+    const date = o.observed_on || '?';
+    const grade = o.quality_grade === 'research' ? '<span style="color:#4caf50">Research</span>' : o.quality_grade || '?';
+    const isInvasive = ['Ailanthus','Lonicera','Lythrum','Phragmites','Alliaria','Reynoutria','Rhamnus'].some(g => sci.toLowerCase().includes(g.toLowerCase()));
+    return '<tr' + (isInvasive ? ' style="color:#ef5350;font-weight:600"' : '') + '><td>' + name + (isInvasive ? ' ⚠️' : '') + '<br><span style="font-size:11px;color:#888">' + sci + '</span></td><td>' + observer + '</td><td>' + date + '</td><td>' + grade + '</td></tr>';
+  }).join('') + '</table>';
+}).catch(()=>{ document.getElementById('inatObs').textContent = 'Failed to load'; });
+
 // Load submissions
-fetch('/api/submissions').then(r=>r.json()).then(data => {
+fetch('/Dryad/api/submissions').then(r=>r.json()).then(data => {
   if (!data.length) { document.getElementById('submissions').innerHTML = '<p>No submissions yet. <a href="/submit">Submit a photo</a></p>'; return; }
   document.getElementById('submissions').innerHTML = data.slice(0,10).map(s =>
     '<div class="sub-item">' +
@@ -389,41 +444,17 @@ export const dryadRoutes = [
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
       try {
-        // Handle multipart form data
-        const contentType = req.headers?.['content-type'] || '';
-        let lat: number, lng: number, timestamp: number, type: string, species: string, description: string, photoFilename: string;
-
-        if (contentType.includes('multipart/form-data')) {
-          // Parse multipart — elizaOS routes get the raw body
-          // For simplicity, also accept JSON
-          const body = req.body as any;
-          lat = parseFloat(body?.lat || '0');
-          lng = parseFloat(body?.lng || '0');
-          timestamp = body?.timestamp ? new Date(body.timestamp).getTime() : Date.now();
-          type = body?.type || 'plant_id';
-          species = body?.species || '';
-          description = body?.description || '';
-          photoFilename = `photo_${Date.now()}.jpg`;
-
-          // Save photo if present
-          if (body?.photo) {
-            try {
-              const photoPath = path.join(UPLOADS_DIR, photoFilename);
-              if (typeof body.photo === 'string') {
-                fs.writeFileSync(photoPath, Buffer.from(body.photo, 'base64'));
-              }
-            } catch {}
-          }
-        } else {
-          const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-          lat = parseFloat(body?.lat || '0');
-          lng = parseFloat(body?.lng || '0');
-          timestamp = body?.timestamp ? new Date(body.timestamp).getTime() : Date.now();
-          type = body?.type || 'plant_id';
-          species = body?.species || '';
-          description = body?.description || '';
-          photoFilename = body?.photoFilename || `photo_${Date.now()}.jpg`;
-        }
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+        const lat = parseFloat(body?.lat || '0');
+        const lng = parseFloat(body?.lng || '0');
+        const timestamp = body?.timestamp ? new Date(body.timestamp).getTime() : Date.now();
+        const type = body?.type || 'proof_of_work';
+        const species = body?.species || '';
+        const workType = body?.workType || '';
+        const description = body?.description || '';
+        const contractorName = body?.contractorName || '';
+        const contractorEmail = body?.contractorEmail || '';
+        const photoFilename = body?.photoFilename || `photo_${Date.now()}.jpg`;
 
         const submission = addSubmission({
           type: type as 'plant_id' | 'proof_of_work',
@@ -431,8 +462,11 @@ export const dryadRoutes = [
           lng,
           timestamp,
           species,
+          workType,
           description,
           photoFilename,
+          contractorName,
+          contractorEmail,
         });
 
         res.json(submission);
