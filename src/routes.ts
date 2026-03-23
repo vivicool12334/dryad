@@ -794,7 +794,7 @@ export const dryadRoutes = [
                   { role: 'user', content: text },
                 ],
                 max_tokens: 500,
-                venice_parameters: { disable_thinking: true },
+                venice_parameters: { disable_thinking: true, include_venice_system_prompt: false },
               }),
               signal: AbortSignal.timeout(15000),
             });
