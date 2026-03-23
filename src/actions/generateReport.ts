@@ -39,7 +39,7 @@ export async function generateWeeklyReport(): Promise<string> {
   const recentTx = txHistory.filter(t => t.timestamp > weekAgo);
   const recentSubs = submissions.filter(s => s.submittedAt > weekAgo);
   const injections = secLog.filter(e => e.event === 'INJECTION_ATTEMPT');
-  const blockedTx = secLog.filter(e => e.event === 'TX_REJECTED');
+  const blockedTx = secLog.filter(e => e.event === 'TRANSACTION_BLOCKED');
 
   let report = `# Dryad Weekly Report\n`;
   report += `**${dateStr}** | **Season:** ${season.season} — ${season.description}\n\n`;

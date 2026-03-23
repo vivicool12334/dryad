@@ -8,26 +8,16 @@ import { addSubmission, getAllSubmissions } from './submissions.ts';
 import { PARCELS, PARCEL_BOUNDS } from './parcels.ts';
 import { isInjectionAttempt, sanitizeSubmissionDescription, logSecurityEvent, getSecurityLog } from './security/sanitize.ts';
 import { getTransactionHistory, isPaymentsPaused } from './security/transactionGuard.ts';
+import { checkRateLimit } from './security/rateLimiter.ts';
+import { getAuditSummary, getRecentAuditEntries, getDailyDigest } from './services/auditLog.ts';
+import { audit } from './services/auditLog.ts';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 // Ensure uploads dir exists
 try { fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch {}
 
-// SECURITY: Simple rate limiter for submission endpoint
-const submitRateLimit = { count: 0, windowStart: Date.now() };
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 10; // 10 submissions per minute
-
-function checkSubmitRateLimit(): boolean {
-  const now = Date.now();
-  if (now - submitRateLimit.windowStart > RATE_LIMIT_WINDOW_MS) {
-    submitRateLimit.count = 0;
-    submitRateLimit.windowStart = now;
-  }
-  submitRateLimit.count++;
-  return submitRateLimit.count <= RATE_LIMIT_MAX;
-}
+// Rate limiting handled by src/security/rateLimiter.ts
 
 // iNaturalist URLs
 const INAT_PROJECT_URL = 'https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping';
@@ -476,8 +466,10 @@ export const dryadRoutes = [
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
       // SECURITY: Rate limiting
-      if (!checkSubmitRateLimit()) {
-        res.status(429).json({ error: 'Too many submissions. Try again in a minute.' } as unknown);
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'submit');
+      if (!rl.allowed) {
+        res.status(429).json({ error: 'Too many submissions. Try again later.' } as unknown);
         return;
       }
 
@@ -509,7 +501,7 @@ export const dryadRoutes = [
         const allText = `${description} ${contractorName} ${species} ${workType}`;
         const injection = isInjectionAttempt(allText);
         if (injection.detected) {
-          logSecurityEvent('INJECTION_ATTEMPT', `Pattern: ${injection.pattern}`, 'submit_portal');
+          audit('INJECTION_ATTEMPT', `Pattern: ${injection.pattern}`, 'submit_portal', 'warn');
           res.status(400).json({ error: 'Invalid submission' } as unknown);
           return;
         }
@@ -669,9 +661,11 @@ export const dryadRoutes = [
         return;
       }
       res.json({
-        securityLog: getSecurityLog().slice(-50),
+        summary: getAuditSummary(24),
+        recentEvents: getRecentAuditEntries(50),
         transactionHistory: getTransactionHistory(),
         paymentsPaused: isPaymentsPaused(),
+        dailyDigest: getDailyDigest(),
       });
     },
   },

@@ -64,13 +64,17 @@ export function validateImageUpload(mimeType: string, sizeBytes: number): { vali
   return { valid: true };
 }
 
-const securityLog: Array<{ timestamp: string; event: string; details: string; source: string }> = [];
+import { audit, getRecentAuditEntries, type AuditEventType } from '../services/auditLog.ts';
 
 export function logSecurityEvent(event: string, details: string, source: string): void {
-  const entry = { timestamp: new Date().toISOString(), event, details, source };
-  securityLog.push(entry);
-  console.warn(`[SECURITY] ${event}: ${details} (source: ${source})`);
-  if (securityLog.length > 1000) securityLog.splice(0, securityLog.length - 1000);
+  audit(event as AuditEventType, details, source, 'warn');
 }
 
-export function getSecurityLog() { return [...securityLog]; }
+export function getSecurityLog() {
+  return getRecentAuditEntries(100).map(e => ({
+    timestamp: e.timestamp,
+    event: e.type,
+    details: e.details,
+    source: e.source,
+  }));
+}
