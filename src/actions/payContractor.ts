@@ -12,21 +12,9 @@ const USDC_ABI = parseAbi([
   'function decimals() view returns (uint8)',
 ]);
 
-// Spending limits
+// Spending limits — enforced by transactionGuard (persisted to disk)
 const MAX_PER_TX_USD = 50;
 const MAX_DAILY_USD = 200;
-
-// Simple in-memory daily spend tracker (resets on restart)
-let dailySpend = 0;
-let lastResetDate = new Date().toDateString();
-
-function resetDailySpendIfNeeded() {
-  const today = new Date().toDateString();
-  if (today !== lastResetDate) {
-    dailySpend = 0;
-    lastResetDate = today;
-  }
-}
 
 function getClients(runtime: IAgentRuntime) {
   const privateKey = runtime.getSetting('EVM_PRIVATE_KEY') || process.env.EVM_PRIVATE_KEY;
@@ -72,7 +60,6 @@ export const payContractorAction: Action = {
   ): Promise<ActionResult> => {
     try {
       logger.info('Processing contractor payment');
-      resetDailySpendIfNeeded();
 
       const { address, amount, reason } = parsePaymentFromMessage(message.content.text || '');
 
@@ -88,17 +75,9 @@ export const payContractorAction: Action = {
         return { text: errorMsg, values: { success: false }, data: {}, success: false };
       }
 
-      // Check per-transaction limit
+      // Quick sanity check before making RPC calls
       if (amount > MAX_PER_TX_USD) {
         const errorMsg = `Payment of $${amount} exceeds per-transaction limit of $${MAX_PER_TX_USD}. Break into smaller payments.`;
-        await callback({ text: errorMsg, actions: ['PAY_CONTRACTOR'], source: message.content.source });
-        return { text: errorMsg, values: { success: false }, data: {}, success: false };
-      }
-
-      // Check daily limit
-      if (dailySpend + amount > MAX_DAILY_USD) {
-        const remaining = MAX_DAILY_USD - dailySpend;
-        const errorMsg = `Payment of $${amount} would exceed daily limit of $${MAX_DAILY_USD}. Already spent today: $${dailySpend}. Remaining: $${remaining}.`;
         await callback({ text: errorMsg, actions: ['PAY_CONTRACTOR'], source: message.content.source });
         return { text: errorMsg, values: { success: false }, data: {}, success: false };
       }
@@ -144,8 +123,7 @@ export const payContractorAction: Action = {
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
-      // Update daily spend tracker + transaction guard
-      dailySpend += amount;
+      // Record in persistent transaction guard
       recordTransaction(address, amount, hash);
       audit('TRANSACTION_SUCCESS', `$${amount} USDC to ${address}`, 'payContractor', 'info', { txHash: hash, amount, recipient: address });
 
@@ -158,8 +136,7 @@ export const payContractorAction: Action = {
 **Status:** ${receipt.status === 'success' ? '✅ Confirmed' : '❌ Failed'}
 
 ### Spending Limits
-- **Today's spend:** $${dailySpend.toFixed(2)} / $${MAX_DAILY_USD}
-- **Remaining daily budget:** $${(MAX_DAILY_USD - dailySpend).toFixed(2)}
+- **Per-tx limit:** $${MAX_PER_TX_USD} | **Daily limit:** $${MAX_DAILY_USD}
 - **USDC balance after:** $${(balanceNum - amount).toFixed(2)}
 
 **Reason:** ${reason}`;
@@ -172,7 +149,7 @@ export const payContractorAction: Action = {
 
       return {
         text: `Payment of $${amount} USDC sent to ${address}. TX: ${hash}`,
-        values: { success: true, amount, recipient: address, txHash: hash, dailySpend },
+        values: { success: true, amount, recipient: address, txHash: hash },
         data: { receipt },
         success: true,
       };

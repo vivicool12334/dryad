@@ -1,12 +1,88 @@
 /**
  * Financial transaction safety layer.
  * Wraps all outgoing payments with allowlist, velocity, and anomaly checks.
+ * State is persisted to disk so it survives restarts.
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import { logSecurityEvent } from './sanitize.ts';
 
-const allowlistedRecipients = new Map<string, { addedAt: number; label: string; coolingOff: boolean }>();
-const txHistory: Array<{ timestamp: number; amount: number; recipient: string; txHash?: string }> = [];
+// ─── Persistence ───
+const STATE_PATH = path.join(process.cwd(), 'data', 'transaction-guard-state.json');
 
+interface PersistedState {
+  allowlist: Record<string, { addedAt: number; label: string }>;
+  txHistory: Array<{ timestamp: number; amount: number; recipient: string; txHash?: string }>;
+  paymentsPaused: boolean;
+  consecutiveFailures: number;
+  initialTreasuryBalance: number | null;
+}
+
+function loadState(): PersistedState {
+  try {
+    if (fs.existsSync(STATE_PATH)) {
+      const raw = fs.readFileSync(STATE_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      // Validate structure
+      if (parsed && typeof parsed === 'object' && parsed.allowlist && Array.isArray(parsed.txHistory)) {
+        return parsed as PersistedState;
+      }
+    }
+  } catch {
+    logSecurityEvent('STATE_LOAD_FAILED', 'Could not load transaction guard state — using defaults', 'transactionGuard');
+  }
+  return {
+    allowlist: {},
+    txHistory: [],
+    paymentsPaused: false,
+    consecutiveFailures: 0,
+    initialTreasuryBalance: null,
+  };
+}
+
+function saveState(): void {
+  try {
+    const state: PersistedState = {
+      allowlist: Object.fromEntries(
+        Array.from(allowlistedRecipients.entries()).map(([k, v]) => [k, { addedAt: v.addedAt, label: v.label }])
+      ),
+      txHistory,
+      paymentsPaused,
+      consecutiveFailures,
+      initialTreasuryBalance,
+    };
+    const dir = path.dirname(STATE_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
+  } catch {
+    // Best effort — in-memory state is always authoritative
+  }
+}
+
+// ─── Load persisted state ───
+const loaded = loadState();
+
+const allowlistedRecipients = new Map<string, { addedAt: number; label: string; coolingOff: boolean }>();
+// Restore allowlist — addresses that were added > COOLING_OFF_HOURS ago are active
+for (const [addr, info] of Object.entries(loaded.allowlist)) {
+  const coolingOff = (Date.now() - info.addedAt) < LIMITS_COOLING_OFF_MS();
+  allowlistedRecipients.set(addr, { ...info, coolingOff });
+}
+
+const txHistory: Array<{ timestamp: number; amount: number; recipient: string; txHash?: string }> = loaded.txHistory;
+// Trim stale entries on load
+const loadCutoff = Date.now() - 30 * 86400000;
+while (txHistory.length > 0 && txHistory[0].timestamp < loadCutoff) txHistory.shift();
+
+let consecutiveFailures = loaded.consecutiveFailures;
+let paymentsPaused = loaded.paymentsPaused;
+let initialTreasuryBalance: number | null = loaded.initialTreasuryBalance;
+
+if (allowlistedRecipients.size > 0) {
+  logSecurityEvent('STATE_RESTORED', `Loaded ${allowlistedRecipients.size} allowlisted addresses, ${txHistory.length} tx history entries, paused=${paymentsPaused}`, 'transactionGuard');
+}
+
+// ─── Constants ───
 const LIMITS = {
   PER_TX_USD: 50,
   DAILY_USD: 200,
@@ -19,12 +95,15 @@ const LIMITS = {
   MAX_FAILED_CONSECUTIVE: 3,
 };
 
-let consecutiveFailures = 0;
-let paymentsPaused = false;
-let initialTreasuryBalance: number | null = null;
+function LIMITS_COOLING_OFF_MS() { return LIMITS.COOLING_OFF_HOURS * 3600000; }
+
+// ─── Public API ───
 
 export function setInitialTreasuryBalance(balanceUsd: number): void {
-  if (initialTreasuryBalance === null) initialTreasuryBalance = balanceUsd;
+  if (initialTreasuryBalance === null) {
+    initialTreasuryBalance = balanceUsd;
+    saveState();
+  }
 }
 
 export function addAllowlistedAddress(address: string, label: string): { success: boolean; reason?: string } {
@@ -33,12 +112,14 @@ export function addAllowlistedAddress(address: string, label: string): { success
 
   allowlistedRecipients.set(n, { addedAt: Date.now(), label, coolingOff: true });
   logSecurityEvent('ADDRESS_ADDED', `${label} (${address}) — 24hr cooling off`, 'transactionGuard');
+  saveState();
 
   setTimeout(() => {
     const entry = allowlistedRecipients.get(n);
     if (entry) {
       entry.coolingOff = false;
       logSecurityEvent('ADDRESS_ACTIVE', `${label} (${address}) now active`, 'transactionGuard');
+      saveState();
     }
   }, LIMITS.COOLING_OFF_HOURS * 3600000);
 
@@ -66,17 +147,15 @@ export function validateTransaction(
     return { allowed: false, reason: `Amount $${amountUsd} exceeds $${LIMITS.PER_TX_USD} per-tx limit` };
   }
 
-  // Allowlist check (skip if list is empty — first-time setup)
-  if (allowlistedRecipients.size > 0) {
-    if (!allowlistedRecipients.has(n)) {
-      logSecurityEvent('TX_REJECTED', `${recipient} not allowlisted`, 'transactionGuard');
-      return { allowed: false, reason: `Recipient not allowlisted. New addresses need 24hr cooling-off.` };
-    }
-    const entry = allowlistedRecipients.get(n)!;
-    if (entry.coolingOff) {
-      const hrs = Math.ceil((entry.addedAt + LIMITS.COOLING_OFF_HOURS * 3600000 - Date.now()) / 3600000);
-      return { allowed: false, reason: `${entry.label} in cooling-off (${hrs}h remaining)` };
-    }
+  // Allowlist check — ALWAYS enforced. Empty allowlist = deny all.
+  if (!allowlistedRecipients.has(n)) {
+    logSecurityEvent('TX_REJECTED', `${recipient} not allowlisted (${allowlistedRecipients.size} addresses on list)`, 'transactionGuard');
+    return { allowed: false, reason: `Recipient not allowlisted. Add address first (24hr cooling-off required).` };
+  }
+  const entry = allowlistedRecipients.get(n)!;
+  if (entry.coolingOff) {
+    const hrs = Math.ceil((entry.addedAt + LIMITS.COOLING_OFF_HOURS * 3600000 - Date.now()) / 3600000);
+    return { allowed: false, reason: `${entry.label} in cooling-off (${hrs}h remaining)` };
   }
 
   // Quiet hours
@@ -121,6 +200,7 @@ export function recordTransaction(recipient: string, amountUsd: number, txHash?:
   // Trim to 30 days
   const cutoff = Date.now() - 30 * 86400000;
   while (txHistory.length > 0 && txHistory[0].timestamp < cutoff) txHistory.shift();
+  saveState();
 }
 
 export function recordFailedTransaction(reason: string): void {
@@ -130,12 +210,14 @@ export function recordFailedTransaction(reason: string): void {
     paymentsPaused = true;
     logSecurityEvent('PAYMENTS_PAUSED', `${LIMITS.MAX_FAILED_CONSECUTIVE} failures — paused`, 'transactionGuard');
   }
+  saveState();
 }
 
 export function unpausePayments(): void {
   paymentsPaused = false;
   consecutiveFailures = 0;
   logSecurityEvent('PAYMENTS_RESUMED', 'Manual resume', 'transactionGuard');
+  saveState();
 }
 
 export function isPaymentsPaused(): boolean { return paymentsPaused; }

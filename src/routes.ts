@@ -715,7 +715,7 @@ export const dryadRoutes = [
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
       const adminSecret = process.env.ADMIN_SECRET;
-      if (adminSecret && req.headers?.['x-admin-secret'] !== adminSecret) {
+      if (!adminSecret || req.headers?.['x-admin-secret'] !== adminSecret) {
         res.status(403).json({ error: 'Unauthorized' } as unknown);
         return;
       }
@@ -768,7 +768,7 @@ export const dryadRoutes = [
 
         // Security: check for injection attempts
         if (isInjectionAttempt(text).detected) {
-          audit('INJECTION_BLOCKED', { input: text.slice(0, 100), ip });
+          audit('INJECTION_ATTEMPT', `Input: ${text.slice(0, 100)} | IP: ${ip}`, 'chat_api', 'warn');
           res.json({ text: "I'm Dryad, an autonomous land stewardship agent. I can tell you about the project, Detroit's vacant land crisis, native ecology, or how to get involved. What would you like to know?" } as unknown);
           return;
         }
@@ -825,7 +825,7 @@ export const dryadRoutes = [
           responseText = "I'm having trouble thinking right now. Try asking about the project, Detroit's vacant lots, or native ecology!";
         }
 
-        audit('CHAT_MESSAGE', { input: text.slice(0, 50), ip });
+        audit('LOOP_EXECUTION', `Chat: ${text.slice(0, 50)} | IP: ${ip}`, 'chat_api', 'info');
         res.json({ text: responseText } as unknown);
       } catch (err: any) {
         console.error('[Dryad] Chat error:', err?.message || err);

@@ -50,8 +50,36 @@ export async function buyDIEMWithETH(runtime: IAgentRuntime, ethAmount: bigint):
     throw new Error(`Swap amount ${formatUnits(ethAmount, 18)} ETH exceeds safety cap of ${formatUnits(MAX_SWAP_ETH, 18)} ETH`);
   }
 
-  // SECURITY: Set 5% slippage protection (amountOutMinimum > 0 prevents sandwich attacks)
-  // For small swaps this is acceptable; production should use a price oracle
+  // SECURITY: Get a quote first for slippage protection
+  // Use Uniswap V3 Quoter to determine expected output, then set 10% slippage tolerance
+  const UNISWAP_QUOTER = '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a' as const;
+  const QUOTER_ABI = parseAbi([
+    'function quoteExactInputSingle((address tokenIn, address tokenOut, uint256 amountIn, uint24 fee, uint160 sqrtPriceLimitX96)) returns (uint256 amountOut, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)',
+  ]);
+
+  let amountOutMinimum = 0n;
+  try {
+    const quoteResult = await publicClient.simulateContract({
+      address: UNISWAP_QUOTER,
+      abi: QUOTER_ABI,
+      functionName: 'quoteExactInputSingle',
+      args: [{
+        tokenIn: WETH_BASE,
+        tokenOut: diemAddress,
+        amountIn: ethAmount,
+        fee: 3000,
+        sqrtPriceLimitX96: 0n,
+      }],
+    });
+    const expectedOut = (quoteResult.result as any)[0] as bigint;
+    amountOutMinimum = (expectedOut * 90n) / 100n; // 10% slippage tolerance
+    logger.info(`[DIEM] Quote: expected ${expectedOut}, min accepted ${amountOutMinimum}`);
+  } catch (quoteErr) {
+    // If quote fails, reject the swap rather than proceeding with 0 slippage
+    logger.error(`[DIEM] Quote failed, rejecting swap for safety: ${quoteErr}`);
+    throw new Error('Could not get price quote — swap rejected for slippage safety');
+  }
+
   const hash = await walletClient.writeContract({
     address: UNISWAP_ROUTER,
     abi: SWAP_ROUTER_ABI,
@@ -62,13 +90,16 @@ export async function buyDIEMWithETH(runtime: IAgentRuntime, ethAmount: bigint):
       fee: 3000, // 0.3% fee tier
       recipient: account.address,
       amountIn: ethAmount,
-      amountOutMinimum: 0n, // TODO: MEDIUM — use price oracle for proper slippage protection. Acceptable for small demo swaps.
+      amountOutMinimum,
       sqrtPriceLimitX96: 0n,
     }],
     value: ethAmount,
   });
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  if (receipt.status !== 'success') {
+    throw new Error(`Swap transaction reverted (tx: ${hash})`);
+  }
   logger.info(`[DIEM] Swap TX: ${hash} | Block: ${receipt.blockNumber} | Status: ${receipt.status}`);
 
   // Read new balance
