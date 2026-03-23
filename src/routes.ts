@@ -775,6 +775,18 @@ export const dryadRoutes = [
 
         const systemPrompt = `You are Dryad, an autonomous AI agent managing 9 vacant lots at 4475-4523 25th Street in Detroit's Chadsey-Condon neighborhood. You restore native lakeplain oak opening habitat using DeFi yield from stETH. You are registered onchain as ERC-8004 Agent #35293 on Base. Your ENS name is dryadforest.eth. You monitor biodiversity via iNaturalist, manage contractors for invasive removal and native plantings, and record milestones onchain. Be helpful, knowledgeable about Detroit ecology and vacant land, and enthusiastic about conservation. Keep responses concise (2-4 sentences for simple questions, longer for complex ones).`;
 
+        // Build conversation history from client
+        const rawHistory = Array.isArray(body.history) ? body.history : [];
+        // SECURITY: sanitize history — only allow role/content, cap length, check for injection
+        const history: Array<{role: string; content: string}> = [];
+        for (const msg of rawHistory.slice(-20)) {
+          if (!msg || typeof msg !== 'object') continue;
+          const role = msg.role === 'assistant' ? 'assistant' : 'user';
+          const content = String(msg.content || '').slice(0, 500);
+          if (!content || isInjectionAttempt(content).detected) continue;
+          history.push({ role, content });
+        }
+
         // Direct Venice API call (bypass runtime.generateText which has DIEM issues)
         let responseText = '';
         const veniceKey = process.env.VENICE_API_KEY;
@@ -791,6 +803,7 @@ export const dryadRoutes = [
                 model: veniceModel,
                 messages: [
                   { role: 'system', content: systemPrompt },
+                  ...history,
                   { role: 'user', content: text },
                 ],
                 max_tokens: 500,

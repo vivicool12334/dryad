@@ -1666,15 +1666,19 @@ function addMsg(role,text,isTyping){
 }
 
 var AGENT_API='/api/chat', useKB=false;
+var chatHistory=[];
 async function send(text){
   var w=document.getElementById('chat-welcome');if(w)w.remove();
   addMsg('user',text);
+  chatHistory.push({role:'user',content:text});
+  // Keep last 10 exchanges (20 messages) to stay within token limits
+  if(chatHistory.length>20)chatHistory=chatHistory.slice(-20);
   sugIdx=(sugIdx+4)%allSuggestions.length;showSuggestions();
   var typing=addMsg('agent','...',true);
   var resp;
   if(!useKB){
     try{
-      var r=await fetch(AGENT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text}),signal:AbortSignal.timeout(15000)});
+      var r=await fetch(AGENT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,history:chatHistory.slice(0,-1)}),signal:AbortSignal.timeout(15000)});
       if(!r.ok)throw 0;
       var data=await r.json();
       resp=data.text;
@@ -1684,7 +1688,10 @@ async function send(text){
     await new Promise(function(r){setTimeout(r, Math.min(800 + resp.length * 3, 2500));});
   }
   typing.remove();
-  addMsg('agent',resp||match(text));
+  resp=resp||match(text);
+  addMsg('agent',resp);
+  chatHistory.push({role:'assistant',content:resp});
+  if(chatHistory.length>20)chatHistory=chatHistory.slice(-20);
 }
 
 function init(){
