@@ -143,4 +143,4 @@ MIT
 
 ## Steward
 
-Nick George — powahgen@gmail.com
+Nick George — [@0xnock](https://x.com/0xnock)

@@ -356,7 +356,7 @@ code{word-break:break-all}
       <tr><th>ERC-8004 Agent ID</th><td>#${process.env.ERC8004_AGENT_ID || '35293'} on Base</td></tr>
       <tr><th>Milestones Contract</th><td><a href="https://basescan.org/address/${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}" style="color:#81c784"><code>${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}</code></a></td></tr>
       <tr><th>Registry</th><td><code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code></td></tr>
-      <tr><th>Steward</th><td>Nick George (powahgen@gmail.com)</td></tr>
+      <tr><th>Steward</th><td>Nick George (<a href="https://x.com/0xnock" target="_blank" style="color:#81c784">@0xnock</a>)</td></tr>
       <tr><th>Decision Loop</th><td>Every 24 hours</td></tr>
     </table></div>
   </div>
