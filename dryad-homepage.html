@@ -301,16 +301,14 @@
 
         .chat-suggestions {
             display: flex;
-            gap: 6px;
-            padding: 8px 14px 4px;
-            overflow-x: auto;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 8px 14px 6px;
             flex-shrink: 0;
             border-top: 1px solid var(--card-border);
             background: rgba(20,21,15,0.5);
         }
-        .chat-suggestions::-webkit-scrollbar { height: 0; }
         .chat-sug-btn {
-            flex-shrink: 0;
             padding: 5px 10px;
             border: 1px solid var(--card-border);
             border-radius: 14px;
@@ -320,7 +318,6 @@
             cursor: pointer;
             font-family: var(--font-body);
             transition: all 0.2s;
-            white-space: nowrap;
         }
         .chat-sug-btn:hover { background: rgba(141,166,103,0.15); border-color: var(--accent); }
 
