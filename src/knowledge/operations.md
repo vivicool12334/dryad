@@ -1,6 +1,6 @@
 # Dryad Operational Manual
 
-## Decision Loop (every 6 hours)
+## Decision Loop (every 24 hours)
 1. Check weather — don't schedule work if heavy rain in 48hrs
 2. Process new photo submissions from /Dryad/submit portal
 3. Query iNaturalist API for observations in parcel bounding box
@@ -53,7 +53,7 @@ Center: 42.34174, -83.10007
 - Project: inaturalist.org/projects/dryad-25th-street-parcels-mapping
 - API: api.inaturalist.org/v1/observations with bounding box filter
 - Rate limit: 60 req/min (unauthenticated)
-- Cache observations for 6 hours (matches loop interval)
+- Cache observations for 24 hours (matches loop interval)
 
 ## Email Footer (mandatory on all outgoing)
 "This message was sent by Dryad, an autonomous AI agent managing native habitat restoration on vacant lots in Detroit as part of 'The Forest That Owns Itself' project. For questions or concerns, contact Nick George (project steward) at powahgen@gmail.com."

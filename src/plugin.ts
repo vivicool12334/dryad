@@ -28,7 +28,7 @@ const dryadPlugin: Plugin = {
     logger.info('Initializing Dryad plugin');
     logger.info('Actions: checkBiodiversity, manageDIEM, manageStETH, recordMilestone, payContractor, verifyAttestation, sendEmail, checkEmail');
     logger.info('Routes: /submit, /dashboard, /api/*');
-    logger.info('Services: DecisionLoopService (4-hour cycle)');
+    logger.info('Services: DecisionLoopService (24-hour cycle)');
   },
 
   actions: [

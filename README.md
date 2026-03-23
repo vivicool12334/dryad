@@ -19,7 +19,7 @@ via iNaturalist app on the lots           and submit GPS-tagged proof photos
 │                    DRYAD AGENT                          │
 │  elizaOS v1.7.2 + Venice.ai (GLM 4.7 Flash)           │
 │                                                         │
-│  Decision Loop (every 6 hours):                        │
+│  Decision Loop (every 24 hours):                       │
 │  1. Check iNaturalist for on-parcel observations       │
 │  2. Detect invasives → email contractor via AgentMail  │
 │  3. Review proof-of-work submissions                   │

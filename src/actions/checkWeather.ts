@@ -26,7 +26,7 @@ export interface WeatherAssessment {
 // Cache
 let cachedAssessment: WeatherAssessment | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 function celsiusToF(c: number): number { return Math.round(c * 9 / 5 + 32); }
 
