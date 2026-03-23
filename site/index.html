@@ -1572,7 +1572,7 @@ Would you be able to review the species list and planting density for this site?
 <!-- ═══════════════ CHAT ENGINE ═══════════════ -->
 <script>
 (function(){
-var ELIZA='http://5.75.225.23:3000', useFallback=false;
+
 // All available suggestion prompts — rotated after each interaction
 var allSuggestions=[
   'What is Dryad?',
@@ -1648,18 +1648,9 @@ async function send(text){
   addMsg('user',text);
   sugIdx=(sugIdx+4)%allSuggestions.length;showSuggestions();
   var typing=addMsg('agent','...',true);
-  var resp;
-  if(!useFallback){
-    try{
-      var r=await fetch(ELIZA+'/api/agents',{signal:AbortSignal.timeout(3000)});
-      if(!r.ok)throw 0;
-      // Try sending to agent — adjust endpoint as needed
-      var r2=await fetch(ELIZA+'/Dryad/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,userId:'web-'+Math.random().toString(36).substr(2,6),roomId:'homepage'}),signal:AbortSignal.timeout(12000)});
-      if(!r2.ok)throw 0;
-      var data=await r2.json();
-      resp=Array.isArray(data)?data.map(function(m){return m.text}).join('\n\n'):(data.text||data.message||match(text));
-    }catch(e){useFallback=true;resp=match(text);}
-  }else{resp=match(text);}
+  var resp=match(text);
+  // Natural typing delay based on response length
+  await new Promise(function(r){setTimeout(r, Math.min(800 + resp.length * 3, 2500));});
   typing.remove();
   addMsg('agent',resp);
 }
@@ -1672,6 +1663,7 @@ function init(){
   welcome.innerHTML='<svg class="chat-welcome-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>';
   var h3=document.createElement('h3');h3.textContent='Talk to the Forest';welcome.appendChild(h3);
   var p=document.createElement('p');p.textContent='Ask about the ecology, how to get a lot from the Detroit Land Bank, native species, or how autonomous conservation works.';welcome.appendChild(p);
+  var liveLink=document.createElement('p');liveLink.style.cssText='margin-top:8px;font-size:0.75rem;';liveLink.innerHTML='<a href="http://5.75.225.23:3000" target="_blank" style="color:var(--accent-amber);border-bottom:1px solid var(--accent-amber);">Chat with the live AI agent &rarr;</a>';welcome.appendChild(liveLink);
 
   el.appendChild(welcome);
   showSuggestions();
