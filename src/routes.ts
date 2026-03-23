@@ -1,7 +1,7 @@
 /**
  * Custom routes for Dryad: /submit portal, /dashboard, /api/submissions
  */
-import type { RouteRequest, RouteResponse } from '@elizaos/core';
+import type { RouteRequest, RouteResponse, IAgentRuntime } from '@elizaos/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import { addSubmission, getAllSubmissions } from './submissions.ts';
@@ -56,12 +56,27 @@ a{color:#81c784}
 .qr-placeholder{width:200px;height:200px;margin:16px auto;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:8px}
 .app-links{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .app-links a{background:#1b5e20;padding:8px 16px;border-radius:8px;text-decoration:none;color:#fff;font-size:14px}
-.nav{display:flex;gap:16px;margin-bottom:24px}
-.nav a{color:#81c784;text-decoration:none}
+.nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.nav a{color:#81c784;text-decoration:none;padding:10px 14px;border:1px solid #2e7d32;border-radius:8px;font-size:14px;min-height:44px;display:flex;align-items:center}
+.nav a:hover{background:#1b5e20}
+.gps-status{padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;display:flex;align-items:center;gap:8px}
+.gps-status.success{background:#1b5e20;border:1px solid #4caf50;color:#a5d6a7}
+.gps-status.pending{background:#1a2e1a;border:1px solid #2e7d32;color:#81c784}
+.gps-status.error{background:#4a1010;border:1px solid #c62828;color:#ef9a9a}
+.gps-btn{background:#1b5e20;color:#a5d6a7;border:1px solid #2e7d32;padding:12px 16px;border-radius:8px;cursor:pointer;font-size:14px;width:100%;margin-bottom:16px;min-height:44px}
+.gps-btn:hover{background:#2e7d32}
+.gps-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-loading{opacity:0.7;pointer-events:none}
+@media (max-width: 480px) {
+  .container{padding:16px}
+  .nav{gap:6px}
+  .nav a{padding:8px 10px;font-size:13px}
+  h1{font-size:22px}
+}
 </style>
 </head><body>
 <div class="container">
-<div class="nav"><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
+<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
 
 <h1>Contractor Proof-of-Work</h1>
 <p class="subtitle">Submit GPS-tagged photos to verify completed work on 25th Street parcels</p>
@@ -79,11 +94,12 @@ a{color:#81c784}
   <label>Work Type *</label>
   <select name="workType" id="workType">${workTypeOptions}</select>
 
-  <label>GPS Latitude *</label>
-  <input type="number" name="lat" id="lat" step="any" placeholder="42.3290" required>
-
-  <label>GPS Longitude *</label>
-  <input type="number" name="lng" id="lng" step="any" placeholder="-83.1058" required>
+  <div id="gpsStatus" class="gps-status pending">Waiting for location...</div>
+  <button type="button" class="gps-btn" id="gpsBtn" onclick="getGPS()">📍 Use My Location</button>
+  <div class="gps-fields">
+    <div><label>Latitude *</label><input type="number" name="lat" id="lat" step="any" placeholder="42.3290" required></div>
+    <div><label>Longitude *</label><input type="number" name="lng" id="lng" step="any" placeholder="-83.1058" required></div>
+  </div>
 
   <label>Photo Timestamp</label>
   <input type="datetime-local" name="timestamp" id="timestamp">
@@ -99,7 +115,7 @@ a{color:#81c784}
 
   <p class="info">GPS must be within parcel boundaries (25th St between Ash & Beech). Photos older than 72 hours will be rejected. Payment up to $50/job in USDC on Base.</p>
 
-  <button type="submit">Submit Proof of Work</button>
+  <button type="submit" id="submitBtn" style="min-height:48px">Submit Proof of Work</button>
 </form>
 <div id="result"></div>
 
@@ -129,13 +145,35 @@ a{color:#81c784}
 </div>
 
 <script>
-// Auto-fill GPS from device
-if (navigator.geolocation) {
+function getGPS() {
+  const status = document.getElementById('gpsStatus');
+  const btn = document.getElementById('gpsBtn');
+  if (!navigator.geolocation) {
+    status.className = 'gps-status error';
+    status.textContent = 'Geolocation not supported — enter coordinates manually';
+    return;
+  }
+  status.className = 'gps-status pending';
+  status.textContent = 'Getting location...';
+  btn.textContent = '⏳ Locating...';
+  btn.disabled = true;
   navigator.geolocation.getCurrentPosition(pos => {
     document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
     document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
-  }, () => {}, { enableHighAccuracy: true });
+    status.className = 'gps-status success';
+    status.textContent = '✓ Location captured: ' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4) + ' (±' + Math.round(pos.coords.accuracy) + 'm)';
+    btn.textContent = '📍 Update Location';
+    btn.disabled = false;
+  }, (err) => {
+    status.className = 'gps-status error';
+    status.textContent = 'Location failed — enter coordinates manually below';
+    btn.textContent = '📍 Try Again';
+    btn.disabled = false;
+  }, { enableHighAccuracy: true, timeout: 10000 });
 }
+
+// Auto-fill GPS on load
+getGPS();
 
 document.getElementById('timestamp').value = new Date().toISOString().slice(0,16);
 
@@ -143,6 +181,9 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData(e.target);
   const res = document.getElementById('result');
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Submitting...';
+  btn.classList.add('btn-loading');
 
   // Build JSON payload from form
   const payload = {};
@@ -171,6 +212,9 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
     var d = document.createElement('div'); d.className = 'error';
     d.textContent = 'Error: ' + err.message;
     res.appendChild(d);
+  } finally {
+    btn.textContent = 'Submit Proof of Work';
+    btn.classList.remove('btn-loading');
   }
 });
 </script>
@@ -212,11 +256,25 @@ table{width:100%;border-collapse:collapse}
 td,th{padding:8px;text-align:left;border-bottom:1px solid #1b3a1b;font-size:14px}
 th{color:#81c784}
 .loading{color:#81c784;font-style:italic}
+code{word-break:break-all}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width: 768px) {
+  .grid{grid-template-columns:1fr;padding:16px}
+  .header{flex-wrap:wrap;padding:12px 16px}
+  .header h1{font-size:20px;width:100%}
+  .header nav{width:100%;display:flex;gap:12px;margin-top:8px}
+  .header nav a{font-size:14px;padding:6px 0}
+  .stat{font-size:24px}
+  .stat-row{flex-direction:column;gap:12px}
+  #map{height:220px}
+  td,th{font-size:12px;padding:6px 4px}
+  .card{padding:16px}
+}
 </style>
 </head><body>
 <div class="header">
   <h1>🌿 Dryad Dashboard</h1>
-  <nav><a href="/">Chat</a><a href="/Dryad/submit">Submit Work</a><a href="/Dryad/dashboard">Dashboard</a></nav>
+  <nav><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;padding:6px 12px;border-radius:6px;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit Work</a><a href="/Dryad/dashboard">Dashboard</a></nav>
 </div>
 
 <div class="grid">
@@ -241,7 +299,7 @@ th{color:#81c784}
   <!-- Annual Cost Breakdown -->
   <div class="card">
     <h2>Annual Operating Costs</h2>
-    <table>
+    <div class="table-wrap"><table>
       <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
       <tr><td>Property taxes (9 × $30/lot)</td><td style="text-align:right">$270</td></tr>
       <tr><td>DIEM for inference (0.17 staked)</td><td style="text-align:right">$62</td></tr>
@@ -251,7 +309,7 @@ th{color:#81c784}
       <tr><td>Gas fees on Base</td><td style="text-align:right">$5</td></tr>
       <tr style="font-weight:700;border-top:2px solid #2e7d32"><td>Total (Yr 3+)</td><td style="text-align:right">$945/yr</td></tr>
       <tr style="color:#f9a825"><td>If Land Value Tax passes</td><td style="text-align:right">$978/yr</td></tr>
-    </table>
+    </table></div>
     <p style="font-size:12px;color:#81c784;margin-top:8px">Detroit accepts crypto for taxes via PayPal at checkout.</p>
   </div>
 
@@ -290,7 +348,7 @@ th{color:#81c784}
   <!-- Agent Info -->
   <div class="card full">
     <h2>Agent Identity</h2>
-    <table>
+    <div class="table-wrap"><table>
       <tr><th>Name</th><td>Dryad — "The Forest That Owns Itself"</td></tr>
       <tr><th>ENS</th><td><strong>dryadforest.eth</strong></td></tr>
       <tr><th>Email</th><td>dryad@agentmail.to</td></tr>
@@ -300,7 +358,7 @@ th{color:#81c784}
       <tr><th>Registry</th><td><code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code></td></tr>
       <tr><th>Steward</th><td>Nick George (powahgen@gmail.com)</td></tr>
       <tr><th>Decision Loop</th><td>Every 6 hours</td></tr>
-    </table>
+    </table></div>
   </div>
 </div>
 
@@ -668,6 +726,111 @@ export const dryadRoutes = [
         paymentsPaused: isPaymentsPaused(),
         dailyDigest: getDailyDigest(),
       });
+    },
+  },
+  {
+    name: 'api-chat-cors',
+    path: '/api/chat',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      res.setHeader?.('Access-Control-Allow-Origin', '*');
+      res.setHeader?.('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+      res.json({ status: 'ok', usage: 'POST with {text: "your question"}' } as unknown);
+    },
+  },
+  {
+    name: 'api-chat',
+    path: '/api/chat',
+    type: 'POST' as const,
+    handler: async (req: RouteRequest, res: RouteResponse, runtime: IAgentRuntime) => {
+      // CORS headers for cross-origin requests from Vercel
+      res.setHeader?.('Access-Control-Allow-Origin', '*');
+      res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+
+      // Rate limiting
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'message');
+      if (!rl.allowed) {
+        res.status(429).json({ error: 'Too many messages. Try again later.' } as unknown);
+        return;
+      }
+
+      try {
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+        const text = String(body.text || '').slice(0, 500).trim();
+
+        if (!text) {
+          res.status(400).json({ error: 'Missing text field' } as unknown);
+          return;
+        }
+
+        // Security: check for injection attempts
+        if (isInjectionAttempt(text).detected) {
+          audit('INJECTION_BLOCKED', { input: text.slice(0, 100), ip });
+          res.json({ text: "I'm Dryad, an autonomous land stewardship agent. I can tell you about the project, Detroit's vacant land crisis, native ecology, or how to get involved. What would you like to know?" } as unknown);
+          return;
+        }
+
+        const systemPrompt = `You are Dryad, an autonomous AI agent managing 9 vacant lots at 4475-4523 25th Street in Detroit's Chadsey-Condon neighborhood. You restore native lakeplain oak opening habitat using DeFi yield from stETH. You are registered onchain as ERC-8004 Agent #35293 on Base. Your ENS name is dryadforest.eth. You monitor biodiversity via iNaturalist, manage contractors for invasive removal and native plantings, and record milestones onchain. Be helpful, knowledgeable about Detroit ecology and vacant land, and enthusiastic about conservation. Keep responses concise (2-4 sentences for simple questions, longer for complex ones).`;
+
+        // Direct Venice API call (bypass runtime.generateText which has DIEM issues)
+        let responseText = '';
+        const veniceKey = process.env.VENICE_API_KEY;
+        const veniceModel = process.env.VENICE_SMALL_MODEL || 'zai-org-glm-4.7-flash';
+        if (veniceKey) {
+          try {
+            const veniceResp = await fetch('https://api.venice.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${veniceKey}`,
+              },
+              body: JSON.stringify({
+                model: veniceModel,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: text },
+                ],
+                max_tokens: 300,
+              }),
+              signal: AbortSignal.timeout(15000),
+            });
+            if (veniceResp.ok) {
+              const data = await veniceResp.json() as any;
+              responseText = data?.choices?.[0]?.message?.content || '';
+            } else {
+              console.error('[Dryad] Venice API error:', veniceResp.status, await veniceResp.text().catch(() => ''));
+            }
+          } catch (veniceErr: any) {
+            console.error('[Dryad] Venice direct call failed:', veniceErr?.message);
+          }
+        }
+
+        // Fallback to runtime.generateText if Venice direct call failed
+        if (!responseText) {
+          try {
+            const result = await runtime.generateText(
+              `${systemPrompt}\n\nUser: ${text}\n\nDryad:`,
+              { maxTokens: 300 }
+            );
+            responseText = typeof result === 'string' ? result : (result as any)?.text || '';
+          } catch (rtErr: any) {
+            console.error('[Dryad] runtime.generateText fallback failed:', rtErr?.message);
+          }
+        }
+
+        if (!responseText) {
+          responseText = "I'm having trouble thinking right now. Try asking about the project, Detroit's vacant lots, or native ecology!";
+        }
+
+        audit('CHAT_MESSAGE', { input: text.slice(0, 50), ip });
+        res.json({ text: responseText } as unknown);
+      } catch (err: any) {
+        console.error('[Dryad] Chat error:', err?.message || err);
+        res.json({ text: "I'm having trouble responding right now. You can learn more about the project by exploring the page, or visit our iNaturalist project at inaturalist.org/projects/dryad-25th-street-parcels-mapping" } as unknown);
+      }
     },
   },
 ];
