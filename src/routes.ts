@@ -793,13 +793,15 @@ export const dryadRoutes = [
                   { role: 'system', content: systemPrompt },
                   { role: 'user', content: text },
                 ],
-                max_tokens: 300,
+                max_tokens: 500,
+                venice_parameters: { disable_thinking: true },
               }),
               signal: AbortSignal.timeout(15000),
             });
             if (veniceResp.ok) {
               const data = await veniceResp.json() as any;
-              responseText = data?.choices?.[0]?.message?.content || '';
+              const msg = data?.choices?.[0]?.message;
+              responseText = msg?.content || msg?.reasoning_content || '';
             } else {
               console.error('[Dryad] Venice API error:', veniceResp.status, await veniceResp.text().catch(() => ''));
             }
