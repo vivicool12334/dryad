@@ -1643,16 +1643,26 @@ function addMsg(role,text,isTyping){
   return d;
 }
 
+var AGENT_API='/api/chat', useKB=false;
 async function send(text){
   var w=document.getElementById('chat-welcome');if(w)w.remove();
   addMsg('user',text);
   sugIdx=(sugIdx+4)%allSuggestions.length;showSuggestions();
   var typing=addMsg('agent','...',true);
-  var resp=match(text);
-  // Natural typing delay based on response length
-  await new Promise(function(r){setTimeout(r, Math.min(800 + resp.length * 3, 2500));});
+  var resp;
+  if(!useKB){
+    try{
+      var r=await fetch(AGENT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text}),signal:AbortSignal.timeout(15000)});
+      if(!r.ok)throw 0;
+      var data=await r.json();
+      resp=data.text;
+    }catch(e){useKB=true;resp=match(text);}
+  }else{
+    resp=match(text);
+    await new Promise(function(r){setTimeout(r, Math.min(800 + resp.length * 3, 2500));});
+  }
   typing.remove();
-  addMsg('agent',resp);
+  addMsg('agent',resp||match(text));
 }
 
 function init(){

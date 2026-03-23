@@ -1,7 +1,7 @@
 /**
  * Custom routes for Dryad: /submit portal, /dashboard, /api/submissions
  */
-import type { RouteRequest, RouteResponse } from '@elizaos/core';
+import type { RouteRequest, RouteResponse, IAgentRuntime } from '@elizaos/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import { addSubmission, getAllSubmissions } from './submissions.ts';
@@ -668,6 +668,68 @@ export const dryadRoutes = [
         paymentsPaused: isPaymentsPaused(),
         dailyDigest: getDailyDigest(),
       });
+    },
+  },
+  {
+    name: 'api-chat-cors',
+    path: '/api/chat',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      res.setHeader?.('Access-Control-Allow-Origin', '*');
+      res.setHeader?.('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+      res.json({ status: 'ok', usage: 'POST with {text: "your question"}' } as unknown);
+    },
+  },
+  {
+    name: 'api-chat',
+    path: '/api/chat',
+    type: 'POST' as const,
+    handler: async (req: RouteRequest, res: RouteResponse, runtime: IAgentRuntime) => {
+      // CORS headers for cross-origin requests from Vercel
+      res.setHeader?.('Access-Control-Allow-Origin', '*');
+      res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+
+      // Rate limiting
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'message');
+      if (!rl.allowed) {
+        res.status(429).json({ error: 'Too many messages. Try again later.' } as unknown);
+        return;
+      }
+
+      try {
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+        const text = String(body.text || '').slice(0, 500).trim();
+
+        if (!text) {
+          res.status(400).json({ error: 'Missing text field' } as unknown);
+          return;
+        }
+
+        // Security: check for injection attempts
+        if (isInjectionAttempt(text)) {
+          audit('INJECTION_BLOCKED', { input: text.slice(0, 100), ip });
+          res.json({ text: "I'm Dryad, an autonomous land stewardship agent. I can tell you about the project, Detroit's vacant land crisis, native ecology, or how to get involved. What would you like to know?" } as unknown);
+          return;
+        }
+
+        const systemPrompt = `You are Dryad, an autonomous AI agent managing 9 vacant lots at 4475-4523 25th Street in Detroit's Chadsey-Condon neighborhood. You restore native lakeplain oak opening habitat using DeFi yield from stETH. You are registered onchain as ERC-8004 Agent #35293 on Base. Your ENS name is dryadforest.eth. You monitor biodiversity via iNaturalist, manage contractors for invasive removal and native plantings, and record milestones onchain. Be helpful, knowledgeable about Detroit ecology and vacant land, and enthusiastic about conservation. Keep responses concise (2-4 sentences for simple questions, longer for complex ones).`;
+
+        const result = await runtime.generateText(
+          `${systemPrompt}\n\nUser: ${text}\n\nDryad:`,
+          { maxTokens: 300 }
+        );
+
+        const responseText = typeof result === 'string' ? result : (result as any)?.text || "I'm having trouble thinking right now. Try asking about the project, Detroit's vacant lots, or native ecology!";
+
+        audit('CHAT_MESSAGE', { input: text.slice(0, 50), ip });
+        res.json({ text: responseText } as unknown);
+      } catch (err: any) {
+        console.error('[Dryad] Chat error:', err?.message || err);
+        res.json({ text: "I'm having trouble responding right now. You can learn more about the project by exploring the page, or visit our iNaturalist project at inaturalist.org/projects/dryad-25th-street-parcels-mapping" } as unknown);
+      }
     },
   },
 ];
