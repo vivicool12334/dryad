@@ -1,23 +1,28 @@
-/* Dryad Dashboard — base styles */
+/* Dryad Dashboard — base styles, matching dryad.vercel.app design system */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:        #0a1a0a;
-  --bg-card:   #111f11;
-  --bg-card2:  #162016;
-  --border:    #1e4020;
-  --border-lit:#2e7d32;
-  --text:      #d4e8d4;
-  --text-muted:#81c784;
-  --text-dim:  #4a7a4d;
-  --green:     #4caf50;
-  --green-lit: #66bb6a;
-  --amber:     #f9a825;
-  --red:       #ef5350;
-  --blue:      #42a5f5;
-  --font-mono: 'Space Mono', 'Courier New', monospace;
-  --font-sans: system-ui, -apple-system, sans-serif;
-  --radius:    10px;
+  /* ── Palette (matches homepage exactly) ── */
+  --bg:         #1a1c14;
+  --bg-card:    #1f2218;
+  --bg-card2:   #252a1c;
+  --border:     rgba(141, 166, 103, 0.15);
+  --border-lit: rgba(141, 166, 103, 0.4);
+  --text:       #d2d6c1;
+  --text-muted: rgba(210, 214, 193, 0.75);
+  --text-dim:   rgba(210, 214, 193, 0.4);
+  --green:      #8da667;
+  --green-lit:  #a0bb78;
+  --amber:      #e29e4b;
+  --red:        #c0392b;
+  --red-lit:    #e74c3c;
+  --blue:       #5b8db8;
+
+  /* ── Typography ── */
+  --font-mono:  'Space Mono', 'Courier New', monospace;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+
+  --radius: 8px;
 }
 
 html { scroll-behavior: smooth; }
@@ -25,23 +30,18 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
 a { color: var(--green-lit); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { color: var(--amber); text-decoration: none; }
 
-code, .mono {
-  font-family: var(--font-mono);
-  font-size: 0.85em;
-}
-
-/* Leaflet override for dark bg */
-.leaflet-container { background: #0d1f0d !important; }
-.leaflet-control-attribution { background: rgba(10,26,10,0.8) !important; color: var(--text-dim) !important; }
-.leaflet-popup-content-wrapper { background: var(--bg-card2); border: 1px solid var(--border-lit); color: var(--text); }
+/* Leaflet overrides for dark bg */
+.leaflet-container { background: #151810 !important; }
+.leaflet-control-attribution { background: rgba(26,28,20,0.85) !important; color: var(--text-dim) !important; font-family: var(--font-mono) !important; font-size: 10px !important; }
+.leaflet-popup-content-wrapper { background: var(--bg-card2); border: 1px solid var(--border-lit); color: var(--text); border-radius: var(--radius); }
 .leaflet-popup-tip { background: var(--bg-card2); }

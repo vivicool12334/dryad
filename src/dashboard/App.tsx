@@ -18,21 +18,21 @@ export function Card({ title, children, className = '' }: { title?: string; chil
       background: 'var(--bg-card)',
       border: '1px solid var(--border)',
       borderRadius: 'var(--radius)',
-      padding: '18px 20px',
+      padding: '20px 24px',
       display: 'flex',
       flexDirection: 'column',
-      gap: 12,
+      gap: 14,
     }} className={className}>
       {title && (
         <h2 style={{
-          color: 'var(--green)',
-          fontSize: 15,
-          fontWeight: 700,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
+          color: 'var(--amber)',
+          fontSize: 18,
+          fontWeight: 400,
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'italic',
           borderBottom: '1px solid var(--border)',
-          paddingBottom: 8,
-          marginBottom: 4,
+          paddingBottom: 10,
+          marginBottom: 2,
         }}>
           {title}
         </h2>
@@ -45,41 +45,41 @@ export function Card({ title, children, className = '' }: { title?: string; chil
 export function Stat({ value, label, color }: { value: React.ReactNode; label: string; color?: string }) {
   return (
     <div style={{ flex: 1, minWidth: 80 }}>
-      <div style={{ fontSize: 28, fontWeight: 700, color: color || 'var(--green-lit)', lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{label}</div>
+      <div style={{ fontSize: 26, fontWeight: 700, fontFamily: 'var(--font-mono)', color: color || 'var(--amber)', lineHeight: 1.1 }}>{value}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</div>
     </div>
   );
 }
 
 export function Badge({ label, color }: { label: string; color?: string }) {
-  const colors: Record<string, { bg: string; text: string }> = {
-    green:  { bg: '#1b5e20', text: '#a5d6a7' },
-    amber:  { bg: '#4a3800', text: '#f9a825' },
-    red:    { bg: '#4a1010', text: '#ef9a9a' },
-    blue:   { bg: '#0d2c4a', text: '#90caf9' },
-    gray:   { bg: '#1a1a1a', text: '#9e9e9e' },
+  const colors: Record<string, { border: string; text: string }> = {
+    green:  { border: 'rgba(141,166,103,0.5)', text: '#a0bb78' },
+    amber:  { border: 'rgba(226,158,75,0.5)',  text: '#e29e4b' },
+    red:    { border: 'rgba(192,57,43,0.5)',   text: '#e74c3c' },
+    blue:   { border: 'rgba(91,141,184,0.5)',  text: '#7aafd4' },
+    gray:   { border: 'rgba(210,214,193,0.2)', text: 'rgba(210,214,193,0.5)' },
   };
   const c = colors[color || 'green'];
   return (
     <span style={{
-      background: c.bg,
+      border: `1px solid ${c.border}`,
       color: c.text,
       padding: '2px 8px',
       borderRadius: 4,
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: '0.06em',
+      fontSize: 10,
+      fontFamily: 'var(--font-mono)',
+      letterSpacing: '0.08em',
       textTransform: 'uppercase',
     }}>{label}</span>
   );
 }
 
 export function Loading() {
-  return <span style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: 13 }}>Loading…</span>;
+  return <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>loading…</span>;
 }
 
 export function Err({ msg }: { msg: string }) {
-  return <span style={{ color: 'var(--red)', fontSize: 12 }}>⚠ {msg}</span>;
+  return <span style={{ color: 'var(--red-lit)', fontSize: 12 }}>⚠ {msg}</span>;
 }
 
 // ── Auth modal ────────────────────────────────────────────────────────────────
@@ -106,32 +106,36 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
     <form onSubmit={submit} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
       <input
         type="password"
-        placeholder="Admin secret…"
+        placeholder="admin secret"
         value={val}
         onChange={e => setVal(e.target.value)}
         style={{
-          background: 'var(--bg-card2)',
+          background: 'transparent',
           border: '1px solid var(--border-lit)',
-          borderRadius: 6,
+          borderRadius: 4,
           color: 'var(--text)',
-          padding: '6px 12px',
-          fontSize: 13,
-          width: 180,
+          padding: '5px 10px',
+          fontSize: 12,
+          fontFamily: 'var(--font-mono)',
+          width: 160,
+          outline: 'none',
         }}
       />
       <button type="submit" style={{
-        background: 'var(--border-lit)',
-        color: '#fff',
-        border: 'none',
-        borderRadius: 6,
-        padding: '6px 14px',
+        background: 'transparent',
+        color: 'var(--amber)',
+        border: '1px solid var(--amber)',
+        borderRadius: 4,
+        padding: '5px 12px',
         cursor: 'pointer',
-        fontSize: 13,
-        fontWeight: 600,
+        fontSize: 11,
+        fontFamily: 'var(--font-mono)',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
       }}>
-        Unlock Admin
+        Unlock
       </button>
-      {err && <span style={{ color: 'var(--red)', fontSize: 12 }}>{err}</span>}
+      {err && <span style={{ color: 'var(--red-lit)', fontSize: 11 }}>{err}</span>}
     </form>
   );
 }
@@ -156,9 +160,12 @@ export default function App() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* ── Header ── */}
       <header style={{
-        background: 'var(--bg-card)',
-        borderBottom: '1px solid var(--border)',
-        padding: '12px 24px',
+        background: 'rgba(26, 28, 20, 0.97)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(141, 166, 103, 0.2)',
+        padding: '0 28px',
+        height: 52,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -168,43 +175,55 @@ export default function App() {
         top: 0,
         zIndex: 100,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <h1 style={{ color: 'var(--green)', fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-            🌿 Dryad
-          </h1>
-          <span style={{ color: 'var(--text-dim)', fontSize: 12 }}>dryadforest.eth · ERC-8004 #35293</span>
+        {/* Left: logo + back link */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <a href="https://dryad.vercel.app" style={{ color: 'var(--green)', fontSize: 15, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '-0.01em' }}>
+            dryad
+          </a>
+          <a href="https://dryad.vercel.app" style={{
+            color: 'var(--amber)',
+            border: '1px solid var(--amber)',
+            borderRadius: 4,
+            padding: '3px 10px',
+            fontSize: 11,
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>← Site</a>
+          <span style={{ color: 'var(--text-dim)', fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Dashboard</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          {/* Spending mode pill */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 6, border: `1px solid ${modeColor}`, background: 'rgba(0,0,0,0.3)' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: modeColor, display: 'inline-block' }} />
-            <span style={{ color: modeColor, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em' }}>{spendingMode}</span>
+        {/* Right: spending mode + nav + admin */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          {/* Spending mode */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: modeColor, display: 'inline-block' }} />
+            <span style={{ color: modeColor, fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{spendingMode}</span>
           </div>
 
           {/* Nav links */}
-          <nav style={{ display: 'flex', gap: 8 }}>
+          <nav style={{ display: 'flex', gap: 20 }}>
             {[
               ['/', 'Chat'],
               ['/Dryad/submit', 'Submit Work'],
               ['https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping', 'iNaturalist'],
             ].map(([href, label]) => (
               <a key={href} href={href} target={href.startsWith('http') ? '_blank' : undefined} style={{
-                color: 'var(--text-muted)',
-                fontSize: 12,
-                padding: '4px 8px',
-                borderRadius: 5,
-                border: '1px solid var(--border)',
+                color: 'rgba(210, 214, 193, 0.55)',
+                fontSize: 11,
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
               }}>{label}</a>
             ))}
           </nav>
 
           {/* Admin auth */}
           {admin ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Badge label="Admin" color="blue" />
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12 }}>
-                Sign out
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Badge label="Admin" color="amber" />
+              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+                sign out
               </button>
             </div>
           ) : (
@@ -220,10 +239,10 @@ export default function App() {
       <main style={{
         maxWidth: 1400,
         margin: '0 auto',
-        padding: '20px 20px 60px',
+        padding: '28px 28px 80px',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-        gap: 16,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+        gap: 20,
       }}>
 
         {/* Agent Health */}
@@ -276,8 +295,8 @@ export default function App() {
                   ['Decision loop', 'Every 24 hours'],
                 ].map(([k, v]) => (
                   <tr key={k} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ color: 'var(--text-muted)', padding: '7px 0', paddingRight: 20, whiteSpace: 'nowrap', fontWeight: 600, width: 150 }}>{k}</td>
-                    <td style={{ padding: '7px 0', wordBreak: 'break-all', fontFamily: k === 'Wallet' || k === 'Milestones' ? 'var(--font-mono)' : 'inherit', fontSize: k === 'Wallet' || k === 'Milestones' ? 11 : 13 }}>
+                    <td style={{ color: 'var(--text-dim)', padding: '8px 0', paddingRight: 24, whiteSpace: 'nowrap', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', width: 150 }}>{k}</td>
+                    <td style={{ padding: '8px 0', wordBreak: 'break-all', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
                       {k === 'Milestones' ? (
                         <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener">{v}</a>
                       ) : k === 'Wallet' && v !== '—' ? (

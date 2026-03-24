@@ -3,11 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
 
 const SEASON_COLORS: Record<string, string> = {
-  DORMANT:      '#455a64',
-  EARLY_SPRING: '#66bb6a',
-  SPRING:       '#4caf50',
-  SUMMER:       '#f9a825',
-  FALL:         '#e65100',
+  DORMANT:      'rgba(210,214,193,0.3)',
+  EARLY_SPRING: 'rgba(141,166,103,0.7)',
+  SPRING:       '#8da667',
+  SUMMER:       '#e29e4b',
+  FALL:         '#c0712a',
 };
 
 export default function SeasonWidget() {
@@ -24,35 +24,33 @@ export default function SeasonWidget() {
 
   return (
     <div style={{
-      background: 'var(--bg-card)',
       borderBottom: '1px solid var(--border)',
-      padding: '10px 24px',
+      padding: '8px 28px',
       display: 'flex',
       alignItems: 'center',
       gap: 16,
       flexWrap: 'wrap',
-      fontSize: 12,
+      fontSize: 11,
+      fontFamily: 'var(--font-mono)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{
-          background: color,
-          color: '#000',
-          padding: '2px 10px',
-          borderRadius: 4,
-          fontWeight: 700,
-          letterSpacing: '0.06em',
-          fontSize: 11,
-        }}>
-          {season.season.replace('_', ' ')}
-        </span>
-        <span style={{ color: 'var(--text-muted)' }}>{season.description}</span>
-      </div>
-      <div style={{ color: 'var(--text-dim)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <span style={{
+        border: `1px solid ${color}`,
+        color: color,
+        padding: '1px 8px',
+        borderRadius: 3,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        fontSize: 10,
+      }}>
+        {season.season.replace('_', ' ')}
+      </span>
+      <span style={{ color: 'var(--text-muted)' }}>{season.description}</span>
+      <div style={{ color: 'var(--text-dim)', display: 'flex', gap: 14, flexWrap: 'wrap', marginLeft: 'auto' }}>
         {season.priorities.slice(0, 3).map((p: string) => (
-          <span key={p}>· {p}</span>
+          <span key={p}>{p}</span>
         ))}
         <span style={{ color: season.plantingAppropriate ? 'var(--green)' : 'var(--text-dim)' }}>
-          {season.plantingAppropriate ? '🌱 Planting' : '❌ No planting'}
+          {season.plantingAppropriate ? 'planting ✓' : 'no planting'}
         </span>
       </div>
     </div>
