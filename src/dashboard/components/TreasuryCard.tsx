@@ -61,8 +61,8 @@ export default function TreasuryCard() {
       {current && (
         <>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Stat value={current.wstethBalance} label="wstETH" />
-            <Stat value={current.ethBalance} label="ETH" />
+            <Stat value={parseFloat(current.wstethBalance).toFixed(4)} label="wstETH" />
+            <Stat value={parseFloat(current.ethBalance).toFixed(4)} label="ETH" />
             <Stat value={`~$${fmt(estimatedUsd)}`} label="USD est." color={estimatedUsd >= SUSTAINABILITY_TARGET ? 'var(--green)' : 'var(--amber)'} />
           </div>
 
