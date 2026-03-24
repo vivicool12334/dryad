@@ -2,6 +2,7 @@
 // All public routes are under /Dryad/api/*
 // Admin routes are under /Dryad/api/admin/* and require Authorization: Bearer <secret>
 
+import type { FeatureCollection } from 'geojson';
 import type {
   LoopEntry, LoopLatest, TreasurySnapshot, HealthSnapshot,
   SeasonContext, AuditEntry, Transaction, Submission, Milestone, SummaryData,
@@ -45,7 +46,7 @@ export const api = {
 
   submissions: () => get<Submission[]>('/submissions'),
 
-  parcelsGeoJson: () => get<GeoJSON.FeatureCollection>('/parcels/geojson'),
+  parcelsGeoJson: () => get<FeatureCollection>('/parcels/geojson'),
 
   // ── Admin endpoints ─────────────────────────────────────────────────────────
 

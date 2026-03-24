@@ -43,7 +43,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/Dryad': {
-        target: 'http://localhost:3000',
+        target: process.env.AGENT_URL || 'http://5.75.225.23:3000',
         changeOrigin: true,
       },
     },
