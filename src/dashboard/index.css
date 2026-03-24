@@ -1,0 +1,47 @@
+/* Dryad Dashboard — base styles */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0a1a0a;
+  --bg-card:   #111f11;
+  --bg-card2:  #162016;
+  --border:    #1e4020;
+  --border-lit:#2e7d32;
+  --text:      #d4e8d4;
+  --text-muted:#81c784;
+  --text-dim:  #4a7a4d;
+  --green:     #4caf50;
+  --green-lit: #66bb6a;
+  --amber:     #f9a825;
+  --red:       #ef5350;
+  --blue:      #42a5f5;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --radius:    10px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--green-lit); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+/* Leaflet override for dark bg */
+.leaflet-container { background: #0d1f0d !important; }
+.leaflet-control-attribution { background: rgba(10,26,10,0.8) !important; color: var(--text-dim) !important; }
+.leaflet-popup-content-wrapper { background: var(--bg-card2); border: 1px solid var(--border-lit); color: var(--text); }
+.leaflet-popup-tip { background: var(--bg-card2); }

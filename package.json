@@ -39,25 +39,32 @@
     "@tanstack/react-query": "^5.67.2",
     "agentmail": "^0.4.10",
     "clsx": "^2.1.1",
+    "leaflet": "^1.9.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0",
+    "recharts": "^3.8.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.10",
     "viem": "^2.47.6",
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^5.1.1",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "vite": "^7.2.6"
+    "vite": "^7.2.6",
+    "vite-plugin-singlefile": "^2.3.2"
   },
   "scripts": {
     "start": "elizaos start",
     "dev": "elizaos dev",
     "build": "bun run build.ts",
+    "build:dashboard": "vite build --config vite.dashboard.config.ts",
+    "dev:dashboard": "vite dev --config vite.dashboard.config.ts",
     "lint": "prettier --write ./src",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
