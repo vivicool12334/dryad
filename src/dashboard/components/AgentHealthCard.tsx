@@ -64,7 +64,7 @@ export default function AgentHealthCard() {
   return (
     <Card title="Agent Health">
       {isLoading && <Loading />}
-      {error && <Err msg="Could not load loop history" />}
+      {error && (error as Error).message !== 'ROUTE_NOT_DEPLOYED' && <Err msg="Could not load loop data" />}
 
       {stats && (
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

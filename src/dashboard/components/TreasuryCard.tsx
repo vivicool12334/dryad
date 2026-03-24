@@ -56,7 +56,7 @@ export default function TreasuryCard() {
   return (
     <Card title="Treasury">
       {isLoading && <Loading />}
-      {error && <Err msg="Could not load treasury data" />}
+      {error && (error as Error).message !== 'ROUTE_NOT_DEPLOYED' && <Err msg="Could not load treasury data" />}
 
       {current && (
         <>

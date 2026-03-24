@@ -58,7 +58,7 @@ export default function BiodiversityCard() {
   return (
     <Card title="Ecosystem Health">
       {isLoading && <Loading />}
-      {error && <Err msg="Could not load biodiversity data" />}
+      {error && (error as Error).message !== 'ROUTE_NOT_DEPLOYED' && <Err msg="Could not load biodiversity data" />}
 
       {latest && (
         <>

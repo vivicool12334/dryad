@@ -21,7 +21,7 @@ export default function MilestonesPanel() {
   return (
     <Card title="Onchain Milestones">
       {isLoading && <Loading />}
-      {error && <Err msg="Could not load milestones" />}
+      {error && (error as Error).message !== 'ROUTE_NOT_DEPLOYED' && <Err msg="Could not load milestones" />}
 
       {/* Type totals */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

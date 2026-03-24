@@ -21,7 +21,12 @@ async function get<T>(path: string, isAdmin = false): Promise<T> {
   });
   if (!res.ok) {
     if (res.status === 401) throw new Error('UNAUTHORIZED');
-    throw new Error(`API error ${res.status} for ${path}`);
+    throw new Error(`API error ${res.status}`);
+  }
+  const ct = res.headers.get('content-type') ?? '';
+  if (!ct.includes('application/json')) {
+    // Old server returns HTML for unknown routes — treat as not deployed yet
+    throw new Error('ROUTE_NOT_DEPLOYED');
   }
   return res.json() as Promise<T>;
 }

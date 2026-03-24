@@ -28,7 +28,7 @@ export default function SubmissionsPanel() {
   return (
     <Card title="Contractor & Community Submissions">
       {isLoading && <Loading />}
-      {error && <Err msg="Could not load submissions" />}
+      {error && (error as Error).message !== 'ROUTE_NOT_DEPLOYED' && <Err msg="Could not load submissions" />}
 
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
