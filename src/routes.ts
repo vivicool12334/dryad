@@ -2,6 +2,7 @@
  * Custom routes for Dryad: /submit portal, /dashboard, /api/submissions
  */
 import type { RouteRequest, RouteResponse, IAgentRuntime } from '@elizaos/core';
+import { timingSafeEqual } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { addSubmission, getAllSubmissions } from './submissions.ts';
@@ -19,13 +20,41 @@ import { getCurrentSeason, getSeasonalBriefing } from './utils/seasonalAwareness
 // Built dashboard path (produced by `bun run build:dashboard`)
 const DASHBOARD_HTML_PATH = path.join(process.cwd(), 'dist', 'dashboard', 'index.html');
 
-// Auth helper: checks Authorization: Bearer <secret> or x-admin-secret header
+// Safe integer query param parser with bounds
+function parseIntParam(value: unknown, defaultVal: number, min: number, max: number): number {
+  const n = parseInt(String(value ?? defaultVal), 10);
+  return isNaN(n) ? defaultVal : Math.min(Math.max(n, min), max);
+}
+
+// Allowed CORS origins — Vercel frontend and agent itself
+const ALLOWED_ORIGINS = [
+  'https://dryad.vercel.app',
+  'http://5.75.225.23:3000',
+  'http://localhost:5173',
+];
+
+function corsHeaders(req: RouteRequest, res: RouteResponse): void {
+  const origin = req.headers?.['origin'] as string | undefined;
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  res.setHeader?.('Access-Control-Allow-Origin', allowed);
+  res.setHeader?.('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader?.('Vary', 'Origin');
+}
+
+// Auth helper: checks Authorization: Bearer <secret> (constant-time to prevent timing attacks)
 function isAdmin(req: RouteRequest): boolean {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) return false;
-  const bearer = (req.headers?.['authorization'] as string | undefined)?.replace('Bearer ', '').trim();
-  const legacy = req.headers?.['x-admin-secret'] as string | undefined;
-  return bearer === secret || legacy === secret;
+  const bearer = (req.headers?.['authorization'] as string | undefined)?.replace('Bearer ', '').trim() ?? '';
+  if (bearer.length === 0) return false;
+  try {
+    const a = Buffer.from(bearer.padEnd(secret.length));
+    const b = Buffer.from(secret);
+    return bearer.length === secret.length && timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 // Parcel GeoJSON cache from Detroit ArcGIS
@@ -571,6 +600,12 @@ export const dryadRoutes = [
         return;
       }
 
+      const rawSubmitBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? '');
+      if (rawSubmitBody.length > 50_000) {
+        res.status(413).json({ error: 'Request too large' } as unknown);
+        return;
+      }
+
       try {
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
 
@@ -704,8 +739,8 @@ export const dryadRoutes = [
           dailyYieldUSD: `$${dailyYield.toFixed(2)}`,
           monthlyYieldUSD: `$${(dailyYield * 30).toFixed(2)}`,
         });
-      } catch (e) {
-        res.json({ error: e instanceof Error ? e.message : 'Failed' });
+      } catch {
+        res.status(500).json({ error: 'Failed to fetch treasury data' });
       }
     },
   },
@@ -772,10 +807,8 @@ export const dryadRoutes = [
     name: 'api-chat-cors',
     path: '/api/chat',
     type: 'GET' as const,
-    handler: async (_req: RouteRequest, res: RouteResponse) => {
-      res.setHeader?.('Access-Control-Allow-Origin', '*');
-      res.setHeader?.('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      corsHeaders(req, res);
       res.json({ status: 'ok', usage: 'POST with {text: "your question"}' } as unknown);
     },
   },
@@ -785,15 +818,20 @@ export const dryadRoutes = [
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse, runtime: IAgentRuntime) => {
       // CORS headers for cross-origin requests from Vercel
-      res.setHeader?.('Access-Control-Allow-Origin', '*');
-      res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+      corsHeaders(req, res);
 
       // Rate limiting
       const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
       const rl = checkRateLimit(ip, 'message');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many messages. Try again later.' } as unknown);
+        return;
+      }
+
+      // Reject oversized bodies before parsing (prevent memory exhaustion)
+      const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? '');
+      if (rawBody.length > 10_000) {
+        res.status(413).json({ error: 'Request too large' } as unknown);
         return;
       }
 
@@ -944,7 +982,7 @@ KEY URLS (use these exactly when relevant):
     path: '/api/loop/history',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const limit = Math.min(parseInt((req.query as any)?.limit || '30'), 100);
+      const limit = parseIntParam((req.query as any)?.limit, 30, 1, 100);
       res.json(getLoopHistory(limit) as unknown);
     },
   },
@@ -966,7 +1004,7 @@ KEY URLS (use these exactly when relevant):
     path: '/api/treasury/history',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const days = Math.min(parseInt((req.query as any)?.days || '30'), 365);
+      const days = parseIntParam((req.query as any)?.days, 30, 1, 365);
       res.json(getTreasuryHistory(days) as unknown);
     },
   },
@@ -977,7 +1015,7 @@ KEY URLS (use these exactly when relevant):
     path: '/api/health/trend',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const days = Math.min(parseInt((req.query as any)?.days || '30'), 365);
+      const days = parseIntParam((req.query as any)?.days, 30, 1, 365);
       const latest = getLatestHealthSnapshot();
       const history = getHealthHistory(days);
       res.json({ latest, history } as unknown);
@@ -1079,7 +1117,10 @@ KEY URLS (use these exactly when relevant):
         res.status(401).json({ error: 'Unauthorized' } as unknown);
         return;
       }
-      const count = Math.min(parseInt((req.query as any)?.count || '100'), 500);
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'security');
+      if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
+      const count = parseIntParam((req.query as any)?.count, 100, 1, 500);
       res.json({
         entries: getRecentAuditEntries(count),
         summary: getAuditSummary(24),
@@ -1098,6 +1139,9 @@ KEY URLS (use these exactly when relevant):
         res.status(401).json({ error: 'Unauthorized' } as unknown);
         return;
       }
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'security');
+      if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
       const history = getTransactionHistory();
       const dayAgo = Date.now() - 86400000;
       const dailySpend = history.filter(tx => tx.timestamp > dayAgo).reduce((s, tx) => s + tx.amount, 0);
@@ -1121,6 +1165,9 @@ KEY URLS (use these exactly when relevant):
         res.status(401).json({ error: 'Unauthorized' } as unknown);
         return;
       }
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'security');
+      if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
       const latestTreasury = getLatestTreasurySnapshot();
       const latestLoop = getLatestLoop();
       const loopStats = getLoopStats(30);

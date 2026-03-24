@@ -62,11 +62,14 @@ function saveState(): void {
 // ─── Load persisted state ───
 const loaded = loadState();
 
-const allowlistedRecipients = new Map<string, { addedAt: number; label: string; coolingOff: boolean }>();
-// Restore allowlist — addresses that were added > COOLING_OFF_HOURS ago are active
+// coolingOff is computed dynamically from addedAt — never stored as a flag (avoids race conditions)
+const allowlistedRecipients = new Map<string, { addedAt: number; label: string }>();
 for (const [addr, info] of Object.entries(loaded.allowlist)) {
-  const coolingOff = (Date.now() - info.addedAt) < LIMITS_COOLING_OFF_MS();
-  allowlistedRecipients.set(addr, { ...info, coolingOff });
+  allowlistedRecipients.set(addr, { addedAt: info.addedAt, label: info.label });
+}
+
+function isCoolingOff(entry: { addedAt: number }): boolean {
+  return (Date.now() - entry.addedAt) < LIMITS_COOLING_OFF_MS();
 }
 
 const txHistory: Array<{ timestamp: number; amount: number; recipient: string; txHash?: string }> = loaded.txHistory;
@@ -110,25 +113,16 @@ export function addAllowlistedAddress(address: string, label: string): { success
   const n = address.toLowerCase();
   if (allowlistedRecipients.has(n)) return { success: false, reason: 'Already allowlisted' };
 
-  allowlistedRecipients.set(n, { addedAt: Date.now(), label, coolingOff: true });
+  allowlistedRecipients.set(n, { addedAt: Date.now(), label });
   logSecurityEvent('ADDRESS_ADDED', `${label} (${address}) — 24hr cooling off`, 'transactionGuard');
   saveState();
-
-  setTimeout(() => {
-    const entry = allowlistedRecipients.get(n);
-    if (entry) {
-      entry.coolingOff = false;
-      logSecurityEvent('ADDRESS_ACTIVE', `${label} (${address}) now active`, 'transactionGuard');
-      saveState();
-    }
-  }, LIMITS.COOLING_OFF_HOURS * 3600000);
 
   return { success: true };
 }
 
 export function isAddressAllowlisted(address: string): boolean {
   const entry = allowlistedRecipients.get(address.toLowerCase());
-  return !!entry && !entry.coolingOff;
+  return !!entry && !isCoolingOff(entry);
 }
 
 export function validateTransaction(
@@ -153,8 +147,8 @@ export function validateTransaction(
     return { allowed: false, reason: `Recipient not allowlisted. Add address first (24hr cooling-off required).` };
   }
   const entry = allowlistedRecipients.get(n)!;
-  if (entry.coolingOff) {
-    const hrs = Math.ceil((entry.addedAt + LIMITS.COOLING_OFF_HOURS * 3600000 - Date.now()) / 3600000);
+  if (isCoolingOff(entry)) {
+    const hrs = Math.ceil((entry.addedAt + LIMITS_COOLING_OFF_MS() - Date.now()) / 3600000);
     return { allowed: false, reason: `${entry.label} in cooling-off (${hrs}h remaining)` };
   }
 
