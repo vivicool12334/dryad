@@ -40,6 +40,40 @@ body {
 a { color: var(--green-lit); text-decoration: none; }
 a:hover { color: var(--amber); text-decoration: none; }
 
+/* ── Responsive header ── */
+@media (max-width: 700px) {
+  .header-nav { display: none !important; }
+  .header-admin { display: none !important; }
+  .header-mode { display: none !important; }
+}
+
+/* ── Stress test disclosure ── */
+details.stress-test summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+  list-style: none;
+}
+details.stress-test summary::-webkit-details-marker { display: none; }
+details.stress-test summary::marker { display: none; }
+details.stress-test summary:hover {
+  color: var(--text-muted);
+  border-color: var(--border-lit);
+}
+details.stress-test[open] summary {
+  color: var(--text-muted);
+  border-color: var(--border-lit);
+  margin-bottom: 8px;
+}
+
 /* Leaflet overrides for dark bg */
 .leaflet-container { background: #151810 !important; }
 .leaflet-control-attribution { background: rgba(26,28,20,0.85) !important; color: var(--text-dim) !important; font-family: var(--font-mono) !important; font-size: 10px !important; }

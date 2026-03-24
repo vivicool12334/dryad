@@ -13,11 +13,6 @@ function fmt(n: number, decimals = 0) {
   return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
-function SpendingModeBadge({ mode }: { mode: string }) {
-  const c = mode === 'NORMAL' ? 'green' : mode === 'CONSERVATION' ? 'amber' : 'red';
-  return <Badge label={mode} color={c} />;
-}
-
 export default function TreasuryCard() {
   const { data: current, isLoading, error } = useQuery({
     queryKey: ['treasury-current'],
@@ -53,8 +48,11 @@ export default function TreasuryCard() {
   const drop30Yield = wstNum * (ethPrice * 0.7) * STETH_APR;
   const drop50Yield = wstNum * (ethPrice * 0.5) * STETH_APR;
 
+  const modeColor = mode === 'NORMAL' ? 'green' : mode === 'CONSERVATION' ? 'amber' : 'red';
+  const modeBadge = <Badge label={mode} color={modeColor} />;
+
   return (
-    <Card title="Treasury">
+    <Card title="Treasury" badge={modeBadge}>
       {isLoading && <Loading />}
       {error && (error as Error).message !== 'ROUTE_NOT_DEPLOYED' && <Err msg="Could not load treasury data" />}
 
@@ -67,11 +65,8 @@ export default function TreasuryCard() {
           </div>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Stat value={`$${fmt(annualYield, 0)}/yr`} label="Annual yield (3.5% APR)" color={annualYield >= ANNUAL_COST ? 'var(--green)' : 'var(--red)'} />
+            <Stat value={`$${fmt(annualYield, 0)}/yr`} label="Yield/yr (3.5% APR)" color={annualYield >= ANNUAL_COST ? 'var(--green)' : 'var(--red)'} />
             <Stat value={current.dailyYieldUSD} label="Daily yield" />
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-              <SpendingModeBadge mode={mode} />
-            </div>
           </div>
 
           {/* Progress to sustainability */}
@@ -84,6 +79,7 @@ export default function TreasuryCard() {
               <div style={{
                 height: '100%',
                 width: `${progressPct}%`,
+                minWidth: progressPct > 0 ? 6 : 0,
                 background: progressPct >= 100 ? 'var(--green)' : progressPct >= 60 ? 'var(--amber)' : 'var(--red)',
                 borderRadius: 3,
                 transition: 'width 0.4s ease',
@@ -119,9 +115,9 @@ export default function TreasuryCard() {
       )}
 
       {/* Stress test */}
-      <details>
-        <summary style={{ fontSize: 12, color: 'var(--text-dim)', cursor: 'pointer', userSelect: 'none' }}>
-          Stress test ▾
+      <details className="stress-test">
+        <summary>
+          ▸ Stress test
         </summary>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginTop: 8 }}>
           <thead>

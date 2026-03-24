@@ -12,7 +12,7 @@ import TransactionTable from './components/TransactionTable';
 import SeasonWidget from './components/SeasonWidget';
 
 // ── Shared card shell ─────────────────────────────────────────────────────────
-export function Card({ title, children, className = '' }: { title?: string; children: React.ReactNode; className?: string }) {
+export function Card({ title, badge, children, className = '' }: { title?: string; badge?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
     <div style={{
       background: 'var(--bg-card)',
@@ -24,18 +24,18 @@ export function Card({ title, children, className = '' }: { title?: string; chil
       gap: 14,
     }} className={className}>
       {title && (
-        <h2 style={{
-          color: 'var(--amber)',
-          fontSize: 18,
-          fontWeight: 400,
-          fontFamily: 'var(--font-serif)',
-          fontStyle: 'italic',
-          borderBottom: '1px solid var(--border)',
-          paddingBottom: 10,
-          marginBottom: 2,
-        }}>
-          {title}
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 2 }}>
+          <h2 style={{
+            color: 'var(--amber)',
+            fontSize: 18,
+            fontWeight: 400,
+            fontFamily: 'var(--font-serif)',
+            fontStyle: 'italic',
+          }}>
+            {title}
+          </h2>
+          {badge && <div style={{ flexShrink: 0 }}>{badge}</div>}
+        </div>
       )}
       {children}
     </div>
@@ -165,7 +165,7 @@ export default function App() {
         WebkitBackdropFilter: 'blur(12px)',
         borderBottom: '1px solid rgba(141, 166, 103, 0.2)',
         padding: '0 28px',
-        height: 52,
+        minHeight: 52,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -176,7 +176,7 @@ export default function App() {
         zIndex: 100,
       }}>
         {/* Left: logo + back link */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '10px 0' }}>
           <a href="https://dryad.vercel.app" style={{ color: 'var(--green)', fontSize: 15, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '-0.01em' }}>
             dryad
           </a>
@@ -194,15 +194,15 @@ export default function App() {
         </div>
 
         {/* Right: spending mode + nav + admin */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '10px 0' }}>
           {/* Spending mode */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="header-mode" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: modeColor, display: 'inline-block' }} />
             <span style={{ color: modeColor, fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{spendingMode}</span>
           </div>
 
           {/* Nav links */}
-          <nav style={{ display: 'flex', gap: 20 }}>
+          <nav className="header-nav" style={{ display: 'flex', gap: 20 }}>
             {[
               ['/', 'Chat'],
               ['/Dryad/submit', 'Submit Work'],
@@ -219,16 +219,18 @@ export default function App() {
           </nav>
 
           {/* Admin auth */}
-          {admin ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Badge label="Admin" color="amber" />
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
-                sign out
-              </button>
-            </div>
-          ) : (
-            <AdminLogin onLogin={handleLogin} />
-          )}
+          <div className="header-admin">
+            {admin ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Badge label="Admin" color="amber" />
+                <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+                  sign out
+                </button>
+              </div>
+            ) : (
+              <AdminLogin onLogin={handleLogin} />
+            )}
+          </div>
         </div>
       </header>
 
@@ -288,7 +290,7 @@ export default function App() {
                   ['Name', 'Dryad — "The Forest That Owns Itself"'],
                   ['ENS', 'dryadforest.eth'],
                   ['Email', 'dryad@agentmail.to'],
-                  ['Wallet', summary?.wallet ?? '—'],
+                  ['Wallet', summary?.wallet ?? '0xf2f7527D86e2173c91fF1c10Ede03f6f84510880'],
                   ['ERC-8004', '#35293 on Base'],
                   ['Milestones', '0x7572dcac88720470d8cc827be5b02d474951bc22'],
                   ['Chain', 'Base L2'],

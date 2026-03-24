@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { api } from '../api';
@@ -36,6 +36,13 @@ const STEP_ICONS: Record<string, string> = {
 };
 
 export default function AgentHealthCard() {
+  // Tick every minute so timeAgo / timeUntil stay fresh
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['loop-latest'],
     queryFn: api.loopLatest,
@@ -78,10 +85,10 @@ export default function AgentHealthCard() {
         </div>
       )}
 
-      {/* Run history sparkline */}
-      {sparkData.length > 0 && (
+      {/* Run history sparkline — only show with enough data points */}
+      {sparkData.length >= 3 && (
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>Loop duration (seconds, 30 days)</div>
+          <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>Loop duration — 30 days</div>
           <ResponsiveContainer width="100%" height={60}>
             <AreaChart data={sparkData}>
               <defs>
