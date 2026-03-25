@@ -19,6 +19,7 @@ import { getCurrentSeason, getSeasonalBriefing } from './utils/seasonalAwareness
 
 // Built dashboard path (produced by `bun run build:dashboard`)
 const DASHBOARD_HTML_PATH = path.join(process.cwd(), 'dist', 'dashboard', 'index.html');
+const MOCK_HTML_PATH = path.join(process.cwd(), 'site', 'mock.html');
 
 // Safe integer query param parser with bounds
 function parseIntParam(value: unknown, defaultVal: number, min: number, max: number): number {
@@ -1186,6 +1187,23 @@ KEY URLS (use these exactly when relevant):
         audit: { summary: auditSummary, recent: getRecentAuditEntries(50) },
         submissions: { total: allSubmissions.length, unprocessed: allSubmissions.filter(s => !s.processed).length },
       } as unknown);
+    },
+  },
+
+  // ─── Year 3 mockup dashboard ────────────────────────────────────────────────
+  {
+    name: 'mock-dashboard',
+    path: '/mock',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      try {
+        const html = fs.readFileSync(MOCK_HTML_PATH, 'utf-8');
+        res.setHeader?.('Content-Type', 'text/html');
+        res.send(html);
+      } catch {
+        res.setHeader?.('Content-Type', 'text/html');
+        res.send('<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><h2>Mock not found</h2><p>site/mock.html is missing.</p></body></html>');
+      }
     },
   },
 ];

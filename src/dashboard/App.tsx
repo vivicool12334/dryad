@@ -206,6 +206,7 @@ export default function App() {
             {[
               ['/', 'Chat'],
               ['/Dryad/submit', 'Submit Work'],
+              ['/Dryad/mock', 'Year 3 Mock'],
               ['https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping', 'iNaturalist'],
             ].map(([href, label]) => (
               <a key={href} href={href} target={href.startsWith('http') ? '_blank' : undefined} style={{
