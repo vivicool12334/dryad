@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --bg: #1A1C14;
@@ -360,19 +359,6 @@
         .status-badge.active { background: rgba(141,166,103,0.3); border: 1px solid var(--accent); }
         .status-badge.verified { background: rgba(141,166,103,0.2); border: 1px solid var(--accent); }
 
-        #map {
-            width: 100%;
-            height: 400px;
-            border-radius: 10px;
-            border: 1px solid var(--card-border);
-            margin: 24px 0;
-        }
-
-        .map-controls {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 12px;
-        }
 
         @media (max-width: 768px) {
             .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
@@ -457,10 +443,6 @@
             </div>
         </div>
 
-        <div id="map"></div>
-        <div class="map-controls">
-            <span style="color: var(--accent); font-weight: 600;">●</span> 9 parcels on 25th Street, Chadsey-Condon, Detroit 48216
-        </div>
     </div>
 </section>
 
@@ -1109,46 +1091,8 @@
     </div>
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// Map setup — same coordinates as main site
 document.addEventListener('DOMContentLoaded', function() {
-    var mapElement = document.getElementById('map');
-    if (!mapElement) return;
-
-    // Center on the 9 parcels
-    var center = [42.342, -83.100];
-    var map = L.map('map').setView(center, 17);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19
-    }).addTo(map);
-
-    // Add markers for each parcel (approximate positions along 25th St)
-    var parcels = [
-        { lat: 42.3425, lng: -83.0998, id: 4475 },
-        { lat: 42.3424, lng: -83.0996, id: 4481 },
-        { lat: 42.3423, lng: -83.0994, id: 4487 },
-        { lat: 42.3422, lng: -83.0992, id: 4493 },
-        { lat: 42.3421, lng: -83.0990, id: 4499 },
-        { lat: 42.3420, lng: -83.0988, id: 4505 },
-        { lat: 42.3419, lng: -83.0986, id: 4511 },
-        { lat: 42.3418, lng: -83.0984, id: 4517 },
-        { lat: 42.3417, lng: -83.0982, id: 4523 }
-    ];
-
-    parcels.forEach(function(p) {
-        L.circleMarker([p.lat, p.lng], {
-            radius: 6,
-            fillColor: '#8DA667',
-            color: '#E29E4B',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.7
-        }).bindPopup('Parcel 25th St<br/>Health: 84/100').addTo(map);
-    });
-
     // Mobile menu
     var toggle = document.getElementById('menuToggle');
     var nav = document.getElementById('heroNav');
