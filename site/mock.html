@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dryad — Year 3 Mockup (2029)</title>
+    <meta name="description" content="Year 3 mockup showing Dryad's autonomous land management system in full operation — March 2029.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1A1C14;
+            --bg-alt: #22241A;
+            --text-main: #D2D6C1;
+            --text-body: #c8ccb8;
+            --text-muted: rgba(210, 214, 193, 0.55);
+            --accent: #8DA667;
+            --accent-light: #a8c47a;
+            --accent-amber: #E29E4B;
+            --card-bg: #22241A;
+            --card-border: rgba(141, 166, 103, 0.2);
+            --danger: #c44;
+            --space-unit: max(2vw, 20px);
+            --font-display: 'Instrument Serif', serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-body: 'Manrope', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-body);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        ::selection { background: var(--accent-amber); color: var(--bg); }
+
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+        a:hover { border-bottom-color: var(--accent); }
+
+        /* ── MOCKUP BANNER ── */
+        .mockup-banner {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background: var(--accent-amber);
+            color: var(--bg);
+            padding: 14px 24px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-bottom: 2px solid rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mockup-banner a {
+            color: var(--bg);
+            font-weight: 700;
+            border-bottom: 1px solid rgba(0,0,0,0.3);
+        }
+        .mockup-banner a:hover {
+            border-bottom-color: var(--bg);
+        }
+
+        /* ── NAV ── */
+        .hero-header {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            align-items: center;
+            padding: 0.9rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(26,28,20,0.97);
+            backdrop-filter: blur(12px);
+            flex-shrink: 0;
+            position: sticky;
+            top: 41px;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            text-transform: lowercase;
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+            border-bottom: none !important;
+        }
+        .logo-area:hover { color: var(--accent-light); }
+
+        .logo-area svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: logo-spin 30s linear infinite; }
+        @keyframes logo-spin { to { transform: rotate(360deg); } }
+
+        .hero-nav { display: flex; justify-content: flex-end; gap: 2.5rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .hero-nav a { color: var(--text-muted); border-bottom: none; }
+        .hero-nav a:hover { color: var(--accent-amber); text-decoration: underline; text-underline-offset: 4px; }
+
+        .menu-toggle { display: none; background: none; border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-muted); padding: 8px 10px; cursor: pointer; font-size: 1.2rem; line-height: 1; min-width: 44px; min-height: 44px; }
+        .menu-toggle:hover { color: var(--accent-amber); border-color: var(--accent); }
+
+        /* ── CONTENT ── */
+        .content { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+
+        section {
+            padding: 72px 0 80px;
+            border-bottom: 1px solid var(--card-border);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            letter-spacing: 0;
+        }
+
+        section h2 {
+            font-family: var(--font-display);
+            font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+            font-weight: 400;
+            color: var(--accent-amber);
+            margin-bottom: 12px;
+            line-height: 1.1;
+            text-transform: none;
+            letter-spacing: -0.02em;
+        }
+
+        section h2 + p, section h2 + div { margin-top: 20px; }
+
+        section h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            text-transform: none;
+        }
+
+        section p {
+            line-height: 1.75;
+            margin-bottom: 16px;
+            max-width: 680px;
+            color: var(--text-body);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+        .card:hover { border-color: rgba(141,166,103,0.4); }
+
+        .card-accent {
+            background: rgba(141,166,103,0.15);
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+        .card-accent h3 { color: var(--accent); }
+
+        .card-health-high { border-left: 3px solid var(--accent); }
+        .card-health-medium { border-left: 3px solid var(--accent-amber); }
+        .card-health-low { border-left: 3px solid var(--danger); }
+
+        .stat-big {
+            font-family: var(--font-display);
+            font-size: 2.8rem;
+            font-weight: 400;
+            color: var(--accent-amber);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+        }
+        th, td {
+            padding: 11px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+        th {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: var(--font-mono);
+        }
+        tr:last-child td { border-bottom: none; }
+        td.verified { color: var(--accent); font-weight: 600; }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 32px 0;
+        }
+
+        .timeline-item {
+            padding: 20px;
+            border-left: 3px solid var(--card-border);
+            background: rgba(34,36,26,0.4);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .timeline-item:hover { border-left-color: var(--accent-amber); }
+
+        .timeline-date {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-amber);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .timeline-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .timeline-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-body);
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 16px;
+            background: rgba(34,36,26,0.7);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            margin: 12px 0;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger) 0%, var(--accent-amber) 50%, var(--accent) 100%);
+            border-radius: 6px;
+            transition: width 0.3s;
+        }
+
+        .species-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 28px 0;
+        }
+
+        .species-card {
+            padding: 16px;
+            background: rgba(34,36,26,0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+        .species-card.invasive { border-left-color: var(--danger); }
+        .species-card.managed { border-left-color: var(--accent-amber); }
+
+        .species-name {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .species-type {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .species-status {
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .log-entry {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--text-body);
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(141,166,103,0.1);
+            word-break: break-all;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-time { color: var(--accent-amber); font-weight: 600; }
+        .log-action { color: var(--accent); font-weight: 600; }
+
+        .callout {
+            background: rgba(34,36,26,0.7);
+            border-left: 3px solid var(--accent);
+            padding: 20px 28px;
+            margin: 28px 0;
+            border-radius: 0 10px 10px 0;
+            line-height: 1.75;
+        }
+
+        .page-footer {
+            background: #14150F;
+            color: var(--text-muted);
+            padding: 40px 0 60px;
+            border-top: 1px solid var(--card-border);
+        }
+        .page-footer a { color: var(--accent); border-bottom-color: transparent; }
+        .page-footer a:hover { border-bottom-color: var(--accent); }
+        .page-footer h3 { color: var(--accent-amber); font-size: 1.1rem; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(141,166,103,0.2);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 8px 0;
+        }
+
+        .status-badge.active { background: rgba(141,166,103,0.3); border: 1px solid var(--accent); }
+        .status-badge.verified { background: rgba(141,166,103,0.2); border: 1px solid var(--accent); }
+
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .hero-header { grid-template-columns: auto auto; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; margin-left: auto; }
+            .hero-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; background: rgba(26,28,20,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--card-border); padding: 12px 20px; gap: 0; z-index: 200; }
+            .hero-nav.open { display: flex; }
+            .hero-nav a { padding: 14px 8px; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; min-height: 44px; display: flex; align-items: center; }
+            .hero-nav a:last-child { border-bottom: none; }
+            .content { padding: 0 16px; }
+            section { padding: 48px 0; }
+            .mockup-banner { flex-direction: column; gap: 10px; text-align: center; }
+        }
+
+        @media (max-width: 480px) {
+            .mockup-banner { font-size: 0.75rem; padding: 10px 12px; }
+            .hero-header { padding: 0.7rem 1rem; }
+            section h2 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ MOCKUP BANNER ═══════════════ -->
+<div class="mockup-banner">
+    <span>THIS IS A MOCKUP — Showing what Dryad could look like in Year 3 (March 2029)</span>
+    <a href="index.html">↗ Back to Real Dashboard</a>
+</div>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<header class="hero-header">
+    <a href="#" class="logo-area" onclick="window.scrollTo({top:0,behavior:'smooth'});return false" style="border-bottom:none">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+        dryad
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" onclick="document.getElementById('heroNav').classList.toggle('open');this.textContent=this.textContent==='☰'?'✕':'☰'">☰</button>
+    <div class="hero-nav" id="heroNav">
+        <a href="#overview">Overview</a>
+        <a href="#stats">Stats</a>
+        <a href="#timeline">Timeline</a>
+        <a href="#activity">Activity</a>
+        <a href="#contractors">Contractors</a>
+        <a href="#treasury">Treasury</a>
+        <a href="#species">Species</a>
+        <a href="#milestones">Milestones</a>
+    </div>
+</header>
+
+<!-- ═══════════════ SECTIONS ═══════════════ -->
+
+<section id="overview">
+    <div class="content">
+        <h2>The Forest That Owns Itself</h2>
+        <p>Year 3 — March 2029. Fully autonomous. Self-sustaining. 78 species documented.</p>
+
+        <div style="margin: 32px 0;">
+            <div class="status-badge active">ACTIVE SINCE MARCH 2026</div>
+            <div class="stat-big" style="margin-top: 16px;">1,096 days</div>
+            <div class="stat-label">Continuous operation</div>
+        </div>
+
+        <div class="grid-4" style="margin-top: 32px; gap: 16px;">
+            <div class="card card-accent">
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Agent</div>
+                <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-main);">ERC-8004</div>
+                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);">#35293 on Base</div>
+            </div>
+            <div class="card card-accent">
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Wallet</div>
+                <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-main);">dryadforest</div>
+                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);">.eth</div>
+            </div>
+            <div class="card card-accent">
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Location</div>
+                <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-main);">42.342°N</div>
+                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);">83.100°W Detroit</div>
+            </div>
+            <div class="card card-accent">
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Loop</div>
+                <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--text-main);">Every</div>
+                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);">24 hours</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section id="stats">
+    <div class="content">
+        <h2>Year 3 Status</h2>
+        <p>The system is self-sustaining. All costs covered by stETH yield.</p>
+
+        <div class="grid-3" style="margin-top: 32px; gap: 20px;">
+            <div class="card card-health-high">
+                <div class="stat-label">Treasury Balance</div>
+                <div class="stat-big">$28,450</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px;">6.2 wstETH + 10,450 USDC + 1,880 DIEM</div>
+                <div style="font-size: 0.8rem; color: var(--accent); margin-top: 6px; font-weight: 600;">Yield-funded • Principal untouched</div>
+            </div>
+
+            <div class="card card-health-high">
+                <div class="stat-label">Species Documented</div>
+                <div class="stat-big">78</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px;">52 native • 26 introduced or managed</div>
+                <div style="font-size: 0.8rem; color: var(--accent); margin-top: 6px; font-weight: 600;">↑ 24 from Year 1</div>
+            </div>
+
+            <div class="card card-health-high">
+                <div class="stat-label">Milestones Recorded</div>
+                <div class="stat-big">47</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px;">Onchain on Base mainnet</div>
+                <div style="font-size: 0.8rem; color: var(--accent); margin-top: 6px; font-weight: 600;">Immutable history</div>
+            </div>
+
+            <div class="card card-health-high">
+                <div class="stat-label">Contractor Jobs</div>
+                <div class="stat-big">23</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px;">Completed • All verified</div>
+                <div style="font-size: 0.8rem; color: var(--accent); margin-top: 6px; font-weight: 600;">$6,030 deployed</div>
+            </div>
+
+            <div class="card card-health-high">
+                <div class="stat-label">Property Taxes Paid</div>
+                <div class="stat-big">$810</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px;">3 years • 9 lots</div>
+                <div style="font-size: 0.8rem; color: var(--accent); margin-top: 6px; font-weight: 600;">$30/lot/year</div>
+            </div>
+
+            <div class="card card-health-high">
+                <div class="stat-label">Health Score</div>
+                <div class="stat-big">84</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px;">Up from 31 in 2026</div>
+                <div style="font-size: 0.8rem; color: var(--accent); margin-top: 6px; font-weight: 600;">Native ecosystem thriving</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="timeline">
+    <div class="content">
+        <h2>Ecological Health Progress</h2>
+        <p>Three years of restoration tracked from the ground up.</p>
+
+        <div class="timeline">
+            <div class="timeline-item card-health-low">
+                <div class="timeline-date">March 2026</div>
+                <div class="timeline-label">Year 1 Start</div>
+                <div class="timeline-text">Lots dominated by Tree of Heaven, Buckthorn, Japanese Knotweed. Heavy invasive pressure. Baseline health assessment complete.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 37%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--danger);">Score: 31</div>
+            </div>
+
+            <div class="timeline-item card-health-medium">
+                <div class="timeline-date">September 2026</div>
+                <div class="timeline-label">First Intervention</div>
+                <div class="timeline-text">Major invasive removal completed. Buckthorn and Tree of Heaven cleared. Soil preparation and dormant seeding. Site ready for spring planting.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 50%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--accent-amber);">Score: 42</div>
+            </div>
+
+            <div class="timeline-item card-health-medium">
+                <div class="timeline-date">March 2027</div>
+                <div class="timeline-label">Spring Planting</div>
+                <div class="timeline-text">300 native saplings in ground (80 Bur Oak, 60 Swamp White Oak, 40+ others). Prairie seed mix applied. First native forbs appear.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 61%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--accent-amber);">Score: 51</div>
+            </div>
+
+            <div class="timeline-item card-health-medium">
+                <div class="timeline-date">September 2027</div>
+                <div class="timeline-label">Year 2 Management</div>
+                <div class="timeline-text">Saplings establishing. Prairie grasses reaching 2-3 ft. Second weedy growth managed with 2 mow cycles. First Monarch butterflies observed.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 75%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--accent-amber);">Score: 63</div>
+            </div>
+
+            <div class="timeline-item card-health-high">
+                <div class="timeline-date">March 2028</div>
+                <div class="timeline-label">Ecosystem Emerging</div>
+                <div class="timeline-text">Saplings 8-12 ft tall. Prairie grasses dominant (Big Bluestem, Little Bluestem, Indian Grass). First forb blooms: Black-eyed Susan, Purple Coneflower.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 86%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--accent);">Score: 72</div>
+            </div>
+
+            <div class="timeline-item card-health-high">
+                <div class="timeline-date">September 2028</div>
+                <div class="timeline-label">Diversity Peak</div>
+                <div class="timeline-text">Big Bluestem dominates landscape (6-8 ft). 40+ native forbs in bloom. Monarch colonies established. Buckthorn eradicated. Thriving ecosystem.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 93%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--accent);">Score: 78</div>
+            </div>
+
+            <div class="timeline-item card-health-high">
+                <div class="timeline-date">March 2029 (Today)</div>
+                <div class="timeline-label">Self-Sustaining System</div>
+                <div class="timeline-text">52 native species established. Oak saplings 6-8 ft, entering rapid growth phase. Ecosystem largely self-regulating. Annual mowing only as needed. Cost per lot: $105/yr.</div>
+                <div class="health-bar"><div class="health-fill" style="width: 100%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--accent);">Score: 84</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="activity">
+    <div class="content">
+        <h2>Recent Agent Activity</h2>
+        <p>Last 10 autonomous actions recorded in the event log.</p>
+
+        <div class="card" style="background: rgba(20,21,15,0.8); border: 1px solid var(--card-border); font-family: var(--font-mono); padding: 0; overflow: hidden; margin-top: 24px;">
+            <div class="log-entry">
+                <span class="log-time">[2029-03-24 06:00]</span> <span class="log-action">MONITOR</span> — iNaturalist scan: 3 new observations (Asclepias tuberosa, Rudbeckia hirta, Solidago canadensis)
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-03-23 06:00]</span> <span class="log-action">MONITOR</span> — Health score: 84/100. No intervention needed. Continue monitoring.
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-03-18 14:22]</span> <span class="log-action">MILESTONE</span> — Recorded onchain: Spring Monitoring Assessment (tx: 0x8a3f...2d1e)
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-03-15 09:30]</span> <span class="log-action">ALERT</span> — Spotted Knapweed detected on parcel 4513. Flagging for spring contractor visit.
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-03-10 06:00]</span> <span class="log-action">TREASURY</span> — Auto-purchased 62 DIEM for inference credits ($62 USDC)
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-03-01 06:00]</span> <span class="log-action">TREASURY</span> — Property tax payment queued: $270 for 2029 (9 lots × $30)
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-02-15 10:45]</span> <span class="log-action">EMAIL</span> — Sent spring work order to GreenWorks Detroit LLC (invasive spot removal + monitoring)
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-02-01 06:00]</span> <span class="log-action">MONITOR</span> — Winter dormancy scan: No action needed. Prairie dormant.
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2029-01-15 06:00]</span> <span class="log-action">TREASURY</span> — stETH yield harvest: $248.50 accrued this quarter
+            </div>
+            <div class="log-entry">
+                <span class="log-time">[2028-12-20 14:30]</span> <span class="log-action">MILESTONE</span> — Recorded onchain: Fall Monitoring Report — 78 species, health score 82 (tx: 0x2b7c...9f4a)
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contractors">
+    <div class="content">
+        <h2>Contractor History</h2>
+        <p>All work completed and verified. Smart contracts ensure accountability.</p>
+
+        <table style="margin-top: 28px;">
+            <thead>
+                <tr>
+                    <th>Contractor</th>
+                    <th>When</th>
+                    <th>Work Scope</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>GreenWorks Detroit LLC</strong></td>
+                    <td>Fall 2028</td>
+                    <td>Selective mowing + spot invasive removal</td>
+                    <td>$450 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr>
+                    <td><strong>GreenWorks Detroit LLC</strong></td>
+                    <td>Spring 2028</td>
+                    <td>Annual invasive patrol + replanting gaps</td>
+                    <td>$380 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr>
+                    <td><strong>Detroit Ground Cover</strong></td>
+                    <td>Fall 2027</td>
+                    <td>Second-year mowing (3 cuts at 6")</td>
+                    <td>$350 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr>
+                    <td><strong>Detroit Ground Cover</strong></td>
+                    <td>Spring 2027</td>
+                    <td>Prairie seeding + 300 sapling planting</td>
+                    <td>$1,200 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr>
+                    <td><strong>EcoRestore MI</strong></td>
+                    <td>Fall 2026</td>
+                    <td>Soil prep + dormant seeding</td>
+                    <td>$800 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr>
+                    <td><strong>EcoRestore MI</strong></td>
+                    <td>Summer 2026</td>
+                    <td>Major invasive removal (TOH, Buckthorn, Knotweed)</td>
+                    <td>$2,500 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr>
+                    <td><strong>Site Assessment LLC</strong></td>
+                    <td>Spring 2026</td>
+                    <td>Initial site assessment + soil sampling</td>
+                    <td>$350 USDC</td>
+                    <td class="verified">✓ Verified</td>
+                </tr>
+                <tr style="border-top: 2px solid var(--accent);">
+                    <td colspan="4" style="text-align: right; font-weight: 700;">Total Contractor Spending:</td>
+                    <td style="font-weight: 700; color: var(--accent-amber);">$6,030</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="treasury">
+    <div class="content">
+        <h2>Treasury Deep Dive</h2>
+        <p>Complete financial picture. Principal preserved. Yield covers all costs.</p>
+
+        <div class="grid-2" style="margin-top: 32px; gap: 28px;">
+            <div>
+                <h3 style="margin-bottom: 16px;">Current Holdings</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Amount</th>
+                            <th>Value (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>wstETH (staked Ether)</td>
+                            <td>6.2</td>
+                            <td>$16,120</td>
+                        </tr>
+                        <tr>
+                            <td>USDC (stablecoin)</td>
+                            <td>10,450</td>
+                            <td>$10,450</td>
+                        </tr>
+                        <tr>
+                            <td>DIEM (inference credits)</td>
+                            <td>1,880</td>
+                            <td>$1,880</td>
+                        </tr>
+                        <tr style="border-top: 2px solid var(--accent);">
+                            <td style="font-weight: 700;">Total Treasury</td>
+                            <td style="font-weight: 700;"></td>
+                            <td style="font-weight: 700; color: var(--accent-amber);">$28,450</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <h3 style="margin-bottom: 16px;">Annual Economics</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Annual Yield Income</strong></td>
+                            <td style="color: var(--accent); font-weight: 600;">~$999/yr</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">stETH APR (3.5%)</td>
+                            <td style="font-size: 0.85rem;">$564</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">USDC Aave (4.0%)</td>
+                            <td style="font-size: 0.85rem;">$418</td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--card-border);">
+                            <td><strong>Annual Costs</strong></td>
+                            <td style="color: var(--danger); font-weight: 600;">~$945/yr</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">Contractor work (est)</td>
+                            <td style="font-size: 0.85rem;">$400</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">Property taxes</td>
+                            <td style="font-size: 0.85rem;">$270</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">DIEM (inference)</td>
+                            <td style="font-size: 0.85rem;">$186</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">VPS hosting</td>
+                            <td style="font-size: 0.85rem;">$60</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">LLC maintenance</td>
+                            <td style="font-size: 0.85rem;">$20</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 28px; font-size: 0.85rem;">Gas fees (onchain)</td>
+                            <td style="font-size: 0.85rem;">$9</td>
+                        </tr>
+                        <tr style="border-top: 2px solid var(--accent);">
+                            <td style="font-weight: 700;">Net Annual Surplus</td>
+                            <td style="font-weight: 700; color: var(--accent);">+$54/yr</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 48px; margin-bottom: 16px;">Lifetime Spending (2026–2029)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Contractor payments (verified)</strong></td>
+                    <td>$6,030</td>
+                </tr>
+                <tr>
+                    <td><strong>Property taxes (9 lots × 3 yrs)</strong></td>
+                    <td>$810</td>
+                </tr>
+                <tr>
+                    <td><strong>DIEM (inference credits)</strong></td>
+                    <td>$186</td>
+                </tr>
+                <tr>
+                    <td><strong>VPS hosting (Hetzner)</strong></td>
+                    <td>$174</td>
+                </tr>
+                <tr>
+                    <td><strong>LLC formation & maintenance</strong></td>
+                    <td>$150</td>
+                </tr>
+                <tr>
+                    <td><strong>Gas fees (onchain milestones)</strong></td>
+                    <td>$15</td>
+                </tr>
+                <tr style="border-top: 2px solid var(--accent);">
+                    <td style="font-weight: 700;">Total Lifetime Spending</td>
+                    <td style="font-weight: 700; color: var(--danger);">$7,365</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 700;">Principal Remaining</td>
+                    <td style="font-weight: 700; color: var(--accent);">$21,085</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout" style="margin-top: 28px;">
+            <strong>Design principle:</strong> The $27K stETH endowment was never touched. Yield covers operations. The forest can run in NORMAL mode for 50+ years, or enter CONSERVATION mode for 100+ years if needed.
+        </div>
+    </div>
+</section>
+
+<section id="species">
+    <div class="content">
+        <h2>Species Catalog</h2>
+        <p>78 species documented via iNaturalist. 52 native, 26 introduced or managed.</p>
+
+        <h3 style="margin-top: 40px; margin-bottom: 20px;">Native Established (22)</h3>
+        <div class="species-grid">
+            <div class="species-card">
+                <div class="species-name">Bur Oak</div>
+                <div class="species-type">Tree (Saplings 6-8 ft)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Swamp White Oak</div>
+                <div class="species-type">Tree (Saplings 5-7 ft)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">White Oak</div>
+                <div class="species-type">Tree</div>
+                <div class="species-status">established</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Eastern Redbud</div>
+                <div class="species-type">Tree (8-10 ft)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Big Bluestem</div>
+                <div class="species-type">Grass (6-8 ft)</div>
+                <div class="species-status">dominant</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Little Bluestem</div>
+                <div class="species-type">Grass (3-4 ft)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Switch Grass</div>
+                <div class="species-type">Grass</div>
+                <div class="species-status">established</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Indian Grass</div>
+                <div class="species-type">Grass (4-6 ft)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Black-eyed Susan</div>
+                <div class="species-type">Forb (Rudbeckia)</div>
+                <div class="species-status">blooming</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Purple Coneflower</div>
+                <div class="species-type">Forb (Echinacea)</div>
+                <div class="species-status">blooming</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Butterfly Milkweed</div>
+                <div class="species-type">Forb (Asclepias tuberosa)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Common Milkweed</div>
+                <div class="species-type">Forb (Asclepias syriaca)</div>
+                <div class="species-status">abundant</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Wild Bergamot</div>
+                <div class="species-type">Forb (Monarda)</div>
+                <div class="species-status">blooming</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Goldenrod</div>
+                <div class="species-type">Forb (Solidago)</div>
+                <div class="species-status">abundant</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Asters (mixed)</div>
+                <div class="species-type">Forb (Fall color)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Monarch Butterfly</div>
+                <div class="species-type">Pollinator (Danaus plexippus)</div>
+                <div class="species-status">colonies</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Eastern Bluebird</div>
+                <div class="species-type">Bird (Summer resident)</div>
+                <div class="species-status">observed</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Song Sparrow</div>
+                <div class="species-type">Bird</div>
+                <div class="species-status">common</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Common Yellowthroat</div>
+                <div class="species-type">Warbler</div>
+                <div class="species-status">migrating</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Serviceberry</div>
+                <div class="species-type">Shrub (Amelanchier)</div>
+                <div class="species-status">thriving</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Elderberry</div>
+                <div class="species-type">Shrub (Sambucus)</div>
+                <div class="species-status">established</div>
+            </div>
+            <div class="species-card">
+                <div class="species-name">Hawthorn (native)</div>
+                <div class="species-type">Shrub</div>
+                <div class="species-status">thriving</div>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 40px; margin-bottom: 20px;">Introduced/Managed (30+)</h3>
+        <div class="species-grid">
+            <div class="species-card managed">
+                <div class="species-name">Tree of Heaven</div>
+                <div class="species-type">Invasive (Ailanthus)</div>
+                <div class="species-status">eradicated</div>
+            </div>
+            <div class="species-card managed">
+                <div class="species-name">Common Buckthorn</div>
+                <div class="species-type">Invasive</div>
+                <div class="species-status">95% removed</div>
+            </div>
+            <div class="species-card managed">
+                <div class="species-name">Spotted Knapweed</div>
+                <div class="species-type">Invasive (Centaurea maculosa)</div>
+                <div class="species-status">flagged spring</div>
+            </div>
+            <div class="species-card invasive">
+                <div class="species-name">Japanese Knotweed</div>
+                <div class="species-type">Invasive (historic)</div>
+                <div class="species-status">mostly removed</div>
+            </div>
+            <div class="species-card managed">
+                <div class="species-name">Autumn Olive</div>
+                <div class="species-type">Invasive</div>
+                <div class="species-status">removed</div>
+            </div>
+            <div class="species-card managed">
+                <div class="species-name">Amur Honeysuckle</div>
+                <div class="species-type">Invasive</div>
+                <div class="species-status">monitoring</div>
+            </div>
+            <div class="species-card managed">
+                <div class="species-name">Phragmites (non-native)</div>
+                <div class="species-type">Invasive grass</div>
+                <div class="species-status">managed</div>
+            </div>
+            <div class="species-card managed">
+                <div class="species-name">Reed Canary Grass</div>
+                <div class="species-type">Invasive</div>
+                <div class="species-status">managed</div>
+            </div>
+        </div>
+
+        <div class="card card-accent" style="margin-top: 28px;">
+            <strong>Note:</strong> Species data sourced from iNaturalist project integration. Identifications verified by community naturalists and AI. All sightings logged onchain. <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank" style="color: var(--accent-amber);">View full catalog →</a>
+        </div>
+    </div>
+</section>
+
+<section id="milestones">
+    <div class="content">
+        <h2>Onchain Milestones</h2>
+        <p>All major ecological assessments recorded permanently on Base mainnet.</p>
+
+        <table style="margin-top: 28px;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Transaction</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#47</td>
+                    <td>Spring Monitoring Assessment</td>
+                    <td>2029-03-18</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x8a3f...2d1e</td>
+                </tr>
+                <tr>
+                    <td>#46</td>
+                    <td>Fall Monitoring Report — 78 species</td>
+                    <td>2028-12-20</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x2b7c...9f4a</td>
+                </tr>
+                <tr>
+                    <td>#45</td>
+                    <td>Invasive Removal Verification</td>
+                    <td>2028-10-15</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x5d1a...8c3b</td>
+                </tr>
+                <tr>
+                    <td>#44</td>
+                    <td>Summer Growth Assessment</td>
+                    <td>2028-08-22</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0xc7e4...1f6d</td>
+                </tr>
+                <tr>
+                    <td>#43</td>
+                    <td>Spring Planting Verification</td>
+                    <td>2028-04-10</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x9a2e...4b7c</td>
+                </tr>
+                <tr>
+                    <td>#42</td>
+                    <td>Winter Dormancy Report</td>
+                    <td>2028-01-15</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x1f5d...8e2a</td>
+                </tr>
+                <tr>
+                    <td>#41</td>
+                    <td>Fall Monitoring — Year 2 Peak</td>
+                    <td>2027-10-03</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x4c8b...9d3e</td>
+                </tr>
+                <tr>
+                    <td>#40</td>
+                    <td>Summer Establishment Check</td>
+                    <td>2027-07-20</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x7d3c...2a5f</td>
+                </tr>
+                <tr>
+                    <td>#39</td>
+                    <td>Spring Planting Complete</td>
+                    <td>2027-05-08</td>
+                    <td style="font-family: var(--font-mono); font-size: 0.75rem;">0x2e6f...7c9a</td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 12px; color: var(--text-muted); font-style: italic;">... and 29 earlier milestones (2026–2027)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout" style="margin-top: 28px;">
+            <strong>Onchain record:</strong> Every major decision, assessment, and milestone is logged in <code>DryadMilestones.sol</code> at <code>0x7572dcac...bc22</code>. Immutable. Verifiable. Tamper-proof.
+        </div>
+    </div>
+</section>
+
+<footer class="page-footer">
+    <div class="content">
+        <h3>About This Mockup</h3>
+        <p style="margin-bottom: 24px;">This is a speculative dashboard showing what Dryad could look like in Year 3 (March 2029) if the project reaches its goals. It demonstrates the design language, data architecture, and lifecycle of a fully autonomous land restoration agent.</p>
+
+        <p style="margin-bottom: 24px;">
+            <strong>Real timeline:</strong> Dryad launched on March 23, 2026. As of today, it is approximately <strong>1,096 days into operation</strong>. This mockup shows what success could look like in Year 3 — with thriving native ecosystems, proven financial sustainability, and a foundation for scaling.
+        </p>
+
+        <p>
+            <strong>Return to reality:</strong> <a href="index.html">View the real dashboard →</a>
+        </p>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu
+    var toggle = document.getElementById('menuToggle');
+    var nav = document.getElementById('heroNav');
+    if (toggle && nav) {
+        nav.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                nav.classList.remove('open');
+                toggle.textContent = '☰';
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

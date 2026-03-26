@@ -2,6 +2,7 @@
  * Custom routes for Dryad: /submit portal, /dashboard, /api/submissions
  */
 import type { RouteRequest, RouteResponse, IAgentRuntime } from '@elizaos/core';
+import { timingSafeEqual } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { addSubmission, getAllSubmissions } from './submissions.ts';
@@ -11,6 +12,74 @@ import { getTransactionHistory, isPaymentsPaused } from './security/transactionG
 import { checkRateLimit } from './security/rateLimiter.ts';
 import { getAuditSummary, getRecentAuditEntries, getDailyDigest } from './services/auditLog.ts';
 import { audit } from './services/auditLog.ts';
+import { getLoopHistory, getLatestLoop, getLoopStats } from './services/loopHistory.ts';
+import { getTreasuryHistory, getLatestTreasurySnapshot } from './services/treasurySnapshots.ts';
+import { getHealthHistory, getLatestHealthSnapshot } from './services/healthSnapshots.ts';
+import { getCurrentSeason, getSeasonalBriefing } from './utils/seasonalAwareness.ts';
+
+// Built dashboard path (produced by `bun run build:dashboard`)
+const DASHBOARD_HTML_PATH = path.join(process.cwd(), 'dist', 'dashboard', 'index.html');
+const MOCK_HTML_PATH = path.join(process.cwd(), 'site', 'mock.html');
+
+// Safe integer query param parser with bounds
+function parseIntParam(value: unknown, defaultVal: number, min: number, max: number): number {
+  const n = parseInt(String(value ?? defaultVal), 10);
+  return isNaN(n) ? defaultVal : Math.min(Math.max(n, min), max);
+}
+
+// Allowed CORS origins — Vercel frontend and agent itself
+const ALLOWED_ORIGINS = [
+  'https://dryad.vercel.app',
+  'http://5.75.225.23:3000',
+  'http://localhost:5173',
+];
+
+function corsHeaders(req: RouteRequest, res: RouteResponse): void {
+  const origin = req.headers?.['origin'] as string | undefined;
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  res.setHeader?.('Access-Control-Allow-Origin', allowed);
+  res.setHeader?.('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader?.('Vary', 'Origin');
+}
+
+// Auth helper: checks Authorization: Bearer <secret> (constant-time to prevent timing attacks)
+function isAdmin(req: RouteRequest): boolean {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  const bearer = (req.headers?.['authorization'] as string | undefined)?.replace('Bearer ', '').trim() ?? '';
+  if (bearer.length === 0) return false;
+  try {
+    const a = Buffer.from(bearer.padEnd(secret.length));
+    const b = Buffer.from(secret);
+    return bearer.length === secret.length && timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+// Parcel GeoJSON cache from Detroit ArcGIS
+let parcelGeoJsonCache: any = null;
+let parcelGeoJsonFetchedAt = 0;
+async function fetchParcelGeoJson() {
+  const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — parcels don't change
+  if (parcelGeoJsonCache && Date.now() - parcelGeoJsonFetchedAt < CACHE_TTL) {
+    return parcelGeoJsonCache;
+  }
+  const parcelNums = PARCELS.map(p => `'${p.parcelNumber}'`).join(',');
+  const url = `https://gis.detroitmi.gov/arcgis/rest/services/AdvancedPlanning/Parcels/FeatureServer/0/query?where=parcelno+IN+(${encodeURIComponent(parcelNums)})&outFields=*&outSR=4326&f=geojson`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!resp.ok) throw new Error(`Detroit GIS returned ${resp.status}`);
+  const geojson = await resp.json();
+  parcelGeoJsonCache = geojson;
+  parcelGeoJsonFetchedAt = Date.now();
+  return geojson;
+}
+
+// iNaturalist + biodiversity cache (5-min TTL — expensive API call)
+let inatCache: any = null;
+let inatFetchedAt = 0;
+const INAT_CACHE_TTL = 5 * 60 * 1000;
 
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
@@ -510,10 +579,11 @@ export const dryadRoutes = [
     },
   },
   {
-    name: 'dashboard-page',
-    path: '/dashboard',
+    name: 'dashboard-page-html',
+    path: '/dashboard-html',
     type: 'GET' as const,
     handler: async (_req: RouteRequest, res: RouteResponse) => {
+      // Legacy HTML dashboard — kept for fallback
       res.setHeader?.('Content-Type', 'text/html');
       res.send(dashboardHTML());
     },
@@ -528,6 +598,12 @@ export const dryadRoutes = [
       const rl = checkRateLimit(ip, 'submit');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many submissions. Try again later.' } as unknown);
+        return;
+      }
+
+      const rawSubmitBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? '');
+      if (rawSubmitBody.length > 50_000) {
+        res.status(413).json({ error: 'Request too large' } as unknown);
         return;
       }
 
@@ -664,8 +740,8 @@ export const dryadRoutes = [
           dailyYieldUSD: `$${dailyYield.toFixed(2)}`,
           monthlyYieldUSD: `$${(dailyYield * 30).toFixed(2)}`,
         });
-      } catch (e) {
-        res.json({ error: e instanceof Error ? e.message : 'Failed' });
+      } catch {
+        res.status(500).json({ error: 'Failed to fetch treasury data' });
       }
     },
   },
@@ -732,10 +808,8 @@ export const dryadRoutes = [
     name: 'api-chat-cors',
     path: '/api/chat',
     type: 'GET' as const,
-    handler: async (_req: RouteRequest, res: RouteResponse) => {
-      res.setHeader?.('Access-Control-Allow-Origin', '*');
-      res.setHeader?.('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      corsHeaders(req, res);
       res.json({ status: 'ok', usage: 'POST with {text: "your question"}' } as unknown);
     },
   },
@@ -745,15 +819,20 @@ export const dryadRoutes = [
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse, runtime: IAgentRuntime) => {
       // CORS headers for cross-origin requests from Vercel
-      res.setHeader?.('Access-Control-Allow-Origin', '*');
-      res.setHeader?.('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      res.setHeader?.('Access-Control-Allow-Headers', 'Content-Type');
+      corsHeaders(req, res);
 
       // Rate limiting
       const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
       const rl = checkRateLimit(ip, 'message');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many messages. Try again later.' } as unknown);
+        return;
+      }
+
+      // Reject oversized bodies before parsing (prevent memory exhaustion)
+      const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? '');
+      if (rawBody.length > 10_000) {
+        res.status(413).json({ error: 'Request too large' } as unknown);
         return;
       }
 
@@ -864,6 +943,266 @@ KEY URLS (use these exactly when relevant):
       } catch (err: any) {
         console.error('[Dryad] Chat error:', err?.message || err);
         res.json({ text: "I'm having trouble responding right now. You can learn more about the project by exploring the page, or visit our iNaturalist project at inaturalist.org/projects/dryad-25th-street-parcels-mapping" } as unknown);
+      }
+    },
+  },
+
+  // ─── Dashboard SPA ───────────────────────────────────────────────────────────
+  // The existing /dashboard route serves legacy HTML; this supersedes it.
+  // After running `bun run build:dashboard`, serve the single-file React build.
+  {
+    name: 'dashboard-spa',
+    path: '/dashboard',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      try {
+        const html = fs.readFileSync(DASHBOARD_HTML_PATH, 'utf-8');
+        res.setHeader?.('Content-Type', 'text/html');
+        res.send(html);
+      } catch {
+        // Fallback: redirect to the legacy HTML dashboard while build hasn't run yet
+        res.setHeader?.('Content-Type', 'text/html');
+        res.send('<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><h2>Dashboard building...</h2><p>Run <code>bun run build:dashboard</code> to build the React dashboard, then restart the agent.</p><p><a href="/Dryad/dashboard-legacy" style="color:#4caf50">View legacy dashboard</a></p></body></html>');
+      }
+    },
+  },
+  {
+    name: 'dashboard-legacy',
+    path: '/dashboard-legacy',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      // Legacy HTML dashboard — kept for fallback
+      res.setHeader?.('Content-Type', 'text/html');
+      res.send(dashboardHTML());
+    },
+  },
+
+  // ─── Public API: Loop history ─────────────────────────────────────────────
+  {
+    name: 'api-loop-history',
+    path: '/api/loop/history',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      const limit = parseIntParam((req.query as any)?.limit, 30, 1, 100);
+      res.json(getLoopHistory(limit) as unknown);
+    },
+  },
+  {
+    name: 'api-loop-latest',
+    path: '/api/loop/latest',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      const latest = getLatestLoop();
+      const stats = getLoopStats(30);
+      const nextRunMs = latest ? latest.timestamp + 24 * 60 * 60 * 1000 : null;
+      res.json({ latest, stats, nextRunAt: nextRunMs } as unknown);
+    },
+  },
+
+  // ─── Public API: Treasury history ────────────────────────────────────────
+  {
+    name: 'api-treasury-history',
+    path: '/api/treasury/history',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      const days = parseIntParam((req.query as any)?.days, 30, 1, 365);
+      res.json(getTreasuryHistory(days) as unknown);
+    },
+  },
+
+  // ─── Public API: Health trend ─────────────────────────────────────────────
+  {
+    name: 'api-health-trend',
+    path: '/api/health/trend',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      const days = parseIntParam((req.query as any)?.days, 30, 1, 365);
+      const latest = getLatestHealthSnapshot();
+      const history = getHealthHistory(days);
+      res.json({ latest, history } as unknown);
+    },
+  },
+
+  // ─── Public API: Current season context ──────────────────────────────────
+  {
+    name: 'api-season',
+    path: '/api/season',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      const season = getCurrentSeason();
+      const briefing = getSeasonalBriefing();
+      res.json({ ...season, briefing } as unknown);
+    },
+  },
+
+  // ─── Public API: Parcel GeoJSON from Detroit ArcGIS ──────────────────────
+  {
+    name: 'api-parcels-geojson',
+    path: '/api/parcels/geojson',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      try {
+        const geojson = await fetchParcelGeoJson();
+        res.setHeader?.('Cache-Control', 'public, max-age=86400');
+        res.json(geojson as unknown);
+      } catch (err) {
+        // Fallback: return point GeoJSON from hardcoded centroids
+        const fallback = {
+          type: 'FeatureCollection',
+          features: PARCELS.map(p => ({
+            type: 'Feature',
+            properties: { address: p.address, parcelNumber: p.parcelNumber },
+            geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+          })),
+        };
+        res.json(fallback as unknown);
+      }
+    },
+  },
+
+  // ─── Public API: Summary stats (no sensitive data) ───────────────────────
+  {
+    name: 'api-summary',
+    path: '/api/summary',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      const latestHealth = getLatestHealthSnapshot();
+      const latestTreasury = getLatestTreasurySnapshot();
+      const latestLoop = getLatestLoop();
+      const loopStats = getLoopStats(30);
+      const season = getCurrentSeason();
+      const auditSummary = getAuditSummary(24);
+
+      res.json({
+        health: latestHealth ? {
+          score: latestHealth.healthScore,
+          invasivesP1: latestHealth.invasivesP1,
+          invasivesP2: latestHealth.invasivesP2,
+          invasivesP3: latestHealth.invasivesP3,
+          observationsTotal: latestHealth.observationsTotal,
+          nativeSpeciesCount: latestHealth.nativeSpeciesCount,
+          season: latestHealth.season,
+          invasiveSpecies: latestHealth.invasiveSpecies,
+        } : null,
+        treasury: latestTreasury ? {
+          estimatedUsd: latestTreasury.estimatedUsd,
+          wstEthBalance: latestTreasury.wstEthBalance,
+          annualYieldUsd: latestTreasury.annualYieldUsd,
+          dailyYieldUsd: latestTreasury.dailyYieldUsd,
+          spendingMode: latestTreasury.spendingMode,
+          // Never expose wallet balances without auth — just mode and yield
+        } : null,
+        loop: {
+          lastRunAt: latestLoop?.timestamp ?? null,
+          lastRunStatus: latestLoop?.status ?? null,
+          nextRunAt: latestLoop ? latestLoop.timestamp + 24 * 60 * 60 * 1000 : null,
+          stats30d: loopStats,
+        },
+        season: { name: season.season, description: season.description },
+        auditSummary: {
+          totalEvents24h: auditSummary.totalEvents,
+          criticalEvents24h: auditSummary.criticalEvents.length,
+        },
+        wallet: null, // populated by /api/treasury for live reads
+      } as unknown);
+    },
+  },
+
+  // ─── Admin API: Full audit log (requires ADMIN_SECRET) ───────────────────
+  {
+    name: 'api-admin-audit',
+    path: '/api/admin/audit',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      if (!isAdmin(req)) {
+        res.status(401).json({ error: 'Unauthorized' } as unknown);
+        return;
+      }
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'security');
+      if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
+      const count = parseIntParam((req.query as any)?.count, 100, 1, 500);
+      res.json({
+        entries: getRecentAuditEntries(count),
+        summary: getAuditSummary(24),
+        digest: getDailyDigest(),
+      } as unknown);
+    },
+  },
+
+  // ─── Admin API: Transactions (requires ADMIN_SECRET) ─────────────────────
+  {
+    name: 'api-admin-transactions',
+    path: '/api/admin/transactions',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      if (!isAdmin(req)) {
+        res.status(401).json({ error: 'Unauthorized' } as unknown);
+        return;
+      }
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'security');
+      if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
+      const history = getTransactionHistory();
+      const dayAgo = Date.now() - 86400000;
+      const dailySpend = history.filter(tx => tx.timestamp > dayAgo).reduce((s, tx) => s + tx.amount, 0);
+      res.json({
+        history,
+        paymentsPaused: isPaymentsPaused(),
+        dailySpendUsd: dailySpend,
+        dailyLimitUsd: 200,
+        perTxLimitUsd: 50,
+      } as unknown);
+    },
+  },
+
+  // ─── Admin API: Full system status (requires ADMIN_SECRET) ───────────────
+  {
+    name: 'api-admin-status',
+    path: '/api/admin/status',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      if (!isAdmin(req)) {
+        res.status(401).json({ error: 'Unauthorized' } as unknown);
+        return;
+      }
+      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const rl = checkRateLimit(ip, 'security');
+      if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
+      const latestTreasury = getLatestTreasurySnapshot();
+      const latestLoop = getLatestLoop();
+      const loopStats = getLoopStats(30);
+      const txHistory = getTransactionHistory();
+      const auditSummary = getAuditSummary(24);
+      const allSubmissions = getAllSubmissions();
+
+      res.json({
+        treasury: latestTreasury,
+        loop: { latest: latestLoop, stats: loopStats },
+        transactions: {
+          history: txHistory,
+          paymentsPaused: isPaymentsPaused(),
+          dailySpend: txHistory.filter(tx => tx.timestamp > Date.now() - 86400000).reduce((s, tx) => s + tx.amount, 0),
+        },
+        audit: { summary: auditSummary, recent: getRecentAuditEntries(50) },
+        submissions: { total: allSubmissions.length, unprocessed: allSubmissions.filter(s => !s.processed).length },
+      } as unknown);
+    },
+  },
+
+  // ─── Year 3 mockup dashboard ────────────────────────────────────────────────
+  {
+    name: 'mock-dashboard',
+    path: '/mock',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      try {
+        const html = fs.readFileSync(MOCK_HTML_PATH, 'utf-8');
+        res.setHeader?.('Content-Type', 'text/html');
+        res.send(html);
+      } catch {
+        res.setHeader?.('Content-Type', 'text/html');
+        res.send('<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><h2>Mock not found</h2><p>site/mock.html is missing.</p></body></html>');
       }
     },
   },

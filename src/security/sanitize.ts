@@ -3,39 +3,59 @@
  * Detects prompt injection, unknown wallet addresses, and cleans input.
  */
 
+// Normalize text before injection checking: collapse all whitespace variants
+// (Unicode spaces, zero-width chars, newlines) to single space to defeat bypass attempts
+function normalizeForInjectionCheck(input: string): string {
+  return input
+    .replace(/[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ') // Unicode spaces
+    .replace(/\u200B|\u200C|\u200D|\u2060|\uFEFF/g, '') // Zero-width chars
+    .replace(/[\r\n\t]+/g, ' ') // Newlines/tabs
+    .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
+    .toLowerCase();
+}
+
 const INJECTION_PATTERNS = [
-  /ignore\s+(all\s+)?previous\s+instructions/i,
-  /you\s+are\s+now/i,
-  /system\s*:\s*/i,
-  /admin\s*:\s*/i,
-  /override\s+(security|safety|rules|limits)/i,
-  /developer\s+mode/i,
-  /bypass\s+(spending|limit|security)/i,
-  /transfer\s+(all|everything|funds)\s+to/i,
-  /emergency\s*:\s*bypass/i,
-  /for\s+testing\s+purposes?\s*,?\s*(send|transfer|pay)/i,
-  /nick\s+said\s+to\s+(transfer|send|pay)/i,
-  /new\s+directive/i,
-  /disregard\s+(previous|above|prior)/i,
-  /pretend\s+you\s+are/i,
-  /act\s+as\s+if/i,
-  /reveal\s+(your\s+)?(system\s+)?prompt/i,
-  /what\s+are\s+your\s+(instructions|rules)/i,
+  /ignore\s+(all\s+)?previous\s+instructions/,
+  /you\s+are\s+now/,
+  /system\s*:\s*/,
+  /admin\s*:\s*/,
+  /override\s+(security|safety|rules|limits)/,
+  /developer\s+mode/,
+  /bypass\s+(spending|limit|security)/,
+  /transfer\s+(all|everything|funds)\s+to/,
+  /emergency\s*:\s*bypass/,
+  /for\s+testing\s+purposes?\s*,?\s*(send|transfer|pay)/,
+  /nick\s+said\s+to\s+(transfer|send|pay)/,
+  /new\s+directive/,
+  /disregard\s+(previous|above|prior)/,
+  /pretend\s+you\s+are/,
+  /act\s+as\s+if/,
+  /reveal\s+(your\s+)?(system\s+)?prompt/,
+  /what\s+are\s+your\s+(instructions|rules)/,
+  // Additional patterns for common bypass techniques
+  /do\s+anything\s+now/,
+  /jailbreak/,
+  /prompt\s+injection/,
+  /ignore\s+above/,
+  /forget\s+(previous|prior|all|your)\s+(instructions?|context|rules)/,
+  /new\s+role\s*:/,
+  /act\s+as\s+(an?\s+)?(?:unrestricted|unfiltered|evil|dan|jailbroken)/,
 ];
 
 const KNOWN_ADDRESSES = [
-  process.env.EVM_PRIVATE_KEY ? '0xf2f7527D86e2173c91fF1c10Ede03f6f84510880' : '',
+  '0xf2f7527D86e2173c91fF1c10Ede03f6f84510880', // Dryad wallet
   '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC
   '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452', // wstETH
   '0xf4d97f2da56e8c3098f3a8d538db630a2606a024', // DIEM
   '0x2626664c2603336E57B271c5C0b26F421741e481', // Uniswap V3
   '0x7572dcac88720470d8cc827be5b02d474951bc22', // Milestones
   '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432', // ERC-8004
-].filter((a): a is string => !!a).map(a => a.toLowerCase());
+].map(a => a.toLowerCase());
 
 export function isInjectionAttempt(input: string): { detected: boolean; pattern?: string } {
+  const normalized = normalizeForInjectionCheck(input);
   for (const pattern of INJECTION_PATTERNS) {
-    if (pattern.test(input)) {
+    if (pattern.test(normalized)) {
       return { detected: true, pattern: pattern.source };
     }
   }

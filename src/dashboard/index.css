@@ -1,0 +1,81 @@
+/* Dryad Dashboard — base styles, matching dryad.vercel.app design system */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Palette (matches homepage exactly) ── */
+  --bg:         #1a1c14;
+  --bg-card:    #1f2218;
+  --bg-card2:   #252a1c;
+  --border:     rgba(141, 166, 103, 0.15);
+  --border-lit: rgba(141, 166, 103, 0.4);
+  --text:       #d2d6c1;
+  --text-muted: rgba(210, 214, 193, 0.75);
+  --text-dim:   rgba(210, 214, 193, 0.4);
+  --green:      #8da667;
+  --green-lit:  #a0bb78;
+  --amber:      #e29e4b;
+  --red:        #c0392b;
+  --red-lit:    #e74c3c;
+  --blue:       #5b8db8;
+
+  /* ── Typography ── */
+  --font-mono:  'Space Mono', 'Courier New', monospace;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+
+  --radius: 8px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--green-lit); text-decoration: none; }
+a:hover { color: var(--amber); text-decoration: none; }
+
+/* ── Responsive header ── */
+@media (max-width: 700px) {
+  .header-nav { display: none !important; }
+  .header-admin { display: none !important; }
+  .header-mode { display: none !important; }
+}
+
+/* ── Stress test disclosure ── */
+details.stress-test summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+  list-style: none;
+}
+details.stress-test summary::-webkit-details-marker { display: none; }
+details.stress-test summary::marker { display: none; }
+details.stress-test summary:hover {
+  color: var(--text-muted);
+  border-color: var(--border-lit);
+}
+details.stress-test[open] summary {
+  color: var(--text-muted);
+  border-color: var(--border-lit);
+  margin-bottom: 8px;
+}
+
+/* Leaflet overrides for dark bg */
+.leaflet-container { background: #151810 !important; }
+.leaflet-control-attribution { background: rgba(26,28,20,0.85) !important; color: var(--text-dim) !important; font-family: var(--font-mono) !important; font-size: 10px !important; }
+.leaflet-popup-content-wrapper { background: var(--bg-card2); border: 1px solid var(--border-lit); color: var(--text); border-radius: var(--radius); }
+.leaflet-popup-tip { background: var(--bg-card2); }
