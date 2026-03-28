@@ -10,7 +10,7 @@
  * 7. Post summary
  */
 import { Service, type IAgentRuntime, logger } from '@elizaos/core';
-import { getSubmissions, markProcessed, type PhotoSubmission } from '../submissions.ts';
+import { getSubmissions, markProcessed, updateSubmissionVision, getSubmissionById, type PhotoSubmission } from '../submissions.ts';
 import { INVASIVE_SPECIES, INVASIVE_PRIORITY_1, INVASIVE_PRIORITY_2, INVASIVE_PRIORITY_3 } from '../actions/checkBiodiversity.ts';
 import { sendDryadEmail } from '../actions/agentMail.ts';
 import { PARCEL_BOUNDS, isWithinParcels, findNearestParcel } from '../parcels.ts';
@@ -23,6 +23,7 @@ import { appendLoopEntry, type LoopStep } from './loopHistory.ts';
 import { appendTreasurySnapshot } from './treasurySnapshots.ts';
 import { appendHealthSnapshot } from './healthSnapshots.ts';
 import { getTransactionHistory } from '../security/transactionGuard.ts';
+import { verifyWorkPhoto, verifyBeforeAfter } from './visionVerify.ts';
 
 const CYCLE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const CONTRACTOR_EMAIL = process.env.CONTRACTOR_EMAIL || 'powahgen@gmail.com';
@@ -267,8 +268,67 @@ Budget: Up to $50 per parcel per visit.`;
       }
     }
 
+    // Vision-verify proof-of-work photos before approving
+    let visionApproved = 0;
+    let visionFlagged = 0;
     if (proofOfWork.length > 0) {
-      logger.info(`[Dryad] ${proofOfWork.length} proof-of-work submissions verified`);
+      for (const sub of proofOfWork) {
+        // Skip if already vision-verified
+        if (sub.visionVerifiedAt) {
+          if (sub.visionApproved) visionApproved++;
+          else visionFlagged++;
+          continue;
+        }
+
+        // Only verify if we have a photo on disk
+        if (!sub.photoPath) {
+          logger.warn(`[Dryad] Proof-of-work ${sub.id} has no photo path — skipping vision check`);
+          continue;
+        }
+
+        try {
+          // Check if there's a before photo for comparison
+          let result;
+          if (sub.beforePhotoPath) {
+            result = await verifyBeforeAfter({
+              beforePhotoPath: sub.beforePhotoPath,
+              afterPhotoPath: sub.photoPath,
+              workType: sub.workType || 'site_assessment',
+              workDescription: sub.description,
+              parcelAddress: sub.nearestParcel,
+            });
+          } else {
+            result = await verifyWorkPhoto({
+              photoPath: sub.photoPath,
+              workType: sub.workType || 'site_assessment',
+              workDescription: sub.description,
+              parcelAddress: sub.nearestParcel,
+              contractorName: sub.contractorName,
+            });
+          }
+
+          updateSubmissionVision(sub.id, {
+            score: result.score,
+            approved: result.approved,
+            reasoning: result.reasoning,
+            matchedIndicators: result.matchedIndicators,
+            flagsTriggered: result.flagsTriggered,
+            model: result.model,
+          });
+
+          if (result.approved) {
+            visionApproved++;
+            logger.info(`[Dryad] ✅ ${sub.id} vision-approved (score: ${result.score.toFixed(2)})`);
+          } else {
+            visionFlagged++;
+            logger.warn(`[Dryad] ⚠️ ${sub.id} vision-flagged (score: ${result.score.toFixed(2)}): ${result.reasoning}`);
+          }
+        } catch (err: any) {
+          logger.error(`[Dryad] Vision verification error for ${sub.id}: ${err?.message}`);
+        }
+      }
+
+      logger.info(`[Dryad] ${proofOfWork.length} proof-of-work: ${visionApproved} approved, ${visionFlagged} flagged for review`);
     }
 
     markProcessed(unprocessed.map((s) => s.id));

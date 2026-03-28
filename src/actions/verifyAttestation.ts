@@ -2,6 +2,7 @@ import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Mem
 import { logger } from '@elizaos/core';
 import { keccak256, toHex } from 'viem';
 import { PARCELS, haversineDistance, isWithinParcels, findNearestParcel, MAX_PARCEL_DISTANCE_METERS } from '../parcels.ts';
+import { getSubmissions, getAllSubmissions } from '../submissions.ts';
 
 // Build PARCEL_COORDS from shared parcels module
 const PARCEL_COORDS: Record<string, { lat: number; lng: number }> = {};
@@ -19,10 +20,28 @@ interface AttestationData {
   imageHash?: string;
   parcel?: string;
   description?: string;
+  submissionId?: string;
 }
 
 function parseAttestationFromMessage(text: string): AttestationData {
   const data: AttestationData = {};
+
+  // Check if this references a submission ID (sub_xxxxx_xxxxxx format)
+  const subIdMatch = text.match(/\b(sub_[a-zA-Z0-9_]+)\b/i);
+  if (subIdMatch) {
+    data.submissionId = subIdMatch[1];
+    // Try to load the submission and use its data
+    const submission = getAllSubmissions().find(s => s.id === data.submissionId);
+    if (submission) {
+      data.lat = submission.exifLat ?? submission.lat;
+      data.lng = submission.exifLng ?? submission.lng;
+      data.timestamp = Math.floor(submission.timestamp / 1000); // Convert to seconds
+      data.imageHash = submission.imageHash;
+      data.parcel = submission.nearestParcel;
+      data.description = submission.description;
+      return data; // Return early with loaded submission data
+    }
+  }
 
   // Extract coordinates
   const latMatch = text.match(/lat[itude]*[:\s=]+(-?\d+\.?\d*)/i);

@@ -25,6 +25,23 @@ export interface PhotoSubmission {
   verified: boolean;
   verificationErrors: string[];
   processed: boolean; // has the decision loop acted on this?
+  imageHash?: string; // keccak256 hash of the photo file (0x prefixed hex)
+  photoPath?: string; // path on disk where photo is stored
+  exifLat?: number; // GPS latitude extracted from EXIF
+  exifLng?: number; // GPS longitude extracted from EXIF
+
+  // Vision verification results
+  visionScore?: number; // 0.0–1.0 confidence from vision model
+  visionApproved?: boolean; // score >= threshold (auto-approved)
+  visionReasoning?: string; // Model's explanation
+  visionMatchedIndicators?: string[]; // Expected indicators found
+  visionFlagsTriggered?: string[]; // Red flags detected
+  visionModel?: string; // Which model was used
+  visionVerifiedAt?: number; // When vision verification ran (unix ms)
+
+  // Before/after comparison
+  beforePhotoPath?: string; // Path to the "before" photo for comparison
+  beforePhotoHash?: string; // keccak256 hash of the before photo
 }
 
 const MAX_AGE_HOURS = 72;
@@ -88,7 +105,7 @@ export function validateSubmission(
   };
 }
 
-export function addSubmission(sub: Omit<PhotoSubmission, 'id' | 'submittedAt' | 'verified' | 'verificationErrors' | 'processed' | 'nearestParcel' | 'distanceMeters'>): PhotoSubmission {
+export function addSubmission(sub: Omit<PhotoSubmission, 'id' | 'submittedAt' | 'verified' | 'verificationErrors' | 'processed' | 'nearestParcel' | 'distanceMeters'> & { imageHash?: string; photoPath?: string; exifLat?: number; exifLng?: number }): PhotoSubmission {
   loadFromDisk();
   const validation = validateSubmission(sub.lat, sub.lng, sub.timestamp);
   const submission: PhotoSubmission = {
@@ -132,4 +149,64 @@ export function markProcessed(ids: string[]) {
 export function getAllSubmissions(): PhotoSubmission[] {
   loadFromDisk();
   return [...submissions].sort((a, b) => b.submittedAt - a.submittedAt);
+}
+
+/**
+ * Update a submission with vision verification results.
+ */
+export function updateSubmissionVision(
+  id: string,
+  vision: {
+    score: number;
+    approved: boolean;
+    reasoning: string;
+    matchedIndicators: string[];
+    flagsTriggered: string[];
+    model: string;
+  },
+): PhotoSubmission | null {
+  loadFromDisk();
+  const sub = submissions.find((s) => s.id === id);
+  if (!sub) return null;
+
+  sub.visionScore = vision.score;
+  sub.visionApproved = vision.approved;
+  sub.visionReasoning = vision.reasoning;
+  sub.visionMatchedIndicators = vision.matchedIndicators;
+  sub.visionFlagsTriggered = vision.flagsTriggered;
+  sub.visionModel = vision.model;
+  sub.visionVerifiedAt = Date.now();
+
+  // If vision rejected the photo, mark as unverified
+  if (!vision.approved) {
+    sub.verified = false;
+    if (!sub.verificationErrors.includes('Vision verification failed')) {
+      sub.verificationErrors.push('Vision verification failed');
+    }
+  }
+
+  saveToDisk();
+  return sub;
+}
+
+/**
+ * Attach a "before" photo to a submission for before/after comparison.
+ */
+export function setBeforePhoto(id: string, beforePhotoPath: string, beforePhotoHash?: string): PhotoSubmission | null {
+  loadFromDisk();
+  const sub = submissions.find((s) => s.id === id);
+  if (!sub) return null;
+
+  sub.beforePhotoPath = beforePhotoPath;
+  sub.beforePhotoHash = beforePhotoHash;
+  saveToDisk();
+  return sub;
+}
+
+/**
+ * Find a submission by ID.
+ */
+export function getSubmissionById(id: string): PhotoSubmission | null {
+  loadFromDisk();
+  return submissions.find((s) => s.id === id) || null;
 }

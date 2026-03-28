@@ -15,7 +15,8 @@ export type AuditEventType =
   | 'TREASURY_MODE_CHANGE'
   | 'SUBMISSION_RECEIVED' | 'SUBMISSION_REJECTED'
   | 'EMAIL_SENT' | 'EMAIL_RECEIVED'
-  | 'UNKNOWN_ADDRESS_DETECTED';
+  | 'UNKNOWN_ADDRESS_DETECTED'
+  | 'VISION_VERIFY' | 'VISION_VERIFY_COMPARE';
 
 export interface AuditEntry {
   timestamp: string;

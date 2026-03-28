@@ -5,7 +5,8 @@ import type { RouteRequest, RouteResponse, IAgentRuntime } from '@elizaos/core';
 import { timingSafeEqual } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { addSubmission, getAllSubmissions } from './submissions.ts';
+import Busboy from 'busboy';
+import { addSubmission, getAllSubmissions, updateSubmissionVision, getSubmissionById } from './submissions.ts';
 import { PARCELS, PARCEL_BOUNDS } from './parcels.ts';
 import { isInjectionAttempt, sanitizeSubmissionDescription, logSecurityEvent, getSecurityLog } from './security/sanitize.ts';
 import { getTransactionHistory, isPaymentsPaused } from './security/transactionGuard.ts';
@@ -16,6 +17,9 @@ import { getLoopHistory, getLatestLoop, getLoopStats } from './services/loopHist
 import { getTreasuryHistory, getLatestTreasurySnapshot } from './services/treasurySnapshots.ts';
 import { getHealthHistory, getLatestHealthSnapshot } from './services/healthSnapshots.ts';
 import { getCurrentSeason, getSeasonalBriefing } from './utils/seasonalAwareness.ts';
+import { extractGpsFromExif } from './utils/exifGps.ts';
+import { computeImageHash } from './utils/imageHash.ts';
+import { verifyWorkPhoto } from './services/visionVerify.ts';
 
 // Built dashboard path (produced by `bun run build:dashboard`)
 const DASHBOARD_HTML_PATH = path.join(process.cwd(), 'dist', 'dashboard', 'index.html');
@@ -254,21 +258,16 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
   btn.textContent = 'Submitting...';
   btn.classList.add('btn-loading');
 
-  // Build JSON payload from form
-  const payload = {};
-  form.forEach((v, k) => { if (k !== 'photo') payload[k] = v; });
-
   try {
     const resp = await fetch('/Dryad/api/submissions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: form, // Send as multipart/form-data with photo file included
     });
     const data = await resp.json();
     if (data.verified) {
       res.textContent = '';
       var d = document.createElement('div'); d.className = 'success';
-      d.textContent = 'Submission verified! Parcel: ' + data.nearestParcel + ' | Distance: ' + data.distanceMeters.toFixed(0) + 'm | ID: ' + data.id;
+      d.textContent = 'Submission verified! Parcel: ' + data.nearestParcel + ' | Distance: ' + data.distanceMeters.toFixed(0) + 'm | ID: ' + data.id + (data.exifLat ? ' | GPS from photo EXIF' : '') + (data.imageHash ? ' | Hash: ' + data.imageHash.slice(0, 14) + '...' : '');
       res.appendChild(d);
     } else {
       res.textContent = '';
@@ -601,6 +600,154 @@ export const dryadRoutes = [
         return;
       }
 
+      const contentType = (req.headers?.['content-type'] || '') as string;
+
+      // Handle multipart/form-data with file upload
+      if (contentType.includes('multipart/form-data')) {
+        try {
+          const parsed: { fields: Record<string, string>; fileBuffer: Buffer | null; originalFilename: string } = {
+            fields: {},
+            fileBuffer: null,
+            originalFilename: '',
+          };
+
+          await new Promise<void>((resolve, reject) => {
+            const busboy = Busboy({ headers: req.headers as Record<string, string> });
+
+            busboy.on('field', (name: string, value: string) => {
+              parsed.fields[name] = value;
+            });
+
+            busboy.on('file', (name: string, stream: any, info: any) => {
+              if (name === 'photo') {
+                parsed.originalFilename = info.filename;
+                const chunks: Buffer[] = [];
+                stream.on('data', (chunk: Buffer) => {
+                  chunks.push(chunk);
+                });
+                stream.on('end', () => {
+                  parsed.fileBuffer = Buffer.concat(chunks);
+                });
+                stream.on('error', reject);
+              }
+            });
+
+            busboy.on('finish', () => {
+              resolve();
+            });
+
+            busboy.on('error', reject);
+            (req as any).pipe(busboy);
+          });
+
+          // SECURITY: Sanitize input
+          const sanitize = (s: string, maxLen: number) => String(s || '').replace(/<[^>]*>/g, '').slice(0, maxLen);
+
+          // Get coordinates — prefer EXIF if available, fallback to form fields
+          const { fields, fileBuffer } = parsed;
+          let lat = parseFloat(fields.lat || '0');
+          let lng = parseFloat(fields.lng || '0');
+          let exifLat: number | undefined;
+          let exifLng: number | undefined;
+          let imageHash: string | undefined;
+          let photoPath: string | undefined;
+
+          // Extract GPS and hash from photo if file was uploaded
+          if (fileBuffer && fileBuffer.length > 0) {
+            // Compute hash of file content
+            imageHash = computeImageHash(fileBuffer);
+
+            // Try to extract GPS from EXIF
+            const exifGps = extractGpsFromExif(fileBuffer);
+            if (exifGps) {
+              exifLat = exifGps.lat;
+              exifLng = exifGps.lng;
+              // Use EXIF coordinates if available (overrides form field coordinates)
+              lat = exifGps.lat;
+              lng = exifGps.lng;
+            }
+
+            // Save photo to disk
+            const photoFilename = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+            photoPath = path.join(UPLOADS_DIR, photoFilename);
+            fs.writeFileSync(photoPath, fileBuffer);
+          } else {
+            // No file uploaded — fallback to form coordinates
+            const photoFilename = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+            photoPath = path.join(UPLOADS_DIR, photoFilename);
+          }
+
+          // SECURITY: Reject obviously invalid coordinates
+          if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            res.status(400).json({ error: 'Invalid GPS coordinates' } as unknown);
+            return;
+          }
+
+          const timestamp = fields.timestamp ? new Date(fields.timestamp).getTime() : Date.now();
+          const type = fields.type === 'plant_id' ? 'plant_id' : 'proof_of_work';
+          const species = sanitize(fields.species, 200);
+          const workType = sanitize(fields.workType, 100);
+          const description = sanitize(fields.description, 2000);
+          const contractorName = sanitize(fields.contractorName, 100);
+          const contractorEmail = sanitize(fields.contractorEmail, 200);
+
+          // SECURITY: Check for injection attempts
+          const allText = `${description} ${contractorName} ${species} ${workType}`;
+          const injection = isInjectionAttempt(allText);
+          if (injection.detected) {
+            audit('INJECTION_ATTEMPT', `Pattern: ${injection.pattern}`, 'submit_portal', 'warn');
+            res.status(400).json({ error: 'Invalid submission' } as unknown);
+            return;
+          }
+
+          const submission = addSubmission({
+            type: type as 'plant_id' | 'proof_of_work',
+            lat,
+            lng,
+            timestamp,
+            species,
+            workType,
+            description,
+            photoFilename: path.basename(photoPath),
+            contractorName,
+            contractorEmail,
+            imageHash,
+            photoPath,
+            exifLat,
+            exifLng,
+          });
+
+          // Fire-and-forget: run vision verification in background for proof-of-work photos
+          if (submission.type === 'proof_of_work' && submission.photoPath && fileBuffer && fileBuffer.length > 0) {
+            verifyWorkPhoto({
+              photoPath: submission.photoPath,
+              workType: submission.workType || 'site_assessment',
+              workDescription: submission.description,
+              parcelAddress: submission.nearestParcel,
+              contractorName: submission.contractorName,
+            }).then((visionResult) => {
+              updateSubmissionVision(submission.id, {
+                score: visionResult.score,
+                approved: visionResult.approved,
+                reasoning: visionResult.reasoning,
+                matchedIndicators: visionResult.matchedIndicators,
+                flagsTriggered: visionResult.flagsTriggered,
+                model: visionResult.model,
+              });
+              console.log(`[Dryad Vision] ${submission.id}: score=${visionResult.score.toFixed(2)} approved=${visionResult.approved}`);
+            }).catch((err) => {
+              console.error(`[Dryad Vision] Failed for ${submission.id}:`, err?.message);
+            });
+          }
+
+          res.json(submission);
+        } catch (error) {
+          res.status(400).json({ error: (error instanceof Error ? error.message : 'Invalid multipart submission') as unknown });
+        }
+        return;
+      }
+
+      // Handle JSON fallback for backward compatibility
       const rawSubmitBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? '');
       if (rawSubmitBody.length > 50_000) {
         res.status(413).json({ error: 'Request too large' } as unknown);
@@ -610,7 +757,7 @@ export const dryadRoutes = [
       try {
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
 
-        // SECURITY: Input sanitization — strip HTML tags, enforce length limits
+        // SECURITY: Input sanitization
         const sanitize = (s: string, maxLen: number) => String(s || '').replace(/<[^>]*>/g, '').slice(0, maxLen);
         const lat = parseFloat(body?.lat || '0');
         const lng = parseFloat(body?.lng || '0');
@@ -622,16 +769,15 @@ export const dryadRoutes = [
         }
 
         const timestamp = body?.timestamp ? new Date(body.timestamp).getTime() : Date.now();
-        const type = body?.type === 'plant_id' ? 'plant_id' : 'proof_of_work'; // Whitelist types
+        const type = body?.type === 'plant_id' ? 'plant_id' : 'proof_of_work';
         const species = sanitize(body?.species, 200);
         const workType = sanitize(body?.workType, 100);
         const description = sanitize(body?.description, 2000);
         const contractorName = sanitize(body?.contractorName, 100);
         const contractorEmail = sanitize(body?.contractorEmail, 200);
-        // SECURITY: Sanitize filename — no path traversal
         const photoFilename = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
 
-        // SECURITY: Check for injection attempts in all text fields
+        // SECURITY: Check for injection attempts
         const allText = `${description} ${contractorName} ${species} ${workType}`;
         const injection = isInjectionAttempt(allText);
         if (injection.detected) {
@@ -1187,6 +1333,105 @@ KEY URLS (use these exactly when relevant):
         audit: { summary: auditSummary, recent: getRecentAuditEntries(50) },
         submissions: { total: allSubmissions.length, unprocessed: allSubmissions.filter(s => !s.processed).length },
       } as unknown);
+    },
+  },
+
+  // ─── Vision verification status ──────────────────────────────────────────────
+  {
+    name: 'api-submission-vision',
+    path: '/api/submissions/:id/vision',
+    type: 'GET' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      const id = (req as any).params?.id;
+      if (!id) {
+        res.status(400).json({ error: 'Missing submission ID' } as unknown);
+        return;
+      }
+      const sub = getSubmissionById(id);
+      if (!sub) {
+        res.status(404).json({ error: 'Submission not found' } as unknown);
+        return;
+      }
+      res.json({
+        id: sub.id,
+        visionScore: sub.visionScore ?? null,
+        visionApproved: sub.visionApproved ?? null,
+        visionReasoning: sub.visionReasoning ?? null,
+        visionMatchedIndicators: sub.visionMatchedIndicators ?? [],
+        visionFlagsTriggered: sub.visionFlagsTriggered ?? [],
+        visionModel: sub.visionModel ?? null,
+        visionVerifiedAt: sub.visionVerifiedAt ?? null,
+        hasBeforePhoto: !!sub.beforePhotoPath,
+        pending: !sub.visionVerifiedAt,
+      } as unknown);
+    },
+  },
+
+  // ─── Before photo upload (for before/after comparison) ─────────────────────
+  {
+    name: 'api-submission-before-photo',
+    path: '/api/submissions/:id/before',
+    type: 'POST' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      const id = (req as any).params?.id;
+      if (!id) {
+        res.status(400).json({ error: 'Missing submission ID' } as unknown);
+        return;
+      }
+      const sub = getSubmissionById(id);
+      if (!sub) {
+        res.status(404).json({ error: 'Submission not found' } as unknown);
+        return;
+      }
+
+      const contentType = (req.headers?.['content-type'] || '') as string;
+      if (!contentType.includes('multipart/form-data')) {
+        res.status(400).json({ error: 'Expected multipart/form-data with a photo' } as unknown);
+        return;
+      }
+
+      try {
+        const parsed: { fileBuffer: Buffer | null } = { fileBuffer: null };
+
+        await new Promise<void>((resolve, reject) => {
+          const busboy = Busboy({ headers: req.headers as Record<string, string> });
+          busboy.on('file', (_name: string, stream: any, _info: any) => {
+            const chunks: Buffer[] = [];
+            stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+            stream.on('end', () => { parsed.fileBuffer = Buffer.concat(chunks); });
+            stream.on('error', reject);
+          });
+          busboy.on('finish', resolve);
+          busboy.on('error', reject);
+          (req as any).pipe(busboy);
+        });
+
+        const { fileBuffer } = parsed;
+        if (!fileBuffer || fileBuffer.length < 1000) {
+          res.status(400).json({ error: 'No valid photo uploaded' } as unknown);
+          return;
+        }
+
+        // Save before photo
+        const beforeFilename = `before_${id}_${Date.now()}.jpg`;
+        const beforePath = path.join(UPLOADS_DIR, beforeFilename);
+        fs.writeFileSync(beforePath, fileBuffer);
+
+        const beforeHash = computeImageHash(fileBuffer);
+
+        // Attach to the submission
+        const { setBeforePhoto } = await import('./submissions.ts');
+        setBeforePhoto(id, beforePath, beforeHash);
+
+        res.json({
+          id: sub.id,
+          beforePhotoPath: beforePath,
+          beforePhotoHash: beforeHash,
+          message: 'Before photo attached. Vision verification will use before/after comparison on next check.',
+        } as unknown);
+      } catch (error) {
+        res.status(400).json({ error: (error instanceof Error ? error.message : 'Upload failed') as unknown });
+      }
     },
   },
 
