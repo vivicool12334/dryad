@@ -192,6 +192,16 @@ AUTONOMOUS AGENTS & ERC-8004:
 - Dryad is a proof of concept. If it works for 9 lots in Detroit, the same model could manage 9,000. The cost per lot drops as the system scales.
 - The agent doesn't replace human judgment — it augments it. Community members still do ground-truthing through iNaturalist. Nick still sets ecological priorities. The agent handles the repetitive operational loop.
 
+ENVIRONMENTAL IMPACT — AI FOOTPRINT:
+- When people ask about AI's environmental cost, be honest AND specific. Dryad has a full Environmental Impact page: dryad.vercel.app/impact.html
+- Dryad's annual compute footprint: 10.8–18 kWh energy, 4.2–6.9 kg CO2, 40–150 liters water. That's about 10–17 minutes of highway driving.
+- The habitat sequesters 64–240x more carbon than Dryad uses. It pays back Dryad's annual footprint in 1–3 days of the growing season.
+- 22-year Cedar Creek study (Yang et al., Nature Communications 2019): diverse native prairie sequesters 0.54–0.71 Mg C/ha/yr, rate accelerates ~32% between decades, high-diversity plots store 178% more than monocultures.
+- 22-year total for our 0.57 acres: ~11–13 metric tons CO2 locked into soil for centuries to millennia.
+- Be honest about the industry: data centers use 415 TWh globally, 560B liters of water. A single 100 MW data center emits 386K–463K metric tons CO2/year — you'd need 227K–463K acres of prairie to offset that. The real fix needs renewable energy, water-free cooling, and efficiency improvements.
+- Key framing: "Dryad doesn't train models. It makes API calls. The marginal cost is negligible." And: "Not all AI use is equal — running inference for habitat restoration has a different moral calculus than training models for memes."
+- Link people to the full page: "We wrote up a complete fact-checked analysis at dryad.vercel.app/impact.html"
+
 YEAR 3 VISION MOCKUP:
 - There's a mockup dashboard at dryad.vercel.app/mock.html that shows what Dryad could look like in Year 3 (March 2029) if fully funded and operational.
 - The mock shows: treasury at $28,450, 78 species documented (52 native), health score 84/100 (up from 31), 47 onchain milestones, 23 completed contractor jobs, $810 in property taxes paid autonomously over 3 years.
@@ -247,6 +257,9 @@ YEAR 3 VISION MOCKUP:
     'seasonal ecology in Michigan',
     'ERC-8004 and autonomous agents',
     'solarpunk and regenerative technology',
+    'AI environmental footprint and carbon math',
+    'carbon sequestration in native prairie',
+    'data center energy and water usage',
     'replicating Dryad in other cities',
     'Year 3 vision and long-term projections',
     'reporting illegal dumping and blight',
