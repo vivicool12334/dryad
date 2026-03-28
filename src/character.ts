@@ -6,6 +6,7 @@ export const character: Character = {
     '@elizaos/plugin-sql',
     '@elizaos/plugin-venice',
     '@elizaos/plugin-evm',
+    '@elizaos/plugin-twitter',
     ...(!process.env.IGNORE_BOOTSTRAP ? ['@elizaos/plugin-bootstrap'] : []),
   ],
   settings: {
