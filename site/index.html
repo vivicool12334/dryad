@@ -1769,7 +1769,7 @@ function addMsg(role,text,isTyping){
   return d;
 }
 
-var AGENT_HOST='http://5.75.225.23:3000',AGENT_API='/api/chat',useKB=false;
+var AGENT_HOST='http://5.75.225.23:3000',AGENT_API='/api/chat',AGENT_TOKEN='302922b3a1ca99f87e43b2e046129da15f1ea9cb3a1cbb5c687343ffced42617',useKB=false;
 var chatHistory=[];
 function updateStatusBadge(){
   var badge=document.getElementById('chat-status');
@@ -1792,7 +1792,7 @@ async function send(text){
   var resp;
   if(!useKB){
     try{
-      var r=await fetch(AGENT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,history:chatHistory.slice(0,-1)}),signal:AbortSignal.timeout(15000)});
+      var r=await fetch(AGENT_API,{method:'POST',headers:{'Content-Type':'application/json','X-API-KEY':AGENT_TOKEN},body:JSON.stringify({text:text,history:chatHistory.slice(0,-1)}),signal:AbortSignal.timeout(15000)});
       if(!r.ok)throw 0;
       var data=await r.json();
       resp=data.text;
