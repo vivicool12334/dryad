@@ -381,23 +381,39 @@
             .hero-header { padding: 0.7rem 1rem; }
             section h2 { font-size: 1.8rem; }
         }
+
+        /* ── ACCESSIBILITY: Skip-to-content link ── */
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--accent); color: var(--bg); padding: 8px 16px; z-index: 999; font-size: 0.9rem; transition: top 0.2s; }
+        .skip-link:focus { top: 0; }
+
+        /* ── ACCESSIBILITY: Reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            .logo-area svg { animation: none !important; }
+            .mockup-banner { animation: none !important; }
+        }
+
+        /* ── ACCESSIBILITY: Table responsive wrapper ── */
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 16px 0; }
     </style>
 </head>
 <body>
 
+<!-- ═══════════════ ACCESSIBILITY: SKIP TO CONTENT LINK ═══════════════ -->
+<a href="#main-content" class="skip-link">Skip to content</a>
+
 <!-- ═══════════════ MOCKUP BANNER ═══════════════ -->
-<div class="mockup-banner">
+<div class="mockup-banner" role="status">
     <span>THIS IS A MOCKUP — Showing what Dryad could look like in Year 3 (March 2029)</span>
-    <a href="index.html">↗ Back to Real Dashboard</a>
+    <a href="index.html" rel="noopener">↗ Back to Real Dashboard</a>
 </div>
 
 <!-- ═══════════════ NAV ═══════════════ -->
 <header class="hero-header">
     <a href="index.html" class="logo-area" style="border-bottom:none">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dryad logo"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
         dryad
     </a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" onclick="document.getElementById('heroNav').classList.toggle('open');this.textContent=this.textContent==='☰'?'✕':'☰'">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false" onclick="document.getElementById('heroNav').classList.toggle('open');this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='false'?'true':'false');this.textContent=this.textContent==='☰'?'✕':'☰'">☰</button>
     <div class="hero-nav" id="heroNav">
         <a href="#overview">Overview</a>
         <a href="#stats">Stats</a>
@@ -413,7 +429,7 @@
 <!-- ═══════════════ SECTIONS ═══════════════ -->
 
 <section id="overview">
-    <div class="content">
+    <div class="content" id="main-content">
         <h2>The Forest That Owns Itself</h2>
         <p>Year 3 — March 2029. Fully autonomous. Self-sustaining. 78 species documented.</p>
 
@@ -509,16 +525,24 @@
             <div class="timeline-item card-health-low" role="listitem">
                 <div class="timeline-date">March 2026</div>
                 <div class="timeline-label">Year 1 Start</div>
-                <div class="timeline-text">Lots dominated by Tree of Heaven, Buckthorn, Japanese Knotweed. Heavy invasive pressure. Baseline health assessment complete.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 37%"><div class="health-fill" style="width: 37%;"></div></div>
+                <div class="timeline-text">Lots dominated by Tree of Heaven, Buckthorn, Japanese Knotweed. Heavy invasive pressure. Baseline health assessment and iNaturalist survey complete.</div>
+                <div class="health-bar" role="progressbar" aria-valuenow="37" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 37%"><div class="health-fill" style="width: 37%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--danger);">Score: 31</div>
+            </div>
+
+            <div class="timeline-item card-health-low" role="listitem">
+                <div class="timeline-date">June 2026</div>
+                <div class="timeline-label">Mastication</div>
+                <div class="timeline-text">Forestry mulching of all 9 lots (0.68 acres). Invasive trees and shrubs ground in place — no hauling needed. Mulch layer suppresses regrowth and begins building soil organic matter.</div>
+                <div class="health-bar" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 42%"><div class="health-fill" style="width: 42%;"></div></div>
+                <div class="stat-big" style="font-size: 1.8rem; color: var(--danger);">Score: 35</div>
             </div>
 
             <div class="timeline-item card-health-medium" role="listitem">
                 <div class="timeline-date">September 2026</div>
-                <div class="timeline-label">First Intervention</div>
-                <div class="timeline-text">Major invasive removal completed. Buckthorn and Tree of Heaven cleared. Soil preparation and dormant seeding. Site ready for spring planting.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 50%"><div class="health-fill" style="width: 50%;"></div></div>
+                <div class="timeline-label">Site Prep &amp; Dormant Seeding</div>
+                <div class="timeline-text">Solarization tarps removed. Light disking to break up mulch layer and create seedbed. Dormant seeding with Michigan-ecotype prairie mix (25+ species). 300 native saplings planted. Site ready for spring emergence.</div>
+                <div class="health-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 50%"><div class="health-fill" style="width: 50%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--accent-amber);">Score: 42</div>
             </div>
 
@@ -526,15 +550,15 @@
                 <div class="timeline-date">March 2027</div>
                 <div class="timeline-label">Spring Planting</div>
                 <div class="timeline-text">300 native saplings in ground (80 Bur Oak, 60 Swamp White Oak, 40+ others). Prairie seed mix applied. First native forbs appear.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 61%"><div class="health-fill" style="width: 61%;"></div></div>
+                <div class="health-bar" role="progressbar" aria-valuenow="61" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 61%"><div class="health-fill" style="width: 61%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--accent-amber);">Score: 51</div>
             </div>
 
             <div class="timeline-item card-health-medium" role="listitem">
                 <div class="timeline-date">September 2027</div>
                 <div class="timeline-label">Year 2 Management</div>
-                <div class="timeline-text">Saplings establishing. Prairie grasses reaching 2-3 ft. Second weedy growth managed with 2 mow cycles. First Monarch butterflies observed.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 75%"><div class="health-fill" style="width: 75%;"></div></div>
+                <div class="timeline-text">Saplings establishing. Prairie grasses reaching 2-3 ft. Maintenance mowing at 6" (2x/year) to suppress weeds while natives establish. First Monarch butterflies observed.</div>
+                <div class="health-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 75%"><div class="health-fill" style="width: 75%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--accent-amber);">Score: 63</div>
             </div>
 
@@ -542,7 +566,7 @@
                 <div class="timeline-date">March 2028</div>
                 <div class="timeline-label">Ecosystem Emerging</div>
                 <div class="timeline-text">Saplings 8-12 ft tall. Prairie grasses dominant (Big Bluestem, Little Bluestem, Indian Grass). First forb blooms: Black-eyed Susan, Purple Coneflower.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 86%"><div class="health-fill" style="width: 86%;"></div></div>
+                <div class="health-bar" role="progressbar" aria-valuenow="86" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 86%"><div class="health-fill" style="width: 86%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--accent);">Score: 72</div>
             </div>
 
@@ -550,7 +574,7 @@
                 <div class="timeline-date">September 2028</div>
                 <div class="timeline-label">Diversity Peak</div>
                 <div class="timeline-text">Big Bluestem dominates landscape (6-8 ft). 40+ native forbs in bloom. Monarch colonies established. Buckthorn eradicated. Thriving ecosystem.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 93%"><div class="health-fill" style="width: 93%;"></div></div>
+                <div class="health-bar" role="progressbar" aria-valuenow="93" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 93%"><div class="health-fill" style="width: 93%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--accent);">Score: 78</div>
             </div>
 
@@ -558,7 +582,7 @@
                 <div class="timeline-date">March 2029 (Today)</div>
                 <div class="timeline-label">Self-Sustaining System</div>
                 <div class="timeline-text">52 native species established. Oak saplings 6-8 ft, entering rapid growth phase. Ecosystem largely self-regulating. Annual mowing only as needed. Cost per lot: $105/yr.</div>
-                <div class="health-bar" aria-label="Ecosystem health: 100%"><div class="health-fill" style="width: 100%;"></div></div>
+                <div class="health-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Ecosystem health: 100%"><div class="health-fill" style="width: 100%;"></div></div>
                 <div class="stat-big" style="font-size: 1.8rem; color: var(--accent);">Score: 84</div>
             </div>
         </div>
@@ -610,15 +634,15 @@
         <h2>Contractor History</h2>
         <p>All work completed and verified. Smart contracts ensure accountability.</p>
 
-        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <div class="table-wrap">
         <table style="margin-top: 28px;">
             <thead>
                 <tr>
-                    <th>Contractor</th>
-                    <th>When</th>
-                    <th>Work Scope</th>
-                    <th>Cost</th>
-                    <th>Status</th>
+                    <th scope="col">Contractor</th>
+                    <th scope="col">When</th>
+                    <th scope="col">Work Scope</th>
+                    <th scope="col">Cost</th>
+                    <th scope="col">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -653,15 +677,15 @@
                 <tr>
                     <td><strong>EcoRestore MI</strong></td>
                     <td>Fall 2026</td>
-                    <td>Soil prep + dormant seeding</td>
+                    <td>Solarization removal, light disking, dormant seeding (25+ species MI ecotype)</td>
                     <td>$800 USDC</td>
                     <td class="verified">✓ Verified</td>
                 </tr>
                 <tr>
-                    <td><strong>EcoRestore MI</strong></td>
+                    <td><strong>MotorCity Hot Shots</strong></td>
                     <td>Summer 2026</td>
-                    <td>Major invasive removal (TOH, Buckthorn, Knotweed)</td>
-                    <td>$2,500 USDC</td>
+                    <td>Forestry mastication — all 9 lots (0.68 acres). Invasives mulched in place.</td>
+                    <td>$1,200 USDC</td>
                     <td class="verified">✓ Verified</td>
                 </tr>
                 <tr>
@@ -689,13 +713,13 @@
         <div class="grid-2" style="margin-top: 32px; gap: 28px;">
             <div>
                 <h3 style="margin-bottom: 16px;">Current Holdings</h3>
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th>Asset</th>
-                            <th>Amount</th>
-                            <th>Value (USD)</th>
+                            <th scope="col">Asset</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Value (USD)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -726,12 +750,12 @@
 
             <div>
                 <h3 style="margin-bottom: 16px;">Annual Economics</h3>
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th>Category</th>
-                            <th>Amount</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -786,12 +810,12 @@
         </div>
 
         <h3 style="margin-top: 48px; margin-bottom: 16px;">Lifetime Spending (2026–2029)</h3>
-        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>Category</th>
-                    <th>Total</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -1001,7 +1025,7 @@
         </div>
 
         <div class="card card-accent" style="margin-top: 28px;">
-            <strong>Note:</strong> Species data sourced from iNaturalist project integration. Identifications verified by community naturalists and AI. All sightings logged onchain. <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank" style="color: var(--accent-amber);">View full catalog →</a>
+            <strong>Note:</strong> Species data sourced from iNaturalist project integration. Identifications verified by community naturalists and AI. All sightings logged onchain. <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank" rel="noopener" style="color: var(--accent-amber);">View full catalog →</a>
         </div>
     </div>
 </section>
@@ -1011,14 +1035,14 @@
         <h2>Onchain Milestones</h2>
         <p>All major ecological assessments recorded permanently on Base mainnet.</p>
 
-        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <div class="table-wrap">
         <table style="margin-top: 28px;">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Transaction</th>
+                    <th scope="col">#</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Transaction</th>
                 </tr>
             </thead>
             <tbody>
