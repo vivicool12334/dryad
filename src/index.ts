@@ -2,7 +2,6 @@ import { logger, type IAgentRuntime, type Project, type ProjectAgent } from '@el
 import dryadPlugin from './plugin.ts';
 import { character } from './character.ts';
 import { DEMO_MODE } from './config/constants.ts';
-import { initDemo, cleanupDemo } from './demo/runner.ts';
 
 const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
   logger.info('Initializing Dryad - Autonomous Land Management Agent');
@@ -10,8 +9,10 @@ const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
 
   // Initialize demo mode if enabled
   if (DEMO_MODE) {
-    logger.info('[Dryad] DEMO_MODE is active — initializing demo runner');
-    initDemo();
+    logger.info('[Dryad] DEMO_MODE is active');
+    import('./demo/runner.ts').then(({ initDemo }) => initDemo()).catch(() => {
+      logger.warn('[Dryad] Demo runner not available — skipping');
+    });
   }
 };
 
