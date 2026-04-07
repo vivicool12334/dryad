@@ -1,10 +1,11 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
 import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseUnits } from 'viem';
-import { base } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { validateTransaction, recordTransaction, recordFailedTransaction } from '../security/transactionGuard.ts';
 import { audit } from '../services/auditLog.ts';
+import { CONTRACTOR, CHAIN, DEMO_MODE, demoLog } from '../config/constants.ts';
 
 const USDC_ABI = parseAbi([
   'function balanceOf(address owner) view returns (uint256)',
@@ -12,17 +13,19 @@ const USDC_ABI = parseAbi([
   'function decimals() view returns (uint8)',
 ]);
 
-// Spending limits — enforced by transactionGuard (persisted to disk)
-const MAX_PER_TX_USD = 50;
-const MAX_DAILY_USD = 200;
+// Spending limits — from centralized config (respects DEMO_MODE)
+const MAX_PER_TX_USD = CONTRACTOR.MAX_PER_TX_USD;
+const MAX_DAILY_USD = CONTRACTOR.MAX_DAILY_USD;
 
 function getClients(runtime: IAgentRuntime) {
   const privateKey = runtime.getSetting('EVM_PRIVATE_KEY') || process.env.EVM_PRIVATE_KEY;
   if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const publicClient = createPublicClient({ chain: base, transport: http() });
-  const walletClient = createWalletClient({ account, chain: base, transport: http() });
+  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
+  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
+  const publicClient = createPublicClient({ chain: selectedChain, transport });
+  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
 
   return { account, publicClient, walletClient };
 }
@@ -83,7 +86,7 @@ export const payContractorAction: Action = {
       }
 
       const { account, publicClient, walletClient } = getClients(runtime);
-      const usdcAddress = (process.env.USDC_BASE_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') as `0x${string}`;
+      const usdcAddress = CHAIN.USDC_ADDRESS;
 
       // Check USDC balance
       const balance = await publicClient.readContract({

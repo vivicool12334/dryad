@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { isWithinParcels, findNearestParcel, MAX_PARCEL_DISTANCE_METERS } from './parcels.ts';
+import { SUBMISSIONS } from './config/constants.ts';
 
 export interface PhotoSubmission {
   id: string;
@@ -44,7 +45,7 @@ export interface PhotoSubmission {
   beforePhotoHash?: string; // keccak256 hash of the before photo
 }
 
-const MAX_AGE_HOURS = 72;
+const MAX_AGE_HOURS = SUBMISSIONS.MAX_AGE_HOURS;
 
 let submissions: PhotoSubmission[] = [];
 let loaded = false;

@@ -13,6 +13,7 @@ import { getTransactionHistory, isPaymentsPaused } from './security/transactionG
 import { checkRateLimit } from './security/rateLimiter.ts';
 import { getAuditSummary, getRecentAuditEntries, getDailyDigest } from './services/auditLog.ts';
 import { audit } from './services/auditLog.ts';
+import { DEMO_MODE, TIMING, TX_LIMITS, FINANCIAL } from './config/constants.ts';
 import { getLoopHistory, getLatestLoop, getLoopStats } from './services/loopHistory.ts';
 import { getTreasuryHistory, getLatestTreasurySnapshot } from './services/treasurySnapshots.ts';
 import { getHealthHistory, getLatestHealthSnapshot } from './services/healthSnapshots.ts';
@@ -1241,10 +1242,18 @@ KEY URLS (use these exactly when relevant):
         loop: {
           lastRunAt: latestLoop?.timestamp ?? null,
           lastRunStatus: latestLoop?.status ?? null,
-          nextRunAt: latestLoop ? latestLoop.timestamp + 24 * 60 * 60 * 1000 : null,
+          nextRunAt: latestLoop ? latestLoop.timestamp + TIMING.CYCLE_INTERVAL_MS : null,
           stats30d: loopStats,
         },
         season: { name: season.season, description: season.description },
+        demoMode: DEMO_MODE ? {
+          active: true,
+          cycleIntervalSec: TIMING.CYCLE_INTERVAL_MS / 1000,
+          maxPerTxUsd: TX_LIMITS.PER_TX_USD,
+          maxDailyUsd: TX_LIMITS.DAILY_USD,
+          sustainabilityTarget: FINANCIAL.SUSTAINABILITY_THRESHOLD,
+          chain: 'Base Sepolia (testnet)',
+        } : null,
         auditSummary: {
           totalEvents24h: auditSummary.totalEvents,
           criticalEvents24h: auditSummary.criticalEvents.length,
@@ -1299,6 +1308,27 @@ KEY URLS (use these exactly when relevant):
         dailyLimitUsd: 200,
         perTxLimitUsd: 50,
       } as unknown);
+    },
+  },
+
+  // ─── Admin API: Trigger decision loop manually (requires ADMIN_SECRET) ───
+  {
+    name: 'api-admin-trigger-loop',
+    path: '/api/admin/trigger-loop',
+    type: 'POST' as const,
+    handler: async (req: RouteRequest, res: RouteResponse) => {
+      if (!isAdmin(req)) {
+        res.status(401).json({ error: 'Unauthorized' } as unknown);
+        return;
+      }
+      try {
+        const { triggerManualCycle } = await import('./services/decisionLoop.ts');
+        const result = await triggerManualCycle();
+        audit('ADMIN_ACTION', `Manual loop trigger: ${result.message}`, 'admin_api', 'info');
+        res.json(result as unknown);
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message || 'Failed to trigger loop' } as unknown);
+      }
     },
   },
 
@@ -1448,6 +1478,28 @@ KEY URLS (use these exactly when relevant):
       } catch {
         res.setHeader?.('Content-Type', 'text/html');
         res.send('<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><h2>Mock not found</h2><p>site/mock.html is missing.</p></body></html>');
+      }
+    },
+  },
+  // Demo proof report — generate and serve on demand
+  {
+    name: 'demo-proof-report',
+    path: '/api/demo-report',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      if (!DEMO_MODE) {
+        res.status(404).json({ error: 'Demo mode is not active' });
+        return;
+      }
+      try {
+        const { generateProofReport } = await import('./demo/reportGenerator.ts');
+        const reportPath = generateProofReport();
+        const html = fs.readFileSync(reportPath, 'utf-8');
+        res.setHeader?.('Content-Type', 'text/html');
+        res.setHeader?.('Content-Disposition', `inline; filename="dryad-proof-report-${new Date().toISOString().split('T')[0]}.html"`);
+        res.send(html);
+      } catch (err) {
+        res.status(500).json({ error: 'Failed to generate report', details: String(err) });
       }
     },
   },

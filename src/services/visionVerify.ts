@@ -12,6 +12,8 @@
 import * as fs from 'fs';
 import { logger } from '@elizaos/core';
 import { audit } from './auditLog.ts';
+import { DEMO_MODE, demoLog } from '../config/constants.ts';
+import { mockVision } from '../demo/mocks/mockVision.ts';
 
 // ---------------------------------------------------------------------------
 // Work-type visual checklists
@@ -375,6 +377,23 @@ export async function verifyWorkPhoto(opts: {
 }): Promise<VisionVerificationResult> {
   const { photoPath, workType, workDescription, parcelAddress, contractorName } = opts;
 
+  // In demo mode, return mock vision results instead of calling a real vision model
+  if (DEMO_MODE) {
+    const mock = mockVision.getNext();
+    demoLog(`Vision verify (DEMO) for ${workType} at ${parcelAddress}: score=${mock.score}, approved=${mock.approved}`);
+    audit('VISION_VERIFY', `DEMO: ${parcelAddress} — score ${mock.score} ${mock.approved ? 'APPROVED' : 'REJECTED'}`, 'visionVerify', mock.approved ? 'info' : 'warn');
+    return {
+      score: mock.score,
+      approved: mock.approved,
+      reasoning: mock.reasoning,
+      matchedIndicators: mock.matchedIndicators,
+      flagsTriggered: mock.flagsTriggered,
+      workType,
+      model: mock.model,
+      timestamp: Date.now(),
+    };
+  }
+
   try {
     // Read the photo file
     if (!fs.existsSync(photoPath)) {
@@ -465,6 +484,18 @@ export async function verifyBeforeAfter(opts: {
   parcelAddress: string;
 }): Promise<VisionVerificationResult> {
   const { beforePhotoPath, afterPhotoPath, workType, workDescription, parcelAddress } = opts;
+
+  // Demo mode: use mock vision
+  if (DEMO_MODE) {
+    const mock = mockVision.getNext();
+    demoLog(`Vision before/after (DEMO) for ${workType} at ${parcelAddress}: score=${mock.score}`);
+    audit('VISION_VERIFY_COMPARE', `DEMO: ${parcelAddress} — score ${mock.score}`, 'visionVerify', mock.approved ? 'info' : 'warn');
+    return {
+      score: mock.score, approved: mock.approved, reasoning: mock.reasoning,
+      matchedIndicators: mock.matchedIndicators, flagsTriggered: mock.flagsTriggered,
+      workType, model: mock.model, timestamp: Date.now(),
+    };
+  }
 
   try {
     if (!fs.existsSync(beforePhotoPath)) {

@@ -31,8 +31,10 @@ export const PARCELS: Parcel[] = [
   { address: '4523 25th St', parcelNumber: '12009482', lat: 42.34207, lng: -83.10028 },
 ];
 
+import { SUBMISSIONS } from './config/constants.ts';
+
 // Maximum distance in meters for a point to be "on our parcels"
-export const MAX_PARCEL_DISTANCE_METERS = 50;
+export const MAX_PARCEL_DISTANCE_METERS = SUBMISSIONS.MAX_PARCEL_DISTANCE_METERS;
 
 /**
  * Haversine distance between two GPS points in meters.

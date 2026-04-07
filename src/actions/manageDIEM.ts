@@ -1,8 +1,9 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
 import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseUnits, parseEther } from 'viem';
-import { base } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
+import { CHAIN, FINANCIAL } from '../config/constants.ts';
 
 const DIEM_ABI = parseAbi([
   'function balanceOf(address owner) view returns (uint256)',
@@ -18,14 +19,16 @@ function getClients(runtime: IAgentRuntime) {
   if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const publicClient = createPublicClient({ chain: base, transport: http() });
-  const walletClient = createWalletClient({ account, chain: base, transport: http() });
+  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
+  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
+  const publicClient = createPublicClient({ chain: selectedChain, transport });
+  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
 
   return { account, publicClient, walletClient };
 }
 
 function getDiemAddress(): `0x${string}` {
-  return (process.env.DIEM_TOKEN_ADDRESS || '0xf4d97f2da56e8c3098f3a8d538db630a2606a024') as `0x${string}`;
+  return CHAIN.DIEM_ADDRESS;
 }
 
 // Uniswap V3 SwapRouter02 on Base
@@ -45,7 +48,7 @@ export async function buyDIEMWithETH(runtime: IAgentRuntime, ethAmount: bigint):
   const diemAddress = getDiemAddress();
 
   // SECURITY: Cap swap amount to prevent accidental wallet drain
-  const MAX_SWAP_ETH = parseEther('0.01'); // Max 0.01 ETH per swap
+  const MAX_SWAP_ETH = parseEther(FINANCIAL.MAX_SWAP_ETH);
   if (ethAmount > MAX_SWAP_ETH) {
     throw new Error(`Swap amount ${formatUnits(ethAmount, 18)} ETH exceeds safety cap of ${formatUnits(MAX_SWAP_ETH, 18)} ETH`);
   }

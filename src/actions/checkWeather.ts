@@ -23,10 +23,12 @@ export interface WeatherAssessment {
   summary: string;
 }
 
+import { TIMING } from '../config/constants.ts';
+
 // Cache
 let cachedAssessment: WeatherAssessment | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_DURATION_MS = TIMING.WEATHER_CACHE_MS;
 
 function celsiusToF(c: number): number { return Math.round(c * 9 / 5 + 32); }
 

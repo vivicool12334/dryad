@@ -1,11 +1,12 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
 import { createPublicClient, createWalletClient, http, parseAbi, formatEther, formatUnits } from 'viem';
-import { base } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
+import { CHAIN, FINANCIAL } from '../config/constants.ts';
 
-// Lido wstETH on Base
-const WSTETH_BASE = '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452' as const;
+// Lido wstETH on Base (or testnet override)
+const WSTETH_BASE = CHAIN.WSTETH_ADDRESS;
 
 const ERC20_ABI = parseAbi([
   'function balanceOf(address owner) view returns (uint256)',
@@ -18,14 +19,16 @@ function getClients(runtime: IAgentRuntime) {
   if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const publicClient = createPublicClient({ chain: base, transport: http() });
-  const walletClient = createWalletClient({ account, chain: base, transport: http() });
+  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
+  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
+  const publicClient = createPublicClient({ chain: selectedChain, transport });
+  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
 
   return { account, publicClient, walletClient };
 }
 
-// Approximate annual stETH yield rate
-const ANNUAL_YIELD_RATE = 0.035; // ~3.5% APR
+// Approximate annual stETH yield rate — from centralized config
+const ANNUAL_YIELD_RATE = FINANCIAL.STETH_APR;
 
 export const manageStETHAction: Action = {
   name: 'MANAGE_STETH',

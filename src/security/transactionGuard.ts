@@ -6,6 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { logSecurityEvent } from './sanitize.ts';
+import { TX_LIMITS, TIMING, DEMO_MODE, demoLog } from '../config/constants.ts';
 
 // ─── Persistence ───
 const STATE_PATH = path.join(process.cwd(), 'data', 'transaction-guard-state.json');
@@ -85,17 +86,17 @@ if (allowlistedRecipients.size > 0) {
   logSecurityEvent('STATE_RESTORED', `Loaded ${allowlistedRecipients.size} allowlisted addresses, ${txHistory.length} tx history entries, paused=${paymentsPaused}`, 'transactionGuard');
 }
 
-// ─── Constants ───
+// ─── Constants (from centralized config — respects DEMO_MODE) ───
 const LIMITS = {
-  PER_TX_USD: 50,
-  DAILY_USD: 200,
-  MAX_TX_PER_DAY: 3,
-  MAX_TX_PER_CONTRACTOR_PER_DAY: 1,
-  COOLING_OFF_HOURS: 24,
-  QUIET_HOURS_START: 23,
-  QUIET_HOURS_END: 6,
-  TREASURY_FLOOR_PERCENT: 0.80,
-  MAX_FAILED_CONSECUTIVE: 3,
+  PER_TX_USD: TX_LIMITS.PER_TX_USD,
+  DAILY_USD: TX_LIMITS.DAILY_USD,
+  MAX_TX_PER_DAY: TX_LIMITS.MAX_TX_PER_DAY,
+  MAX_TX_PER_CONTRACTOR_PER_DAY: TX_LIMITS.MAX_TX_PER_CONTRACTOR_PER_DAY,
+  COOLING_OFF_HOURS: TIMING.COOLING_OFF_HOURS,
+  QUIET_HOURS_START: TX_LIMITS.QUIET_HOURS_START,
+  QUIET_HOURS_END: TX_LIMITS.QUIET_HOURS_END,
+  TREASURY_FLOOR_PERCENT: TX_LIMITS.TREASURY_FLOOR_PERCENT,
+  MAX_FAILED_CONSECUTIVE: TX_LIMITS.MAX_FAILED_CONSECUTIVE,
 };
 
 function LIMITS_COOLING_OFF_MS() { return LIMITS.COOLING_OFF_HOURS * 3600000; }

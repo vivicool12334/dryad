@@ -1,8 +1,9 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
 import { createPublicClient, createWalletClient, http, parseAbi, encodeAbiParameters, keccak256, toHex } from 'viem';
-import { base } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
+import { CHAIN } from '../config/constants.ts';
 
 const MILESTONE_TYPES = ['SiteAssessment', 'InvasiveRemoval', 'SoilPrep', 'NativePlanting', 'Monitoring'] as const;
 type MilestoneType = (typeof MILESTONE_TYPES)[number];
@@ -32,8 +33,10 @@ function getClients(runtime: IAgentRuntime) {
   if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const publicClient = createPublicClient({ chain: base, transport: http() });
-  const walletClient = createWalletClient({ account, chain: base, transport: http() });
+  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
+  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
+  const publicClient = createPublicClient({ chain: selectedChain, transport });
+  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
 
   return { account, publicClient, walletClient };
 }

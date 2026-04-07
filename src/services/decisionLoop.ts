@@ -4,7 +4,8 @@
  * 1. Check for new verified photo submissions → email contractor if invasives
  * 2. Check iNaturalist for on-parcel observations
  * 3. Check AgentMail for new messages
- * 4. Check treasury balances → evaluate 60/40 allocation + adaptive spending
+ * 4. Check treasury balances → evaluate allocation + adaptive spending
+ * 4b. Active yield rebalancing → fetch live APYs, rebalance if beneficial
  * 5. Check DIEM stake health → plan purchase if credits running low
  * 6. Record Monitoring milestone if thresholds crossed
  * 7. Post summary
@@ -25,21 +26,23 @@ import { appendHealthSnapshot } from './healthSnapshots.ts';
 import { getTransactionHistory } from '../security/transactionGuard.ts';
 import { verifyWorkPhoto, verifyBeforeAfter } from './visionVerify.ts';
 import { postTweet, getNextQueuedTweet } from '../utils/twitter.ts';
+import { runRebalanceCheck } from './rebalancer.ts';
+import { TIMING, FINANCIAL, DEMO_MODE, demoLog, demoSection, logConfig } from '../config/constants.ts';
 
-const CYCLE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CYCLE_INTERVAL_MS = TIMING.CYCLE_INTERVAL_MS;
 const CONTRACTOR_EMAIL = process.env.CONTRACTOR_EMAIL || 'powahgen@gmail.com';
 
 // Weekly report tracking
 let weeklyReportSentDate = '';
+let demoCycleCount = 0;
 
-// Financial model constants
-// Year 3+ steady-state costs (established prairie)
-const ANNUAL_OPERATING_COST = 945; // $/yr (Year 3+ established prairie)
-const ANNUAL_COST_ESTABLISHMENT = 1445; // $/yr (Years 1-2 active management)
-const ANNUAL_COST_WITH_LVT = 1278; // $/yr if land value tax passes (Year 3+)
-const STETH_APR = 0.035;
-const SUSTAINABILITY_THRESHOLD = ANNUAL_OPERATING_COST / STETH_APR; // ~$27,000
-const NON_NEGOTIABLE_ANNUAL = 270 + 58 + 5 + 50; // taxes + VPS + gas + LLC = $383/yr
+// Financial model constants — pulled from centralized config
+const ANNUAL_OPERATING_COST = FINANCIAL.ANNUAL_OPERATING_COST;
+const ANNUAL_COST_ESTABLISHMENT = FINANCIAL.ANNUAL_COST_ESTABLISHMENT;
+const ANNUAL_COST_WITH_LVT = FINANCIAL.ANNUAL_COST_WITH_LVT;
+const STETH_APR = FINANCIAL.STETH_APR;
+const SUSTAINABILITY_THRESHOLD = FINANCIAL.SUSTAINABILITY_THRESHOLD;
+const NON_NEGOTIABLE_ANNUAL = FINANCIAL.NON_NEGOTIABLE_ANNUAL;
 
 // Track spending mode across cycles to detect changes
 let lastSpendingMode: string = '';
@@ -53,22 +56,38 @@ const NATIVE_INDICATORS = [
   'Solidago', 'Aster', 'Symphyotrichum',
 ];
 
+// Singleton reference for admin trigger endpoint
+let activeInstance: DecisionLoopService | null = null;
+
+/** Trigger a manual decision loop cycle (used by admin API) */
+export async function triggerManualCycle(): Promise<{ triggered: boolean; message: string }> {
+  if (!activeInstance) return { triggered: false, message: 'Decision loop service not running' };
+  // Don't allow concurrent cycles
+  if ((activeInstance as any)._running) return { triggered: false, message: 'Cycle already in progress' };
+  activeInstance.runCycle();  // fire and forget — it's async
+  return { triggered: true, message: 'Decision loop cycle triggered' };
+}
+
 export class DecisionLoopService extends Service {
   static serviceType = 'dryad-decision-loop';
   capabilityDescription = 'Autonomous 24-hour decision loop: monitors submissions, invasives, treasury health, DIEM stake, and contractor coordination.';
 
   private timer: ReturnType<typeof setInterval> | null = null;
+  private _running = false;
 
   constructor(runtime: IAgentRuntime) {
     super(runtime);
   }
 
   static async start(runtime: IAgentRuntime) {
-    logger.info('[Dryad] Starting autonomous decision loop (every 24 hours)');
+    if (DEMO_MODE) logConfig();
+    const intervalDesc = DEMO_MODE ? `${CYCLE_INTERVAL_MS / 1000}s (DEMO)` : '24 hours';
+    logger.info(`[Dryad] Starting autonomous decision loop (every ${intervalDesc})`);
     const service = new DecisionLoopService(runtime);
+    activeInstance = service;  // Store singleton reference
 
-    // Run first cycle after 30 seconds
-    setTimeout(() => service.runCycle(), 30_000);
+    // Run first cycle after delay
+    setTimeout(() => service.runCycle(), TIMING.FIRST_CYCLE_DELAY_MS);
     service.timer = setInterval(() => service.runCycle(), CYCLE_INTERVAL_MS);
 
     return service;
@@ -85,6 +104,8 @@ export class DecisionLoopService extends Service {
   }
 
   async runCycle() {
+    if (this._running) { logger.warn('[Dryad] Cycle already in progress, skipping'); return; }
+    this._running = true;
     logger.info('[Dryad] ═══ Decision loop cycle starting ═══');
     const cycleStart = Date.now();
     const steps: LoopStep[] = [];
@@ -151,6 +172,13 @@ export class DecisionLoopService extends Service {
         return `mode=${result.mode}, wstETH=${result.wstethNum.toFixed(4)}, yield=$${result.annualYield.toFixed(0)}/yr`;
       });
 
+      // 3b. Active yield rebalancing (runs after treasury health check)
+      await runStep('yield_rebalance', async () => {
+        const result = await runRebalanceCheck();
+        if (result.startsWith('rebalanced')) actionsTriggered.push('yieldRebalance');
+        return result;
+      });
+
       // 4. Check DIEM stake
       await runStep('diem', async () => {
         const result = await this.checkDIEMHealth();
@@ -179,9 +207,11 @@ export class DecisionLoopService extends Service {
         steps,
       });
 
-      // Post from tweet queue on Mondays and Thursdays (~$0.08/month)
+      // Post from tweet queue — every cycle in demo, Mon/Thu in production
+      demoCycleCount++;
       const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon, 4=Thu
-      if (dayOfWeek === 1 || dayOfWeek === 4) {
+      const shouldTweet = TIMING.TWEET_EVERY_CYCLE || dayOfWeek === 1 || dayOfWeek === 4;
+      if (shouldTweet) {
         try {
           const nextTweet = getNextQueuedTweet();
           if (nextTweet) {
@@ -211,6 +241,8 @@ export class DecisionLoopService extends Service {
         errorsEncountered,
         steps,
       });
+    } finally {
+      this._running = false;
     }
   }
 
@@ -453,24 +485,27 @@ Budget: Up to $50 per parcel per visit.`;
 
     try {
       const { createPublicClient, http, parseAbi, formatEther, formatUnits } = await import('viem');
-      const { base } = await import('viem/chains');
+      const { base, baseSepolia } = await import('viem/chains');
       const { privateKeyToAccount } = await import('viem/accounts');
+      const { CHAIN: chainConfig } = await import('../config/constants.ts');
 
       const pk = process.env.EVM_PRIVATE_KEY;
       if (!pk) return empty;
 
       const account = privateKeyToAccount(pk as `0x${string}`);
-      const client = createPublicClient({ chain: base, transport: http() });
+      const selectedChain = chainConfig.USE_TESTNET ? baseSepolia : base;
+      const rpcTransport = chainConfig.RPC_URL ? http(chainConfig.RPC_URL) : http();
+      const client = createPublicClient({ chain: selectedChain, transport: rpcTransport });
       const abi = parseAbi(['function balanceOf(address) view returns (uint256)']);
 
       const ethBal = await client.getBalance({ address: account.address });
       const wstethBal = await client.readContract({
-        address: '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452' as `0x${string}`,
+        address: chainConfig.WSTETH_ADDRESS,
         abi, functionName: 'balanceOf', args: [account.address],
       }) as bigint;
 
       // DIEM balance
-      const diemAddr = (process.env.DIEM_TOKEN_ADDRESS || '0xf4d97f2da56e8c3098f3a8d538db630a2606a024') as `0x${string}`;
+      const diemAddr = chainConfig.DIEM_ADDRESS;
       let diemNum = 0;
       try {
         const diemBal = await client.readContract({ address: diemAddr, abi, functionName: 'balanceOf', args: [account.address] }) as bigint;
@@ -563,15 +598,18 @@ ${mode === 'NORMAL' ? 'All operations active.' : mode === 'CONSERVATION' ? 'Disc
   private async checkDIEMHealth(): Promise<{ balance: number; dailyCredits: number }> {
     try {
       const { createPublicClient, http, parseAbi, formatUnits } = await import('viem');
-      const { base } = await import('viem/chains');
+      const { base, baseSepolia } = await import('viem/chains');
       const { privateKeyToAccount } = await import('viem/accounts');
+      const { CHAIN: chainConfig } = await import('../config/constants.ts');
 
       const pk = process.env.EVM_PRIVATE_KEY;
       if (!pk) return { balance: 0, dailyCredits: 0 };
 
-      const diemAddr = (process.env.DIEM_TOKEN_ADDRESS || '0xf4d97f2da56e8c3098f3a8d538db630a2606a024') as `0x${string}`;
+      const diemAddr = chainConfig.DIEM_ADDRESS;
       const account = privateKeyToAccount(pk as `0x${string}`);
-      const client = createPublicClient({ chain: base, transport: http() });
+      const selectedChain = chainConfig.USE_TESTNET ? baseSepolia : base;
+      const rpcTransport = chainConfig.RPC_URL ? http(chainConfig.RPC_URL) : http();
+      const client = createPublicClient({ chain: selectedChain, transport: rpcTransport });
       const abi = parseAbi(['function balanceOf(address) view returns (uint256)']);
 
       const balance = await client.readContract({ address: diemAddr, abi, functionName: 'balanceOf', args: [account.address] }) as bigint;
@@ -579,7 +617,7 @@ ${mode === 'NORMAL' ? 'All operations active.' : mode === 'CONSERVATION' ? 'Disc
       const dailyCredits = balNum;
 
       logger.info(`[Dryad] DIEM: ${balNum.toFixed(4)} | Credits: ~$${dailyCredits.toFixed(2)}/day`);
-      if (dailyCredits < 0.1) {
+      if (dailyCredits < FINANCIAL.DIEM_LOW_CREDIT_THRESHOLD) {
         logger.warn('[Dryad] DIEM stake is low — inference credits may run out.');
       }
       return { balance: balNum, dailyCredits };
@@ -597,7 +635,12 @@ ${mode === 'NORMAL' ? 'All operations active.' : mode === 'CONSERVATION' ? 'Disc
       const hour = detroit.getHours();
       const today = detroit.toDateString();
 
-      if (isMonday && hour >= 8 && hour < 12 && weeklyReportSentDate !== today) {
+      // In demo mode, send report every Nth cycle instead of waiting for Monday
+      const demoReportDue = TIMING.WEEKLY_REPORT_EVERY_N_CYCLES !== null
+        && demoCycleCount > 0
+        && demoCycleCount % TIMING.WEEKLY_REPORT_EVERY_N_CYCLES === 0;
+
+      if ((demoReportDue || (isMonday && hour >= 8 && hour < 12)) && weeklyReportSentDate !== today) {
         logger.info('[Dryad] Monday morning — generating weekly report');
         const report = await generateWeeklyReport();
         await sendDryadEmail(
