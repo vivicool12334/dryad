@@ -149,8 +149,9 @@ export async function getProtectedTransport(protocolName: string) {
     return http(config.privateRpcUrl);
   }
 
-  // Standard Base RPC for low-risk operations
-  return http();
+  // Standard Base RPC for low-risk operations — use configured RPC URL
+  const { CHAIN } = await import('../config/constants.ts');
+  return CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
 }
 
 // ---------------------------------------------------------------------------

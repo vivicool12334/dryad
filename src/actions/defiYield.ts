@@ -98,12 +98,14 @@ async function getViemClients(protocolName?: string) {
 
 /**
  * Ensure USDC approval for a spender. Only sends tx if needed.
+ * Accepts pre-created clients to avoid nonce desync between approval and deposit.
  */
 async function ensureApproval(
   spender: `0x${string}`,
   amountRaw: bigint,
+  clients?: { publicClient: any; walletClient: any; account: any; parseAbi: any },
 ): Promise<void> {
-  const { publicClient, walletClient, account, parseAbi } = await getViemClients();
+  const { publicClient, walletClient, account, parseAbi } = clients || await getViemClients();
   const abi = parseAbi(ERC20_ABI);
 
   const currentAllowance = await publicClient.readContract({
@@ -115,16 +117,18 @@ async function ensureApproval(
 
   if (currentAllowance >= amountRaw) return;
 
-  logger.info(`[DeFiYield] Approving ${spender} for USDC...`);
+  // Approve max uint256 to avoid repeated approvals
+  const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+  logger.info(`[DeFiYield] Approving ${spender} for USDC (max allowance)...`);
   const hash = await walletClient.writeContract({
     address: BASE_USDC,
     abi,
     functionName: 'approve',
-    args: [spender, amountRaw],
+    args: [spender, MAX_UINT256],
   });
 
-  await publicClient.waitForTransactionReceipt({ hash });
-  logger.info(`[DeFiYield] Approval tx: ${hash}`);
+  await publicClient.waitForTransactionReceipt({ hash, confirmations: 1 });
+  logger.info(`[DeFiYield] Approval tx confirmed: ${hash}`);
 }
 
 /**
@@ -164,10 +168,11 @@ export interface DefiTxResult {
 async function depositAave(amountUsd: number): Promise<DefiTxResult> {
   const protocol = 'Aave V3 USDC';
   try {
-    const { publicClient, walletClient, account, parseAbi } = await getViemClients('Aave V3 USDC');
+    const clients = await getViemClients('Aave V3 USDC');
+    const { publicClient, walletClient, account, parseAbi } = clients;
     const amountRaw = BigInt(Math.floor(amountUsd * 1e6));
 
-    await ensureApproval(AAVE_V3_POOL, amountRaw);
+    await ensureApproval(AAVE_V3_POOL, amountRaw, clients);
 
     const abi = parseAbi(AAVE_POOL_ABI);
     const hash = await walletClient.writeContract({
@@ -219,10 +224,11 @@ async function withdrawAave(amountUsd: number): Promise<DefiTxResult> {
 async function depositCompound(amountUsd: number): Promise<DefiTxResult> {
   const protocol = 'Compound V3 USDC';
   try {
-    const { publicClient, walletClient, account, parseAbi } = await getViemClients(protocol);
+    const clients = await getViemClients(protocol);
+    const { publicClient, walletClient, account, parseAbi } = clients;
     const amountRaw = BigInt(Math.floor(amountUsd * 1e6));
 
-    await ensureApproval(COMPOUND_V3_COMET, amountRaw);
+    await ensureApproval(COMPOUND_V3_COMET, amountRaw, clients);
 
     const abi = parseAbi(COMPOUND_COMET_ABI);
     const hash = await walletClient.writeContract({
@@ -274,10 +280,11 @@ async function withdrawCompound(amountUsd: number): Promise<DefiTxResult> {
 async function depositMorpho(amountUsd: number): Promise<DefiTxResult> {
   const protocol = 'Morpho USDC Vault';
   try {
-    const { publicClient, walletClient, account, parseAbi } = await getViemClients(protocol);
+    const clients = await getViemClients(protocol);
+    const { publicClient, walletClient, account, parseAbi } = clients;
     const amountRaw = BigInt(Math.floor(amountUsd * 1e6));
 
-    await ensureApproval(MORPHO_VAULT, amountRaw);
+    await ensureApproval(MORPHO_VAULT, amountRaw, clients);
 
     const abi = parseAbi(MORPHO_VAULT_ABI);
     const hash = await walletClient.writeContract({
