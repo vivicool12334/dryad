@@ -973,7 +973,7 @@ export const dryadRoutes = [
       securityHeaders(res);
       res.setHeader?.('Content-Security-Policy', "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'");
       res.setHeader?.('Content-Type', 'text/html');
-      res.send(contractorPageHTML());
+      res.send(applyPageHTML());
     },
   },
   {
