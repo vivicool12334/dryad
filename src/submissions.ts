@@ -43,6 +43,11 @@ export interface PhotoSubmission {
   // Before/after comparison
   beforePhotoPath?: string; // Path to the "before" photo for comparison
   beforePhotoHash?: string; // keccak256 hash of the before photo
+
+  // EAS (Ethereum Attestation Service) onchain attestation
+  easAttestationUid?: string; // bytes32 UID of the onchain attestation
+  easTxHash?: string; // transaction hash of the attestation mint
+  easAttestedAt?: number; // unix ms when attestation was minted
 }
 
 const MAX_AGE_HOURS = SUBMISSIONS.MAX_AGE_HOURS;
@@ -186,6 +191,23 @@ export function updateSubmissionVision(
     }
   }
 
+  saveToDisk();
+  return sub;
+}
+
+/**
+ * Update a submission with EAS attestation data.
+ */
+export function updateSubmissionAttestation(
+  id: string,
+  attestation: { uid: string; txHash: string },
+): PhotoSubmission | null {
+  loadFromDisk();
+  const sub = submissions.find((s) => s.id === id);
+  if (!sub) return null;
+  sub.easAttestationUid = attestation.uid;
+  sub.easTxHash = attestation.txHash;
+  sub.easAttestedAt = Date.now();
   saveToDisk();
   return sub;
 }

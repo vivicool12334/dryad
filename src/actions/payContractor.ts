@@ -106,8 +106,8 @@ export const payContractorAction: Action = {
         return { text: errorMsg, values: { success: false }, data: {}, success: false };
       }
 
-      // SECURITY: Transaction guard validation
-      const txCheck = validateTransaction(address, amount);
+      // SECURITY: Transaction guard validation (pass current balance for treasury floor check)
+      const txCheck = validateTransaction(address, amount, balanceNum);
       if (!txCheck.allowed) {
         audit('TRANSACTION_BLOCKED', `${txCheck.reason} | $${amount} to ${address}`, 'payContractor', 'warn');
         const errorMsg = `Payment blocked: ${txCheck.reason}`;

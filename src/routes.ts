@@ -37,8 +37,11 @@ function parseIntParam(value: unknown, defaultVal: number, min: number, max: num
   return isNaN(n) ? defaultVal : Math.min(Math.max(n, min), max);
 }
 
-// Allowed CORS origins — Vercel frontend and agent itself
+// Allowed CORS origins — production domains, Vercel frontend, and local dev
 const ALLOWED_ORIGINS = [
+  'https://www.dryad.land',
+  'https://dryad.land',
+  'https://dashboard.dryad.land',
   'https://dryad.vercel.app',
   'http://5.75.225.23:3000',
   'http://localhost:5173',
@@ -58,6 +61,21 @@ function securityHeaders(res: RouteResponse): void {
   res.setHeader?.('X-Content-Type-Options', 'nosniff');
   res.setHeader?.('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader?.('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
+  res.setHeader?.('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader?.('Cross-Origin-Resource-Policy', 'same-origin');
+  // Override ElizaOS framework's permissive CSP (it hardcodes isProd=false → script-src *)
+  res.setHeader?.('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+    "font-src https://fonts.gstatic.com",
+    "img-src 'self' https: data: blob:",
+    "connect-src 'self' https://api.inaturalist.org https://api.coingecko.com https://gis.detroitmi.gov https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://api.mapbox.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join('; '));
 }
 
 // Auth helper: checks Authorization: Bearer <secret> (constant-time to prevent timing attacks)
@@ -150,27 +168,27 @@ button:hover{background:#388e3c}
 </style>
 </head><body>
 <div class="container">
-<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
+<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" rel="noopener noreferrer" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
 
 <h1>Dryad Contractor Application</h1>
 <p class="subtitle">Apply to become a verified work contractor for 25th Street parcels</p>
 
 <form id="applyForm" class="card">
-  <label>Full Legal Name *</label>
+  <label for="fullName">Full Legal Name *</label>
   <input type="text" name="fullName" id="fullName" placeholder="Your full name" required>
 
-  <label>Email *</label>
+  <label for="email">Email *</label>
   <input type="email" name="email" id="email" placeholder="your@email.com" required>
 
-  <label>Phone Number *</label>
+  <label for="phone">Phone Number *</label>
   <input type="tel" name="phone" id="phone" placeholder="+1 (313) 555-0123" required>
 
-  <label>Base Wallet Address (for USDC payments) *</label>
-  <input type="text" name="walletAddress" id="walletAddress" placeholder="0x..." required>
+  <label for="walletAddress">Base Wallet Address (for USDC payments) *</label>
+  <input type="text" name="walletAddress" id="walletAddress" placeholder="0x..." required pattern="0x[a-fA-F0-9]{40}" title="Enter a valid Ethereum address starting with 0x">
   <p class="info">This is where we'll send your USDC payments. Get one at <a href="https://wallet.coinbase.com" target="_blank" style="color:#81c784">Coinbase Wallet</a> or <a href="https://www.rabby.io" target="_blank" style="color:#81c784">Rabby Wallet</a> (free, takes 2 minutes).</p>
 
-  <label>Work Experience *</label>
-  <textarea name="experience" id="experience" placeholder="Tell us about your experience with invasive removal, native planting, soil work, or land stewardship..." required></textarea>
+  <label for="experience">Work Experience *</label>
+  <textarea name="experience" id="experience" placeholder="Tell us about your experience with invasive removal, native planting, soil work, or land stewardship..." required maxlength="2000"></textarea>
 
   <div class="work-types-group">
     <label style="display:block;font-weight:600;margin-bottom:12px">Work Types You Can Do *</label>
@@ -293,14 +311,14 @@ a{color:#81c784}
 </style>
 </head><body>
 <div class="container">
-<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
+<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" rel="noopener noreferrer" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
 
 <h1>Contractor Proof-of-Work</h1>
 <p class="subtitle">Submit GPS-tagged photos to verify completed work on 25th Street parcels</p>
 
 <!-- Access Code Gate -->
 <div id="accessCodeSection" class="card">
-  <label>Access Code *</label>
+  <label for="accessCode">Access Code *</label>
   <input type="text" id="accessCode" class="access-code-input" placeholder="DRYAD-XXXX" maxlength="12">
   <p class="info">Enter the access code sent to your email after application approval.</p>
   <button type="button" onclick="validateAccessCode()" style="margin-top:8px">Validate Code</button>
@@ -314,11 +332,11 @@ a{color:#81c784}
 
   <div class="access-validated" id="validatedStatus"></div>
 
-  <label>Work Type *</label>
+  <label for="workType">Work Type *</label>
   <select name="workType" id="workType">${workTypeOptions}</select>
 
   <label>Photo Capture *</label>
-  <p class="info">Use your device camera to capture GPS-tagged photos. Minimum 2 photos required. Maximum 20 photos.</p>
+  <p class="info">Use your device camera to capture GPS-tagged photos. Minimum 2 photos required. Maximum 20 photos. Max 10 MB per photo, 50 MB total.</p>
 
   <div class="camera-container">
     <video id="videoPreview" autoplay playsinline muted style="display:none;width:100%;max-height:60vh;border-radius:8px;background:#000"></video>
@@ -338,8 +356,8 @@ a{color:#81c784}
   <div class="photo-count" id="photoCount">0/20 photos</div>
   <div id="photoThumbnails"></div>
 
-  <label>Description of Work *</label>
-  <textarea name="description" id="description" placeholder="e.g. Removed 3 Tree of Heaven saplings at NW corner, applied glyphosate to stumps, bagged debris" required></textarea>
+  <label for="description">Description of Work *</label>
+  <textarea name="description" id="description" placeholder="e.g. Removed 3 Tree of Heaven saplings at NW corner, applied glyphosate to stumps, bagged debris" required maxlength="2000"></textarea>
 
   <p class="info">GPS is automatically captured with each photo. Payment up to \$50/job in USDC on Base.</p>
 
@@ -410,6 +428,18 @@ async function openCamera() {
   var btn = document.getElementById('openCameraBtn');
   btn.textContent = 'Opening camera...';
   btn.disabled = true;
+
+  // Check GPS availability BEFORE opening camera so user knows upfront
+  try {
+    await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+    });
+  } catch (gpsErr) {
+    var warn = document.getElementById('galleryWarning');
+    warn.style.display = 'block';
+    warn.textContent = 'Warning: Location services unavailable. Photos will be captured without GPS tagging. Enable location in your phone settings for best results.';
+  }
+
   try {
     videoStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment' }
@@ -553,17 +583,43 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
 
   const res = document.getElementById('result');
   const btn = document.getElementById('submitBtn');
-  btn.textContent = 'Submitting...';
+  btn.textContent = 'Uploading...';
   btn.classList.add('btn-loading');
 
+  // Show progress bar
+  var progressWrap = document.createElement('div');
+  progressWrap.style.cssText = 'width:100%;background:#1a2e1a;border-radius:8px;overflow:hidden;margin:12px 0;height:24px;border:1px solid #2e7d32';
+  var progressBar = document.createElement('div');
+  progressBar.style.cssText = 'width:0%;height:100%;background:#4caf50;transition:width 0.3s;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600';
+  progressBar.textContent = '0%';
+  progressWrap.appendChild(progressBar);
+  res.textContent = '';
+  res.appendChild(progressWrap);
+
   try {
-    const resp = await fetch('/Dryad/api/submissions', {
-      method: 'POST',
-      body: form,
+    // Use XMLHttpRequest for upload progress tracking
+    const data = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/Dryad/api/submissions');
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          var pct = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = pct + '%';
+          progressBar.textContent = pct + '%';
+          btn.textContent = 'Uploading... ' + pct + '%';
+        }
+      });
+      xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); } catch { reject(new Error('Invalid server response')); }
+      };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.ontimeout = () => reject(new Error('Upload timed out'));
+      xhr.timeout = 120000;
+      xhr.send(form);
     });
-    const data = await resp.json();
+    progressWrap.remove();
     res.textContent = '';
-    if (resp.ok && data.batchId) {
+    if (data.batchId) {
       var d = document.createElement('div'); d.className = 'success';
       d.textContent = ''; var strong = document.createElement('strong'); strong.textContent = 'Batch submitted!'; d.appendChild(strong); d.appendChild(document.createTextNode(' Batch ID: ' + data.batchId + ' | Photos: ' + data.submissions.length)); var easNote = document.createElement('span'); easNote.style.cssText = 'font-size:12px;color:#81c784;margin-top:6px;display:block'; easNote.textContent = 'Once verified, an onchain attestation will be minted on Base. '; var easLink = document.createElement('a'); easLink.href = 'https://base.easscan.org'; easLink.target = '_blank'; easLink.style.cssText = 'color:#81c784;text-decoration:underline'; easLink.textContent = 'View on EAS Explorer'; easNote.appendChild(easLink); d.appendChild(easNote);
       res.appendChild(d);
@@ -686,7 +742,7 @@ code{word-break:break-all}
   <div class="card">
     <h2>Treasury Stress Test</h2>
     <div id="stressTest" class="loading">Loading...</div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">USDC deployed into DeFi yield protocols (Aave V3, Compound V3) on Base L2.</p>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">USDC deployed cross-chain into DeFi yield protocols (Aave V3, Compound V3, Morpho) on Base and Arbitrum.</p>
   </div>
 
   <!-- Milestones -->
