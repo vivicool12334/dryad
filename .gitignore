@@ -1,11 +1,7 @@
+# === Secrets & credentials ===
 .env
 .env.local
 .env.*.local
-node_modules/
-dist/
-build/
-.eliza/
-*.tsbuildinfo
 *.pem
 *.key
 *-key
@@ -16,16 +12,57 @@ id_ed25519
 *.p8
 *.pfx
 *.p12
+
+# === Build artifacts & runtime ===
+node_modules/
+dist/
+build/
+.eliza/
+*.tsbuildinfo
+
+# === Runtime data (logs, state) ===
+# Track data/tweet-queue.json (editorial content), ignore everything else
+data/*
+!data/tweet-queue.json
+
+# === Editor / OS junk ===
 .DS_Store
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# === Claude tooling ===
+.claude/
+claude-code-*.md
+
+# === Temporary / uploads ===
 .tmp/
 uploads/
+
+# === Large media (not for git) ===
 March 2026 pics*/
 dryad media/
+
+# === Design tool exports ===
 *.excalidraw
-claude-code-*.md
-data/
+exc.svg
+site/exc.svg
+
+# === Pitch / collateral (large binaries) ===
+dryad-pitch.pptx
+pitch-assets/
+dryad-refi-integration-plan.docx
+
+# === Vercel local config ===
+site/.vercel/
+
+# === Legal (private) ===
+legal/
+
+# === Ephemeral audit artifacts ===
+CODEX_AUDIT_PROMPT.md
+
+# === Stray skill copies ===
+restart-dryad-SKILL.md
