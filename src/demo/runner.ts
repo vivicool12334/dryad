@@ -35,7 +35,7 @@ import { generateProofReport } from './reportGenerator.ts';
 // ---------------------------------------------------------------------------
 
 function seedContractors(): void {
-  const seedPath = path.join(import.meta.dir, 'seed', 'contractors.json');
+  const seedPath = path.join(path.dirname(new URL(import.meta.url).pathname), 'seed', 'contractors.json');
   const destDir = path.join(process.cwd(), '.eliza');
   const destPath = path.join(destDir, 'contractors.json');
 
@@ -45,7 +45,7 @@ function seedContractors(): void {
 }
 
 function seedSubmissions(): void {
-  const seedPath = path.join(import.meta.dir, 'seed', 'submissions.json');
+  const seedPath = path.join(path.dirname(new URL(import.meta.url).pathname), 'seed', 'submissions.json');
   const raw = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
 
   // Set timestamps to "recent" so they pass validation

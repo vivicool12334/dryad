@@ -308,8 +308,9 @@ export class DecisionLoopService extends Service {
         const updated = approveContractor(app.id);
         if (updated && updated.accessCode) {
           approved++;
-          logger.info(`[Dryad] Approved contractor: ${app.name} (${app.email}) → code ${updated.accessCode}`);
-          audit('CONTRACTOR_APPROVED', `${app.name} (${app.email}) → ${updated.accessCode}`, 'contractor_review', 'info');
+          const redactedCode = updated.accessCode ? updated.accessCode.slice(0, 2) + '****' : '???';
+          logger.info(`[Dryad] Approved contractor: ${app.name} (${app.email}) → code ${redactedCode}`);
+          audit('CONTRACTOR_APPROVED', `${app.name} (${app.email}) → ${redactedCode}`, 'contractor_review', 'info');
 
           // Send access code via email
           try {
@@ -484,10 +485,9 @@ Budget: Up to $50 per parcel per visit.`;
         if (!sub.visionApproved || sub.easAttestationUid) continue;
 
         try {
-          // Resolve contractor wallet address (fall back to zero address for non-contractor submissions)
-          let contractorWallet: `0x${string}` = '0x0000000000000000000000000000000000000000';
+          // Resolve contractor wallet address — skip attestation if wallet can't be resolved
+          let contractorWallet: `0x${string}` | null = null;
           if (sub.contractorName) {
-            // Look up contractor wallet from the contractors registry
             try {
               const { validateAccessCode, getAllContractors } = await import('../contractors.ts');
               const allContractors = getAllContractors();
@@ -497,7 +497,13 @@ Budget: Up to $50 per parcel per visit.`;
               if (contractor?.walletAddress?.startsWith('0x') && contractor.walletAddress.length === 42) {
                 contractorWallet = contractor.walletAddress as `0x${string}`;
               }
-            } catch { /* non-critical */ }
+            } catch (e) {
+              logger.warn(`[EAS] Failed to look up contractor wallet for ${sub.contractorName}: ${e}`);
+            }
+          }
+          if (!contractorWallet) {
+            logger.warn(`[EAS] Skipping attestation for ${sub.id}: no valid contractor wallet found (would have used zero address)`);
+            continue;
           }
 
           const photoHash = (sub.imageHash && /^(0x)?[a-fA-F0-9]{64}$/.test(sub.imageHash)) ? sub.imageHash : '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -645,7 +651,7 @@ Budget: Up to $50 per parcel per visit.`;
               commonName,
               qualityGrade: obs.quality_grade,
               observationId: obs.id,
-              parcelAddress: nearestParcel?.address || 'Unknown',
+              parcelAddress: nearestParcel?.parcel.address || 'Unknown',
               location: obs.location || '0,0',
               observedAt: Math.floor(new Date(obs.observed_on || obs.created_at).getTime() / 1000),
               isInvasive,

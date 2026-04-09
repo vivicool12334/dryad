@@ -12,7 +12,7 @@ import type {
 const BASE = '/Dryad/api';
 
 function authHeader(): Record<string, string> {
-  const secret = localStorage.getItem('dryad_admin_secret');
+  const secret = sessionStorage.getItem('dryad_admin_secret');
   return secret ? { Authorization: `Bearer ${secret}` } : {};
 }
 
@@ -67,13 +67,13 @@ export const api = {
 
 // Auth helpers
 export function getStoredSecret(): string | null {
-  return localStorage.getItem('dryad_admin_secret');
+  return sessionStorage.getItem('dryad_admin_secret');
 }
 export function setStoredSecret(secret: string): void {
-  localStorage.setItem('dryad_admin_secret', secret);
+  sessionStorage.setItem('dryad_admin_secret', secret);
 }
 export function clearStoredSecret(): void {
-  localStorage.removeItem('dryad_admin_secret');
+  sessionStorage.removeItem('dryad_admin_secret');
 }
 export function isAuthenticated(): boolean {
   return !!getStoredSecret();

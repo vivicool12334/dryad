@@ -20,7 +20,9 @@ export type AuditEventType =
   | 'AUTORESEARCH'
   | 'DEFI_DEPOSIT' | 'DEFI_WITHDRAW'
   | 'REBALANCE_EXECUTED' | 'REBALANCE_ERROR'
-  | 'YIELD_MONITOR';
+  | 'YIELD_MONITOR'
+  | 'ADMIN_ACTION'
+  | 'CONTRACTOR_APPROVED' | 'CONTRACTOR_NEEDS_REVIEW';
 
 export interface AuditEntry {
   timestamp: string;

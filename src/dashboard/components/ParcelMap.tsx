@@ -3,6 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
 import { Card, Loading } from '../App';
 
+// SECURITY: Escape HTML entities in GeoJSON properties to prevent XSS
+function escHtml(s: string): string {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // Parcel center points (fallback if GeoJSON fetch fails)
 const PARCEL_CENTERS = [
   { address: '4475 25th St', parcelNumber: '12009490', lat: 42.34143, lng: -83.09995 },
@@ -115,8 +120,8 @@ export default function ParcelMap() {
           fillOpacity: 0.25,
         },
         onEachFeature: (feature: any, layer: any) => {
-          const addr = feature.properties?.address || feature.properties?.Address || feature.properties?.SITEADDRESS || 'Parcel';
-          const parcelNo = feature.properties?.parcelno || feature.properties?.parcelNumber || '';
+          const addr = escHtml(feature.properties?.address || feature.properties?.Address || feature.properties?.SITEADDRESS || 'Parcel');
+          const parcelNo = escHtml(feature.properties?.parcelno || feature.properties?.parcelNumber || '');
           layer.bindPopup(`
             <div style="font-family: var(--font-mono, monospace); font-size: 12px; color: #e0e0e0;">
               <strong style="color: #4caf50">${addr}</strong><br/>

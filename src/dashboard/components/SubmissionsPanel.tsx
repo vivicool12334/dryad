@@ -24,7 +24,7 @@ export default function SubmissionsPanel() {
   const proofCount = all.filter(s => s.type === 'proof_of_work').length;
   const plantCount = all.filter(s => s.type === 'plant_id').length;
   const unprocessed = all.filter(s => !s.processed).length;
-  const attestedCount = all.filter(s => s.easAttestationUid).length;
+  const attestedCount = all.filter(s => s.easUrl).length;
 
   return (
     <Card title="Contractor & Community Submissions">
@@ -94,7 +94,7 @@ export default function SubmissionsPanel() {
                 <span style={{ color: 'var(--text-muted)' }}>at {s.nearestParcel}</span>
                 <Badge label={s.type === 'proof_of_work' ? 'work' : 'plant'} color={s.type === 'proof_of_work' ? 'blue' : 'green'} />
                 {!s.processed && <Badge label="pending" color="amber" />}
-                {s.easAttestationUid && <Badge label="attested" color="blue" />}
+                {s.easUrl && <Badge label="attested" color="blue" />}
               </div>
               {s.description && (
                 <div style={{ color: 'var(--text-dim)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -105,19 +105,19 @@ export default function SubmissionsPanel() {
                 <div style={{ color: 'var(--text-dim)', fontSize: 11 }}>by {s.contractorName}</div>
               )}
               {s.easUrl && /^https:\/\/(base|base-sepolia)\.easscan\.org\//.test(s.easUrl) && (
-                <a href={s.easUrl} target="_blank" rel="noopener" style={{ color: 'var(--blue)', fontSize: 11, marginTop: 2, display: 'inline-block' }}>
+                <a href={s.easUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)', fontSize: 11, marginTop: 2, display: 'inline-block' }}>
                   View onchain attestation ↗
                 </a>
               )}
-              {!s.verified && s.verificationErrors.length > 0 && (
+              {!s.verified && s.verificationErrors && s.verificationErrors.length > 0 && (
                 <div style={{ color: 'var(--red)', fontSize: 11, marginTop: 2 }}>
                   {s.verificationErrors.join(', ')}
                 </div>
               )}
             </div>
             <div style={{ flexShrink: 0, textAlign: 'right', color: 'var(--text-dim)', fontSize: 10 }}>
-              {new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}<br />
-              {s.distanceMeters.toFixed(0)}m from parcel
+              {new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {s.distanceMeters != null && <><br />{s.distanceMeters.toFixed(0)}m from parcel</>}
             </div>
           </div>
         ))}

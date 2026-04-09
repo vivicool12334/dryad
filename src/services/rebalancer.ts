@@ -426,7 +426,7 @@ export async function runRebalanceCheck(
     return `rebalanced: ${successCount} actions, APY ${(record.estimatedApyBefore * 100).toFixed(2)}% → ${(record.estimatedApyAfter * 100).toFixed(2)}%`;
   } catch (err: any) {
     logger.error(`[Rebalancer] Rebalance check failed: ${err?.message}`);
-    audit('REBALANCE_ERROR', err?.message || 'Unknown error', 'rebalancer', 'error');
+    audit('REBALANCE_ERROR', err?.message || 'Unknown error', 'rebalancer', 'critical');
     return `error: ${err?.message}`;
   }
 }

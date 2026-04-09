@@ -94,10 +94,10 @@ export interface Transaction {
 export interface Submission {
   id: string;
   type: 'plant_id' | 'proof_of_work';
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
   nearestParcel: string;
-  distanceMeters: number;
+  distanceMeters?: number;
   timestamp: number;
   submittedAt: number;
   species?: string;
@@ -106,8 +106,12 @@ export interface Submission {
   photoFilename: string;
   contractorName?: string;
   verified: boolean;
-  verificationErrors: string[];
+  verificationErrors?: string[];
   processed: boolean;
+  easAttestationUid?: string;
+  easTxHash?: string;
+  easAttestedAt?: number;
+  easUrl?: string | null;
 }
 
 export interface Milestone {

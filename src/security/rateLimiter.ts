@@ -15,11 +15,13 @@ interface RateLimitConfig {
 }
 
 const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
-  'submit': { windowMs: 3600000, maxRequests: 10 },        // 10/hr per IP
-  'message': { windowMs: 3600000, maxRequests: 30 },        // 30/hr per IP
-  'api': { windowMs: 60000, maxRequests: 60 },              // 60/min per IP
-  'security': { windowMs: 60000, maxRequests: 10 },         // 10/min per IP
-  'default': { windowMs: 60000, maxRequests: 60 },          // 60/min per IP
+  'validate_code': { windowMs: 3600000, maxRequests: 5 },   // 5/hr per IP — brute-force protection
+  'contractor_apply': { windowMs: 3600000, maxRequests: 3 }, // 3/hr per IP — application spam
+  'submit': { windowMs: 3600000, maxRequests: 10 },          // 10/hr per IP
+  'message': { windowMs: 3600000, maxRequests: 30 },         // 30/hr per IP
+  'api': { windowMs: 60000, maxRequests: 60 },               // 60/min per IP
+  'security': { windowMs: 60000, maxRequests: 10 },          // 10/min per IP
+  'default': { windowMs: 60000, maxRequests: 60 },           // 60/min per IP
 };
 
 const GLOBAL_DAILY_LIMITS: Record<string, number> = {

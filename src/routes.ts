@@ -37,8 +37,11 @@ function parseIntParam(value: unknown, defaultVal: number, min: number, max: num
   return isNaN(n) ? defaultVal : Math.min(Math.max(n, min), max);
 }
 
-// Allowed CORS origins — Vercel frontend and agent itself
+// Allowed CORS origins — production domains, Vercel frontend, and local dev
 const ALLOWED_ORIGINS = [
+  'https://www.dryad.land',
+  'https://dryad.land',
+  'https://dashboard.dryad.land',
   'https://dryad.vercel.app',
   'http://5.75.225.23:3000',
   'http://localhost:5173',
@@ -58,6 +61,21 @@ function securityHeaders(res: RouteResponse): void {
   res.setHeader?.('X-Content-Type-Options', 'nosniff');
   res.setHeader?.('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader?.('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
+  res.setHeader?.('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader?.('Cross-Origin-Resource-Policy', 'same-origin');
+  // Override ElizaOS framework's permissive CSP (it hardcodes isProd=false → script-src *)
+  res.setHeader?.('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+    "font-src https://fonts.gstatic.com",
+    "img-src 'self' https: data: blob:",
+    "connect-src 'self' https://api.inaturalist.org https://api.coingecko.com https://gis.detroitmi.gov https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://api.mapbox.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join('; '));
 }
 
 // Auth helper: checks Authorization: Bearer <secret> (constant-time to prevent timing attacks)
@@ -120,9 +138,12 @@ function applyPageHTML(): string {
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dryad — Contractor Application</title>
+<link rel="canonical" href="https://dryad.land/Dryad/contractors">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh}
+.skip-link{position:absolute;top:-40px;left:0;background:#4caf50;color:#fff;padding:8px 16px;z-index:100;font-weight:600;border-radius:0 0 8px 0}
+.skip-link:focus{top:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh;min-height:100dvh}
 .container{max-width:640px;margin:0 auto;padding:24px}
 h1{color:#4caf50;margin-bottom:4px;font-size:28px}
 .subtitle{color:#81c784;margin-bottom:24px}
@@ -149,28 +170,29 @@ button:hover{background:#388e3c}
 }
 </style>
 </head><body>
+<a href="#applyForm" class="skip-link">Skip to application form</a>
 <div class="container">
-<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
+<div class="nav" role="navigation" aria-label="Site navigation"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" rel="noopener noreferrer" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
 
 <h1>Dryad Contractor Application</h1>
 <p class="subtitle">Apply to become a verified work contractor for 25th Street parcels</p>
 
 <form id="applyForm" class="card">
-  <label>Full Legal Name *</label>
+  <label for="fullName">Full Legal Name *</label>
   <input type="text" name="fullName" id="fullName" placeholder="Your full name" required>
 
-  <label>Email *</label>
+  <label for="email">Email *</label>
   <input type="email" name="email" id="email" placeholder="your@email.com" required>
 
-  <label>Phone Number *</label>
+  <label for="phone">Phone Number *</label>
   <input type="tel" name="phone" id="phone" placeholder="+1 (313) 555-0123" required>
 
-  <label>Base Wallet Address (for USDC payments) *</label>
-  <input type="text" name="walletAddress" id="walletAddress" placeholder="0x..." required>
+  <label for="walletAddress">Base Wallet Address (for USDC payments) *</label>
+  <input type="text" name="walletAddress" id="walletAddress" placeholder="0x..." required pattern="0x[a-fA-F0-9]{40}" title="Enter a valid Ethereum address starting with 0x">
   <p class="info">This is where we'll send your USDC payments. Get one at <a href="https://wallet.coinbase.com" target="_blank" style="color:#81c784">Coinbase Wallet</a> or <a href="https://www.rabby.io" target="_blank" style="color:#81c784">Rabby Wallet</a> (free, takes 2 minutes).</p>
 
-  <label>Work Experience *</label>
-  <textarea name="experience" id="experience" placeholder="Tell us about your experience with invasive removal, native planting, soil work, or land stewardship..." required></textarea>
+  <label for="experience">Work Experience *</label>
+  <textarea name="experience" id="experience" placeholder="Tell us about your experience with invasive removal, native planting, soil work, or land stewardship..." required maxlength="2000"></textarea>
 
   <div class="work-types-group">
     <label style="display:block;font-weight:600;margin-bottom:12px">Work Types You Can Do *</label>
@@ -244,9 +266,12 @@ function submitPageHTML(): string {
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dryad — Submit Proof of Work</title>
+<link rel="canonical" href="https://dryad.land/Dryad/submit">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh}
+.skip-link{position:absolute;top:-40px;left:0;background:#4caf50;color:#fff;padding:8px 16px;z-index:100;font-weight:600;border-radius:0 0 8px 0}
+.skip-link:focus{top:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh;min-height:100dvh}
 .container{max-width:640px;margin:0 auto;padding:24px}
 h1{color:#4caf50;margin-bottom:4px;font-size:28px}
 .subtitle{color:#81c784;margin-bottom:24px}
@@ -292,15 +317,16 @@ a{color:#81c784}
 }
 </style>
 </head><body>
+<a href="#accessCodeSection" class="skip-link">Skip to access code</a>
 <div class="container">
-<div class="nav"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
+<div class="nav" role="navigation" aria-label="Site navigation"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" rel="noopener noreferrer" style="background:#2e7d32;color:#fff;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit</a><a href="/Dryad/dashboard">Dashboard</a></div>
 
 <h1>Contractor Proof-of-Work</h1>
 <p class="subtitle">Submit GPS-tagged photos to verify completed work on 25th Street parcels</p>
 
 <!-- Access Code Gate -->
 <div id="accessCodeSection" class="card">
-  <label>Access Code *</label>
+  <label for="accessCode">Access Code *</label>
   <input type="text" id="accessCode" class="access-code-input" placeholder="DRYAD-XXXX" maxlength="12">
   <p class="info">Enter the access code sent to your email after application approval.</p>
   <button type="button" onclick="validateAccessCode()" style="margin-top:8px">Validate Code</button>
@@ -314,11 +340,11 @@ a{color:#81c784}
 
   <div class="access-validated" id="validatedStatus"></div>
 
-  <label>Work Type *</label>
+  <label for="workType">Work Type *</label>
   <select name="workType" id="workType">${workTypeOptions}</select>
 
   <label>Photo Capture *</label>
-  <p class="info">Use your device camera to capture GPS-tagged photos. Minimum 2 photos required. Maximum 20 photos.</p>
+  <p class="info">Use your device camera to capture GPS-tagged photos. Minimum 2 photos required. Maximum 20 photos. Max 10 MB per photo, 50 MB total.</p>
 
   <div class="camera-container">
     <video id="videoPreview" autoplay playsinline muted style="display:none;width:100%;max-height:60vh;border-radius:8px;background:#000"></video>
@@ -338,14 +364,14 @@ a{color:#81c784}
   <div class="photo-count" id="photoCount">0/20 photos</div>
   <div id="photoThumbnails"></div>
 
-  <label>Description of Work *</label>
-  <textarea name="description" id="description" placeholder="e.g. Removed 3 Tree of Heaven saplings at NW corner, applied glyphosate to stumps, bagged debris" required></textarea>
+  <label for="description">Description of Work *</label>
+  <textarea name="description" id="description" placeholder="e.g. Removed 3 Tree of Heaven saplings at NW corner, applied glyphosate to stumps, bagged debris" required maxlength="2000"></textarea>
 
   <p class="info">GPS is automatically captured with each photo. Payment up to \$50/job in USDC on Base.</p>
 
   <div style="background:#1a2e1a;border:1px solid #2e5a2e;border-radius:8px;padding:14px;margin:12px 0;font-size:13px">
     <strong style="color:#81c784">Your work gets a permanent digital receipt</strong>
-    <p style="margin:6px 0 0;color:#a0a0a0;line-height:1.5">When Dryad verifies your photos, a tamper-proof record is created on the blockchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a>. Think of it as a permanent receipt proving your ecological work — it can never be altered or deleted. <a href="https://base.easscan.org" target="_blank" style="color:#81c784">View attestations →</a></p>
+    <p style="margin:6px 0 0;color:#b8b8b8;line-height:1.5">When Dryad verifies your photos, a tamper-proof record is created on the blockchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a>. Think of it as a permanent receipt proving your ecological work — it can never be altered or deleted. <a href="https://base.easscan.org" target="_blank" style="color:#81c784">View attestations →</a></p>
   </div>
 
   <button type="submit" id="submitBtn">Submit Proof of Work</button>
@@ -357,7 +383,7 @@ a{color:#81c784}
 <div class="card-community">
   <h2>Visiting the forest? Help us catalog species!</h2>
   <p style="margin-bottom:16px">Download the <strong>iNaturalist</strong> app (free) and photograph any plants you find on our lots at 25th Street between Ash and Beech. Your observations automatically feed into Dryad's ecosystem monitoring — no account with us needed.</p>
-  <p style="margin-bottom:16px;font-size:13px;color:#a0a0a0">Research-grade observations (where the community confirms the species ID) are attested onchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a> — creating a permanent record of biodiversity data on Base. Your citizen science contributes to verifiable ecological impact.</p>
+  <p style="margin-bottom:16px;font-size:13px;color:#b8b8b8">Research-grade observations (where the community confirms the species ID) are attested onchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a> — creating a permanent record of biodiversity data on Base. Your citizen science contributes to verifiable ecological impact.</p>
 
   <div class="qr-section">
     <div class="qr-placeholder">
@@ -410,6 +436,18 @@ async function openCamera() {
   var btn = document.getElementById('openCameraBtn');
   btn.textContent = 'Opening camera...';
   btn.disabled = true;
+
+  // Check GPS availability BEFORE opening camera so user knows upfront
+  try {
+    await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+    });
+  } catch (gpsErr) {
+    var warn = document.getElementById('galleryWarning');
+    warn.style.display = 'block';
+    warn.textContent = 'Warning: Location services unavailable. Photos will be captured without GPS tagging. Enable location in your phone settings for best results.';
+  }
+
   try {
     videoStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment' }
@@ -553,17 +591,43 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
 
   const res = document.getElementById('result');
   const btn = document.getElementById('submitBtn');
-  btn.textContent = 'Submitting...';
+  btn.textContent = 'Uploading...';
   btn.classList.add('btn-loading');
 
+  // Show progress bar
+  var progressWrap = document.createElement('div');
+  progressWrap.style.cssText = 'width:100%;background:#1a2e1a;border-radius:8px;overflow:hidden;margin:12px 0;height:24px;border:1px solid #2e7d32';
+  var progressBar = document.createElement('div');
+  progressBar.style.cssText = 'width:0%;height:100%;background:#4caf50;transition:width 0.3s;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600';
+  progressBar.textContent = '0%';
+  progressWrap.appendChild(progressBar);
+  res.textContent = '';
+  res.appendChild(progressWrap);
+
   try {
-    const resp = await fetch('/Dryad/api/submissions', {
-      method: 'POST',
-      body: form,
+    // Use XMLHttpRequest for upload progress tracking
+    const data = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/Dryad/api/submissions');
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          var pct = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = pct + '%';
+          progressBar.textContent = pct + '%';
+          btn.textContent = 'Uploading... ' + pct + '%';
+        }
+      });
+      xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); } catch { reject(new Error('Invalid server response')); }
+      };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.ontimeout = () => reject(new Error('Upload timed out'));
+      xhr.timeout = 120000;
+      xhr.send(form);
     });
-    const data = await resp.json();
+    progressWrap.remove();
     res.textContent = '';
-    if (resp.ok && data.batchId) {
+    if (data.batchId) {
       var d = document.createElement('div'); d.className = 'success';
       d.textContent = ''; var strong = document.createElement('strong'); strong.textContent = 'Batch submitted!'; d.appendChild(strong); d.appendChild(document.createTextNode(' Batch ID: ' + data.batchId + ' | Photos: ' + data.submissions.length)); var easNote = document.createElement('span'); easNote.style.cssText = 'font-size:12px;color:#81c784;margin-top:6px;display:block'; easNote.textContent = 'Once verified, an onchain attestation will be minted on Base. '; var easLink = document.createElement('a'); easLink.href = 'https://base.easscan.org'; easLink.target = '_blank'; easLink.style.cssText = 'color:#81c784;text-decoration:underline'; easLink.textContent = 'View on EAS Explorer'; easNote.appendChild(easLink); d.appendChild(easNote);
       res.appendChild(d);
@@ -596,9 +660,12 @@ function dashboardHTML(): string {
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dryad — Dashboard</title>
+<link rel="canonical" href="https://dryad.land/Dryad/dashboard">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh}
+.skip-link{position:absolute;top:-40px;left:0;background:#4caf50;color:#fff;padding:8px 16px;z-index:100;font-weight:600;border-radius:0 0 8px 0}
+.skip-link:focus{top:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh;min-height:100dvh}
 .header{background:#1a2e1a;border-bottom:1px solid #2e7d32;padding:16px 24px;display:flex;align-items:center;gap:16px}
 .header h1{color:#4caf50;font-size:24px}
 .header nav a{color:#81c784;text-decoration:none;margin-left:16px}
@@ -625,6 +692,11 @@ table{width:100%;border-collapse:collapse}
 td,th{padding:8px;text-align:left;border-bottom:1px solid #1b3a1b;font-size:14px}
 th{color:#81c784}
 .loading{color:#81c784;font-style:italic}
+.skeleton{background:linear-gradient(90deg,#1a2e1a 25%,#243d24 50%,#1a2e1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:20px;margin-bottom:8px}
+.skeleton.lg{height:40px;width:60%}
+.skeleton.md{height:16px;width:80%}
+.skeleton.sm{height:14px;width:50%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 code{word-break:break-all}
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media (max-width: 768px) {
@@ -641,9 +713,10 @@ code{word-break:break-all}
 }
 </style>
 </head><body>
+<a href="#map" class="skip-link">Skip to map</a>
 <div class="header">
   <h1>🌿 Dryad Dashboard</h1>
-  <nav><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;padding:6px 12px;border-radius:6px;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit Work</a><a href="/Dryad/dashboard">Dashboard</a></nav>
+  <nav role="navigation" aria-label="Site navigation"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;padding:6px 12px;border-radius:6px;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit Work</a><a href="/Dryad/dashboard">Dashboard</a></nav>
 </div>
 
 <div class="grid">
@@ -656,13 +729,13 @@ code{word-break:break-all}
   <!-- Health Score -->
   <div class="card">
     <h2>Ecosystem Health</h2>
-    <div id="healthScore" class="loading">Loading...</div>
+    <div id="healthScore" class="loading"><div class="skeleton lg"></div><div class="skeleton sm"></div><div class="skeleton sm"></div></div>
   </div>
 
   <!-- Treasury -->
   <div class="card">
     <h2>Treasury</h2>
-    <div id="treasury" class="loading">Loading...</div>
+    <div id="treasury" class="loading"><div class="skeleton lg"></div><div class="skeleton lg"></div><div class="skeleton md"></div></div>
   </div>
 
   <!-- Annual Cost Breakdown -->
@@ -685,33 +758,33 @@ code{word-break:break-all}
   <!-- Stress Test -->
   <div class="card">
     <h2>Treasury Stress Test</h2>
-    <div id="stressTest" class="loading">Loading...</div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">USDC deployed into DeFi yield protocols (Aave V3, Compound V3) on Base L2.</p>
+    <div id="stressTest" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div><div class="skeleton md"></div></div>
+    <p style="font-size:12px;color:#81c784;margin-top:8px">USDC deployed cross-chain into DeFi yield protocols (Aave V3, Compound V3, Morpho) on Base and Arbitrum.</p>
   </div>
 
   <!-- Milestones -->
   <div class="card">
     <h2>Onchain Milestones</h2>
-    <div id="milestones" class="loading">Loading...</div>
+    <div id="milestones" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div></div>
   </div>
 
   <!-- Spending Mode -->
   <div class="card">
     <h2>Adaptive Spending Mode</h2>
-    <div id="spendingMode" class="loading">Loading...</div>
+    <div id="spendingMode" class="loading"><div class="skeleton lg"></div><div class="skeleton sm"></div></div>
   </div>
 
   <!-- iNaturalist Observations -->
   <div class="card full">
     <h2>iNaturalist Observations on Parcels</h2>
-    <div id="inatObs" class="loading">Loading from iNaturalist API...</div>
+    <div id="inatObs" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div><div class="skeleton sm"></div></div>
     <p style="font-size:12px;color:#81c784;margin-top:8px"><a href="${INAT_OBS_URL}" target="_blank">View all observations</a> | <a href="/Dryad/submit">Help catalog species with iNaturalist</a> | <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(INAT_OBS_URL)}" alt="QR" width="40" height="40" style="vertical-align:middle;margin-left:8px;border-radius:4px"></p>
   </div>
 
   <!-- Recent Contractor Submissions -->
   <div class="card full">
     <h2>Contractor Proof-of-Work Submissions</h2>
-    <div id="submissions" class="loading">Loading...</div>
+    <div id="submissions" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div><div class="skeleton sm"></div></div>
   </div>
 
   <!-- Agent Info -->
@@ -847,7 +920,7 @@ fetch('${INAT_API_URL}&per_page=10&order_by=observed_on&taxon_name=Plantae').the
     const date = o.observed_on || '?';
     const grade = o.quality_grade === 'research' ? '<span style="color:#4caf50">Research</span>' : o.quality_grade || '?';
     const isInvasive = ['Ailanthus','Lonicera','Lythrum','Phragmites','Alliaria','Reynoutria','Rhamnus'].some(g => sci.toLowerCase().includes(g.toLowerCase()));
-    return '<tr' + (isInvasive ? ' style="color:#ef5350;font-weight:600"' : '') + '><td>' + name + (isInvasive ? ' ⚠️' : '') + '<br><span style="font-size:11px;color:#888">' + sci + '</span></td><td>' + observer + '</td><td>' + date + '</td><td>' + grade + '</td></tr>';
+    return '<tr' + (isInvasive ? ' style="color:#ef5350;font-weight:600"' : '') + '><td>' + name + (isInvasive ? ' ⚠️' : '') + '<br><span style="font-size:11px;color:#b0b0b0">' + sci + '</span></td><td>' + observer + '</td><td>' + date + '</td><td>' + grade + '</td></tr>';
   }).join('') + '</table>';
 }).catch(()=>{ document.getElementById('inatObs').textContent = 'Failed to load'; });
 
@@ -862,7 +935,7 @@ fetch('/Dryad/api/submissions').then(r=>r.json()).then(data => {
     '<span class="' + (s.verified ? 'sub-verified' : 'sub-failed') + '">' + (s.verified ? '✅' : '❌') + '</span> ' +
     '<strong>' + esc(s.workType || s.type) + '</strong> at ' + esc(s.nearestParcel) +
     (s.contractorName ? ' — ' + esc(s.contractorName) : '') +
-    ' <span style="color:#666;font-size:12px">' + new Date(s.submittedAt).toLocaleString() + '</span>' +
+    ' <span style="color:#b0b0b0;font-size:12px">' + new Date(s.submittedAt).toLocaleString() + '</span>' +
     '</div>'
   ).join('');
 }).catch(()=>{ document.getElementById('submissions').textContent = 'Failed to load'; });
@@ -890,6 +963,17 @@ export const dryadRoutes = [
       res.setHeader?.('Content-Security-Policy', "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'");
       res.setHeader?.('Content-Type', 'text/html');
       res.send(submitPageHTML());
+    },
+  },
+  {
+    name: 'contractors-page',
+    path: '/contractors',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      securityHeaders(res);
+      res.setHeader?.('Content-Security-Policy', "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'");
+      res.setHeader?.('Content-Type', 'text/html');
+      res.send(applyPageHTML());
     },
   },
   {
@@ -992,14 +1076,16 @@ export const dryadRoutes = [
           const description = sanitize(fields.description, 2000);
           const batchId = sanitize(fields.batchId || `batch_${Date.now()}`, 50);
 
-          // NEW: If access code is provided, validate it (contractor submission)
+          // SECURITY: Require valid access code for all proof_of_work submissions (no anonymous uploads)
           let contractor = null;
-          if (accessCode) {
-            contractor = validateAccessCode(accessCode);
-            if (!contractor) {
-              res.status(403).json({ error: 'Invalid access code' } as unknown);
-              return;
-            }
+          if (!accessCode) {
+            res.status(401).json({ error: 'Access code required. Apply at /Dryad/contractors to get one.' } as unknown);
+            return;
+          }
+          contractor = validateAccessCode(accessCode);
+          if (!contractor) {
+            res.status(403).json({ error: 'Invalid access code' } as unknown);
+            return;
           }
 
           // SECURITY: Check for injection attempts
@@ -1076,11 +1162,11 @@ export const dryadRoutes = [
 
             // Fire-and-forget: run vision verification in background
             verifyWorkPhoto({
-              photoPath: submission.photoPath,
+              photoPath: submission.photoPath || photoPath,
               workType: submission.workType || 'site_assessment',
               workDescription: submission.description,
               parcelAddress: submission.nearestParcel,
-              contractorName: submission.contractorName,
+              contractorName: submission.contractorName || '',
             }).then((visionResult) => {
               updateSubmissionVision(submission.id, {
                 score: visionResult.score,
@@ -1178,11 +1264,26 @@ export const dryadRoutes = [
     path: '/api/submissions',
     type: 'GET' as const,
     handler: async (_req: RouteRequest, res: RouteResponse) => {
-      // SECURITY: Strip contractor email from public response (PII)
-      const subs = getAllSubmissions().map(({ contractorEmail, ...rest }) => ({
-        ...rest,
-        // Add EAS attestation URL if attestation exists
-        easUrl: rest.easAttestationUid ? getAttestationUrl(rest.easAttestationUid as `0x${string}`) : null,
+      // SECURITY: Return only safe public fields — no coordinates, file paths, internal metadata, or PII
+      const subs = getAllSubmissions().map((sub) => ({
+        id: sub.id,
+        type: sub.type,
+        nearestParcel: sub.nearestParcel,
+        timestamp: sub.timestamp,
+        submittedAt: sub.submittedAt,
+        species: sub.species ?? null,
+        workType: sub.workType ?? null,
+        description: sub.description,
+        photoFilename: sub.photoFilename,
+        contractorName: sub.contractorName ?? null,
+        verified: sub.verified,
+        processed: sub.processed,
+        visionScore: sub.visionScore ?? null,
+        visionApproved: sub.visionApproved ?? null,
+        visionVerifiedAt: sub.visionVerifiedAt ?? null,
+        hasBeforePhoto: !!sub.beforePhotoPath,
+        pending: !sub.visionVerifiedAt,
+        easUrl: sub.easAttestationUid ? getAttestationUrl(sub.easAttestationUid as `0x${string}`) : null,
       }));
       res.json(subs);
     },
@@ -1925,11 +2026,21 @@ KEY URLS (use these exactly when relevant):
     path: '/api/submissions/:id/before',
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      // SECURITY: Require admin or contractor auth
-      const authHeader = (req.headers?.['authorization'] || req.headers?.['x-api-key'] || '') as string;
-      if (!authHeader) {
-        res.status(401).json({ error: 'Authentication required' } as unknown);
-        return;
+      // SECURITY: Require admin auth OR valid contractor access code bound to this submission
+      const adminAuthed = isAdmin(req);
+      let authedContractorName: string | null = null;
+      if (!adminAuthed) {
+        const accessCodeHeader = (req.headers?.['x-access-code'] || '') as string;
+        if (!accessCodeHeader) {
+          res.status(401).json({ error: 'Authentication required. Use admin Bearer token or X-Access-Code header.' } as unknown);
+          return;
+        }
+        const contractor = validateAccessCode(accessCodeHeader);
+        if (!contractor) {
+          res.status(403).json({ error: 'Invalid access code' } as unknown);
+          return;
+        }
+        authedContractorName = contractor.name;
       }
       const id = (req as any).params?.id;
       if (!id) {
@@ -1939,6 +2050,11 @@ KEY URLS (use these exactly when relevant):
       const sub = getSubmissionById(id);
       if (!sub) {
         res.status(404).json({ error: 'Submission not found' } as unknown);
+        return;
+      }
+      // SECURITY: Non-admin contractors can only modify their own submissions
+      if (!adminAuthed && authedContractorName && sub.contractorName !== authedContractorName) {
+        res.status(403).json({ error: 'You can only upload before-photos for your own submissions' } as unknown);
         return;
       }
 
