@@ -43,11 +43,12 @@ export function Card({ title, badge, children, className = '' }: { title?: strin
   );
 }
 
-export function Stat({ value, label, color }: { value: React.ReactNode; label: string; color?: string }) {
+export function Stat({ value, label, color, size }: { value: React.ReactNode; label: string; color?: string; size?: 'sm' | 'md' }) {
+  const fontSize = size === 'sm' ? 18 : 22;
   return (
-    <div style={{ flex: 1, minWidth: 80 }}>
-      <div style={{ fontSize: 26, fontWeight: 700, fontFamily: 'var(--font-mono)', color: color || 'var(--amber)', lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</div>
+    <div style={{ flex: '0 0 auto', minWidth: 0 }}>
+      <div style={{ fontSize, fontWeight: 700, fontFamily: 'var(--font-mono)', color: color || 'var(--amber)', lineHeight: 1.1, whiteSpace: 'nowrap' }}>{value}</div>
+      <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
     </div>
   );
 }
@@ -141,6 +142,14 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   );
 }
 
+const NAV_LINKS = [
+  { href: '/', label: 'Chat' },
+  { href: '/Dryad/submit', label: 'Submit Work' },
+  { href: '/Dryad/contractors', label: 'Apply' },
+  { href: '/Dryad/mock', label: 'Year 3 Mock' },
+  { href: 'https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping', label: 'iNaturalist' },
+];
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [admin, setAdmin] = useState(isAuthenticated);
@@ -158,7 +167,15 @@ export default function App() {
   const modeColor = spendingMode === 'NORMAL' ? 'var(--green)' : spendingMode === 'CONSERVATION' ? 'var(--amber)' : 'var(--red)';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      {/* Skip-to-content for keyboard accessibility */}
+      <a href="#dashboard-main" style={{
+        position: 'absolute', top: -40, left: 0, background: 'var(--green)', color: '#fff',
+        padding: '8px 16px', zIndex: 200, fontWeight: 600, borderRadius: '0 0 8px 0', fontSize: 13,
+      }} onFocus={e => { e.currentTarget.style.top = '0'; }}
+         onBlur={e => { e.currentTarget.style.top = '-40px'; }}>
+        Skip to dashboard
+      </a>
       {/* ── Header ── */}
       <header style={{
         background: 'rgba(26, 28, 20, 0.97)',
@@ -203,14 +220,15 @@ export default function App() {
           </div>
 
           {/* Nav links */}
-          <nav className="header-nav" style={{ display: 'flex', gap: 20 }}>
+          <nav className="header-nav" role="navigation" aria-label="Site navigation" style={{ display: 'flex', gap: 20 }}>
             {[
               ['/', 'Chat'],
               ['/Dryad/submit', 'Submit Work'],
+              ['/Dryad/contractors', 'Apply'],
               ['/Dryad/mock', 'Year 3 Mock'],
               ['https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping', 'iNaturalist'],
             ].map(([href, label]) => (
-              <a key={href} href={href} target={href.startsWith('http') ? '_blank' : undefined} style={{
+              <a key={href} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined} style={{
                 color: 'rgba(210, 214, 193, 0.55)',
                 fontSize: 11,
                 fontFamily: 'var(--font-mono)',
@@ -236,16 +254,23 @@ export default function App() {
         </div>
       </header>
 
+      {/* ── Mobile nav (visible below 700px when header nav is hidden) ── */}
+      <nav className="mobile-nav" style={{ display: 'none', gap: 6, padding: '10px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', overflowX: 'auto', whiteSpace: 'nowrap' as const }}>
+        {NAV_LINKS.map(({ label, href }) => (
+          <a key={href} href={href} style={{ fontSize: 12, color: 'var(--text-muted)', padding: '6px 10px', border: '1px solid var(--border)', borderRadius: 6, fontFamily: 'var(--font-mono)', textDecoration: 'none', flexShrink: 0 }}>{label}</a>
+        ))}
+      </nav>
+
       {/* ── Season banner ── */}
       <SeasonWidget />
 
       {/* ── Main grid ── */}
-      <main style={{
+      <main id="dashboard-main" className="dashboard-grid" style={{
         maxWidth: 1400,
         margin: '0 auto',
         padding: '28px 28px 80px',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
         gap: 20,
       }}>
 
@@ -305,9 +330,9 @@ export default function App() {
                     <td style={{ color: 'var(--text-dim)', padding: '8px 0', paddingRight: 24, whiteSpace: 'nowrap', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', width: 150 }}>{k}</td>
                     <td style={{ padding: '8px 0', wordBreak: 'break-all', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
                       {k === 'Milestones' ? (
-                        <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener">{v}</a>
+                        <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
                       ) : k === 'Wallet' && v !== '—' ? (
-                        <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener">{v}</a>
+                        <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
                       ) : v}
                     </td>
                   </tr>

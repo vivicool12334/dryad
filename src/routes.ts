@@ -966,6 +966,17 @@ export const dryadRoutes = [
     },
   },
   {
+    name: 'contractors-page',
+    path: '/contractors',
+    type: 'GET' as const,
+    handler: async (_req: RouteRequest, res: RouteResponse) => {
+      securityHeaders(res);
+      res.setHeader?.('Content-Security-Policy', "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'");
+      res.setHeader?.('Content-Type', 'text/html');
+      res.send(contractorPageHTML());
+    },
+  },
+  {
     name: 'dashboard-page-html',
     path: '/dashboard-html',
     type: 'GET' as const,

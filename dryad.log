@@ -1,0 +1,122 @@
+ Info       [CLI] Using local @elizaos/cli installation (util=local-cli-delegation)
+
+[38;5;27m⠀⠀⠀⠀⠀⠀⠀⠀⢀⣐⣿⣿⢰⡀⠀⠀⠀[38;5;255m ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[38;5;255m⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[0m
+[38;5;27m⠀⠀⠀⠀⠀⢀⣴⠤⠾⠛⠛⣿⣶⣇⠀⠀⡆[38;5;255m ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[38;5;255m⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[0m
+[38;5;27m⢰⣋⡳⡄⠀⢨⣭⡀⠀⡤⠀⣀⣝⢿⣶⣿⡅[38;5;255m ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[38;5;255m⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[0m
+[38;5;27m⢸⣯⠀⣇⠀⣼⣿⣿⣆⢷⣴⣿⣿⡏⣛⡉⠀[38;5;255m ⢸⣿⣿⣿⣿⣿⣿⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⣾⣿⣿⣧⠀⠀⠀[38;5;255m⢸⠟⢀⣴⣿⣿⣿⣿⣦⡀⣠⣾⣿⣿⣿⣿⣦⡙⢿[0m
+[38;5;27m⠀⠙⢷⣮⢸⣿⣿⣿⣿⣷⣯⣟⣏⣼⣷⣅⠾[38;5;255m ⢸⣿⣇⣀⣀⣀⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⠀⠀⣠⣿⣿⠟⠁⠀⠀⣼⣿⡟⣿⣿⣆⠀⠀[38;5;255m⠀⠀⣿⣿⠋⠀⠈⠻⣿⡇⣿⣿⣅⣀⣀⡛⠛⠃⠀[0m
+[38;5;27m⠀⠀⠀⠁⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀[38;5;255m ⢸⣿⡿⠿⠿⠿⠀⢸⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⣠⣾⣿⠟⠁⠀⠀⠀⣰⣿⣿⣁⣸⣿⣿⡄⠀[38;5;255m⠀⠀⣿⣿ ⠀⠀ ⣿⣿⢈⣛⠿⠿⠿⣿⣷⡄⠀[0m
+[38;5;27m⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣉⡟⠀⠀[38;5;255m ⢸⣿⣧⣤⣤⣤⣤⢸⣿⣿⣦⣤⣤⣤⡄⣿⣿⡇⣾⣿⣿⣧⣤⣤⣤⡄⢰⣿⣿⠟⠛⠛⠻⣿⣿⡄[38;5;255m⢠⡀⠻⣿⣿⣦⣴⣿⣿⠇⢿⣿⣦⣤⣤⣿⣿⠇⣠[0m
+[38;5;27m⠀⠀⠀⠀⢰⡈⠛⠿⣿⣿⣿⣿⣿⠋⠀  [38;5;255m ⠘⠛⠛⠛⠛⠛⠛⠈⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠛⠛⠛⠛⠛⠛⠛⠃⠛⠛⠃⠀⠀⠀⠀⠙⠛⠃[38;5;255m⠘⠛⠀⠈⠛⠛⠛⠛⠁⠀⠀⠙⠛⠛⠛⠛⠁⠚⠛[0m
+[38;5;27m⠀⠀⠀⠀⢸⣿⡦⠀⠀⠉⠛⠿⠃⠀⠀⠀ [38;5;255m ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[38;5;255m⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[0m
+
+[38;5;51mVersion: 1.7.2[0m
+[dotenv@17.3.1] injecting env (10) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[?25l[90m│[39m
+[35m◒[39m  Building project[999D[J[35m◐[39m  Building project[999D[J[35m◓[39m  Building project[999D[J[35m◑[39m  Building project[999D[J[35m◒[39m  Building project[999D[J[35m◐[39m  Building project[999D[J[35m◓[39m  Building project[999D[J[35m◑[39m  Building project[999D[J[35m◒[39m  Building project.[999D[J[35m◐[39m  Building project.[999D[J[35m◓[39m  Building project.[999D[J[35m◑[39m  Building project.[999D[J[35m◒[39m  Building project.[999D[J[35m◐[39m  Building project.[999D[J[35m◓[39m  Building project.[999D[J[35m◑[39m  Building project.[999D[J[35m◒[39m  Building project..[999D[J[35m◐[39m  Building project..[999D[J[35m◓[39m  Building project..[999D[J[35m◑[39m  Building project..[999D[J[35m◒[39m  Building project..[999D[J[35m◐[39m  Building project..[999D[J[35m◓[39m  Building project..[999D[J[35m◑[39m  Building project..[999D[J[35m◒[39m  Building project...[999D[J[35m◐[39m  Building project...[999D[J[35m◓[39m  Building project...[999D[J[35m◑[39m  Building project...[999D[J[35m◒[39m  Building project...[999D[J[35m◐[39m  Building project...[999D[J[35m◓[39m  Building project...[999D[J[35m◑[39m  Building project...[999D[J[35m◒[39m  Building project...[999D[J[35m◐[39m  Building project[999D[J[35m◓[39m  Building project[999D[J[35m◑[39m  Building project[999D[J[35m◒[39m  Building project[999D[J[35m◐[39m  Building project[999D[J[35m◓[39m  Building project[999D[J[35m◑[39m  Building project[999D[J[35m◒[39m  Building project[999D[J[35m◐[39m  Building project.[999D[J[35m◓[39m  Building project.[999D[J[35m◑[39m  Building project.[999D[J[35m◒[39m  Building project.[999D[J[35m◐[39m  Building project.[999D[J[35m◓[39m  Building project.[999D[J[35m◑[39m  Building project.[999D[J[35m◒[39m  Building project.[999D[J[35m◐[39m  Building project..[999D[J[35m◓[39m  Building project..[999D[J[35m◑[39m  Building project..[999D[J[35m◒[39m  Building project..[999D[J[35m◐[39m  Building project..[999D[J[35m◓[39m  Building project..[999D[J[35m◑[39m  Building project..[999D[J[35m◒[39m  Building project..[999D[J[35m◐[39m  Building project...[999D[J[35m◓[39m  Building project...[999D[J[35m◑[39m  Building project...[999D[J[35m◒[39m  Building project...[999D[J[35m◐[39m  Building project...[999D[J[35m◓[39m  Building project...[999D[J[35m◑[39m  Building project...[999D[J[35m◒[39m  Building project...[999D[J[35m◐[39m  Building project...[999D[J[32m◇[39m  [32m✓ Project built successfully[39m
+[?25h[36m Info      [39m [CLI] Loading project agents (command=start)
+[36m Info      [39m [CLI] Loaded project (util=project, entryPoint=/root/dryad/dist/index.js)
+[36m Info      [39m [CLI] Found project agents (command=start, agentCount=1)
+[36m Info      [39m [CLI] Character loaded (command=start, characterName=Dryad)
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[36m Info      [39m [DB] Database directory configured (dataDir=/root/dryad/.eliza/.elizadb)
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+[36m Info      [39m [DB] Running database migrations
+[36m Info      [39m [PLUGIN:SQL] Initializing migration system
+[36m Info      [39m [PLUGIN:SQL] Migration system initialized
+[36m Info      [39m [PLUGIN:SQL] DatabaseMigrationService initialized
+[36m Info      [39m [PLUGIN:SQL] Plugin schemas discovered (schemasDiscovered=1, totalPlugins=1)
+[36m Info      [39m [PLUGIN:SQL] Starting migrations (environment=DEVELOPMENT, pluginCount=1, dryRun=false)
+[36m Info      [39m [PLUGIN:SQL] Starting migration for plugin (pluginName=@elizaos/plugin-sql)
+[36m Info      [39m [PLUGIN:SQL] Initializing migration system
+[36m Info      [39m [PLUGIN:SQL] Migration system initialized
+[36m Info      [39m [PLUGIN:SQL] No changes detected, skipping migration (pluginName=@elizaos/plugin-sql, hash=0837c648ac972285253e7d5d2812a7a987cfb92abef8f365d07cb610985c7299)
+[36m Info      [39m [PLUGIN:SQL] Migration completed (pluginName=@elizaos/plugin-sql)
+[36m Info      [39m [PLUGIN:SQL] All migrations completed successfully (successCount=1)
+[36m Info      [39m [PLUGIN:SQL] Skipping RLS re-application (ENABLE_DATA_ISOLATION is not true)
+[36m Info      [39m [DB] Checking for server... (serverId=00000000-0000-0000-0000-000000000000)
+[36m Info      [39m [HTTP] Initializing ElizaOS
+[36m Info      [39m [SERVICE:MESSAGE-BUS] Global ElizaOS instance set
+[36m Info      [39m [SERVICE:MESSAGE-BUS] Global AgentServer instance set
+[36m Info      [39m [HTTP] Public health check endpoints enabled: /healthz and /health (rate limited: 100 req/min)
+[36m Info      [39m [HTTP] Configuring authentication middleware...
+[1m[30m[43m Warn      [49m[39m[22m [HTTP] Authentication middleware configured - API Key: DISABLED (set ELIZA_SERVER_AUTH_TOKEN to enable)
+[36m Info      [39m [HTTP] Serving static files (clientPath=/root/dryad/node_modules/@elizaos/server/dist/client)
+[36m Info      [39m [WS] SocketIO router initialized (agentCount=0)
+AgentServer is listening on port 3000
+[1m[30m[43m Warn      [49m[39m[22m [CORE:SETTINGS] SECRET_SALT is not set or using default value
+[36m Info      [39m #Dryad  [PLUGIN:SQL] plugin-sql (node) init starting
+[36m Info      [39m [plugin-venice] Initializing...
+[36m Info      [39m Initializing Dryad plugin
+[36m Info      [39m Actions: checkBiodiversity, manageDIEM, manageStETH, recordMilestone, payContractor, verifyAttestation, sendEmail, checkEmail
+[36m Info      [39m Routes: /submit, /dashboard, /api/*
+[36m Info      [39m Services: DecisionLoopService (4-hour cycle)
+[36m Info      [39m #Dryad  [PLUGIN:SQL] No pre-registered database adapter detected; registering adapter
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[36m Info      [39m #Dryad  [PLUGIN:SQL] Database adapter created and registered
+[36m Info      [39m [PLUGIN:SQL] Initializing migration system
+[36m Info      [39m [PLUGIN:SQL] Migration system initialized
+[36m Info      [39m [PLUGIN:SQL] DatabaseMigrationService initialized
+[36m Info      [39m [PLUGIN:SQL] Starting migrations (environment=DEVELOPMENT, pluginCount=1, dryRun=false)
+[36m Info      [39m [PLUGIN:SQL] Starting migration for plugin (pluginName=@elizaos/plugin-sql)
+[36m Info      [39m [PLUGIN:SQL] Initializing migration system
+[36m Info      [39m [PLUGIN:SQL] Migration system initialized
+[36m Info      [39m [PLUGIN:SQL] No changes detected, skipping migration (pluginName=@elizaos/plugin-sql, hash=0837c648ac972285253e7d5d2812a7a987cfb92abef8f365d07cb610985c7299)
+[36m Info      [39m [PLUGIN:SQL] Migration completed (pluginName=@elizaos/plugin-sql)
+[36m Info      [39m [PLUGIN:SQL] All migrations completed successfully (successCount=1)
+[36m Info      [39m [PLUGIN:SQL] Skipping RLS re-application (ENABLE_DATA_ISOLATION is not true)
+[1m[30m[43m Warn      [49m[39m[22m No EVM chains configured in settings, defaulting to mainnet and base
+[36m Info      [39m #Dryad  [PLUGIN:BOOTSTRAP:SERVICE:EMBEDDING] Starting embedding generation service
+[36m Info      [39m #Dryad  [PLUGIN:BOOTSTRAP:SERVICE:EMBEDDING] Initializing embedding generation service
+[36m Info      [39m #Dryad  [PLUGIN:BOOTSTRAP:SERVICE:EMBEDDING] Started processing loop
+[36m Info      [39m [Dryad] Starting autonomous decision loop (every 6 hours)
+[36m Info      [39m Initializing Dryad - Autonomous Land Management Agent
+[36m Info      [39m Agent: (name=Dryad)
+[36m Info      [39m [AGENT] Successfully registered agent with core services
+[36m Info      [39m [SERVICE:MESSAGE-BUS] Subscribing to internal message bus
+[36m Info      [39m [AGENT] Auto-associated agent with message server (messageServerId=00000000-0000-0000-0000-000000000000)
+[36m Info      [39m [AGENT] Started agents (count=1)
+[36m Info      [39m [SERVICE:MESSAGE-BUS] Agent subscribed to servers (serverCount=1, messageServerId=00000000-0000-0000-0000-000000000000)
+[36m Info      [39m [SERVICE:MESSAGE-BUS] Fetched channels from server (messageServerId=00000000-0000-0000-0000-000000000000, channelCount=1)
+[36m Info      [39m [SERVICE:MESSAGE-BUS] Loaded valid channel IDs from servers (channelCount=1, serverCount=1)
+[36m Info      [39m [Dryad] ═══ Decision loop cycle starting ═══
+[36m Info      [39m [Dryad] Season: EARLY_SPRING (Mar 22). Critical invasive removal window before leaf-out. Priorities: invasive removal, knotweed/buckthorn before leaf-out, soil prep. Health threshold: 48/100 (1.2x). Planting: no. Mowing: no.
+[36m Info      [39m [Dryad] Weather: 53°F high, 35°F low today. 1.8mm rain expected. Good conditions for site work. Frost risk in forecast. Rain expected 2026-03-22 (1.8mm).
+[36m Info      [39m [Dryad] Weather flags: FROST_RISK
+[36m Info      [39m [Dryad] No new verified submissions
+[36m Info      [39m [Dryad] iNaturalist: 0 obs, 0 invasive
+[36m Info      [39m [Dryad] Treasury: 0.0020 ETH + 0.0146 wstETH = ~$43 | Yield: ~$1/yr | Mode: CRITICAL
+[0m[31m[1m[97m[41m Error     [49m[39m[22m [Dryad] CRITICAL — yield insufficient for non-negotiable costs. Steward intervention needed.[0m
+[36m Info      [39m [Dryad] DIEM: 0.0000 | Credits: ~$0.00/day
+[1m[30m[43m Warn      [49m[39m[22m [Dryad] DIEM stake is low — inference credits may run out. Consider buying more DIEM via Uniswap.
+[36m Info      [39m [Dryad] ═══ Decision loop cycle complete (1.7s) ═══
+[0m[31m[Dryad] Venice direct call failed: The operation timed out.[0m
+[0m[31m[Dryad] runtime.generateText fallback failed: Failed after 3 attempts. Last error: Service Unavailable[0m
+[36m Info      [39m [Dryad] ═══ Decision loop cycle starting ═══
+[36m Info      [39m [Dryad] Season: EARLY_SPRING (Mar 23). Critical invasive removal window before leaf-out. Priorities: invasive removal, knotweed/buckthorn before leaf-out, soil prep. Health threshold: 48/100 (1.2x). Planting: no. Mowing: no.
+[36m Info      [39m [Dryad] Weather: 53°F high, 35°F low today. 1.8mm rain expected. Good conditions for site work. Frost risk in forecast. Rain expected 2026-03-22 (1.8mm).
+[36m Info      [39m [Dryad] Weather flags: FROST_RISK
+[36m Info      [39m [Dryad] No new verified submissions
+[36m Info      [39m [Dryad] iNaturalist: 0 obs, 0 invasive
+[36m Info      [39m [Dryad] Treasury: 0.0020 ETH + 0.0146 wstETH = ~$43 | Yield: ~$1/yr | Mode: CRITICAL
+[0m[31m[1m[97m[41m Error     [49m[39m[22m [Dryad] CRITICAL — yield insufficient for non-negotiable costs. Steward intervention needed.[0m
+[36m Info      [39m [Dryad] DIEM: 0.0000 | Credits: ~$0.00/day
+[1m[30m[43m Warn      [49m[39m[22m [Dryad] DIEM stake is low — inference credits may run out. Consider buying more DIEM via Uniswap.
+[36m Info      [39m [Dryad] ═══ Decision loop cycle complete (1.2s) ═══
+[36m Info      [39m [Dryad] ═══ Decision loop cycle starting ═══
+[36m Info      [39m [Dryad] Season: EARLY_SPRING (Mar 23). Critical invasive removal window before leaf-out. Priorities: invasive removal, knotweed/buckthorn before leaf-out, soil prep. Health threshold: 48/100 (1.2x). Planting: no. Mowing: no.
+[36m Info      [39m [Dryad] Weather: 37°F high, 31°F low today. 1.3mm rain expected. Good conditions for site work. Frost risk in forecast. Rain expected 2026-03-23 (1.3mm).
+[36m Info      [39m [Dryad] Weather flags: FROST_RISK
+[36m Info      [39m [Dryad] No new verified submissions
+[36m Info      [39m [Dryad] iNaturalist: 0 obs, 0 invasive
+[36m Info      [39m [Dryad] Treasury: 0.0020 ETH + 0.0146 wstETH = ~$43 | Yield: ~$1/yr | Mode: CRITICAL
+[0m[31m[1m[97m[41m Error     [49m[39m[22m [Dryad] CRITICAL — yield insufficient for non-negotiable costs. Steward intervention needed.[0m
+[36m Info      [39m [Dryad] DIEM: 0.0000 | Credits: ~$0.00/day
+[1m[30m[43m Warn      [49m[39m[22m [Dryad] DIEM stake is low — inference credits may run out. Consider buying more DIEM via Uniswap.
+[36m Info      [39m [Dryad] Monday morning — generating weekly report
+[36m Info      [39m [Dryad] Weekly report sent
+[36m Info      [39m [Dryad] ═══ Decision loop cycle complete (3.8s) ═══
+[0m[31m[Dryad] Venice API error: [0m[33m503[0m {"error":"The model is currently overloaded. Please try again later."}[0m
+[0m[31m[Dryad] Venice API error: [0m[33m503[0m {"error":"The model is currently overloaded. Please try again later."}[0m
+[0m[31m[Dryad] Venice API error: [0m[33m503[0m {"error":"The model is currently overloaded. Please try again later."}[0m
+[0m[31m[Dryad] Venice API error: [0m[33m503[0m {"error":"The model is currently overloaded. Please try again later."}[0m
