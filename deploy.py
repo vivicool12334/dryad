@@ -25,9 +25,6 @@ BRANCH = "main"
 VERCEL_DOMAIN = "dryad.vercel.app"
 SITE_DIR = "site"
 
-# Files to always deploy (the full site directory)
-SITE_FILES = []
-
 
 def find_repo_root():
     """Find the dryad repo root directory."""
@@ -132,7 +129,7 @@ def push_via_api(repo_root, token, files):
             "type": "blob",
             "sha": blob_data["sha"]
         })
-    print(f"  All blobs created.")
+    print("  All blobs created.")
 
     # Step 4: Create new tree
     tree_data, status = github_api("POST", f"/repos/{REPO}/git/trees", token, {
@@ -188,15 +185,15 @@ def verify_deployment():
                     with urllib.request.urlopen(fetch_req, timeout=10) as fetch_resp:
                         body = fetch_resp.read().decode("utf-8", errors="replace")[:2000]
                         if "skip-link" in body:
-                            print(f"  Content verified (skip-link marker found)")
+                            print("  Content verified (skip-link marker found)")
                         else:
-                            print(f"  Site is up but content may still be deploying")
+                            print("  Site is up but content may still be deploying")
                     return True
         except Exception:
             print(f"  Waiting... ({(i + 1) * 5}s)")
 
-    print(f"\n  Deployment may still be in progress.")
-    print(f"  Check: https://vercel.com/nock4s-projects/dryad")
+    print("\n  Deployment may still be in progress.")
+    print("  Check: https://vercel.com/nock4s-projects/dryad")
     return True
 
 
