@@ -5,9 +5,14 @@
     <meta name="description" content="An autonomous AI agent managing native habitat restoration on 9 vacant lots in Detroit — funded by DeFi yield, verified by community science, recorded onchain.">
     <meta property="og:title" content="Dryad — The Forest That Owns Itself">
     <meta property="og:description" content="Autonomous AI agent restoring native ecosystems on Detroit vacant land. dryadforest.eth • ERC-8004 #35293 on Base.">
-    <meta property="og:image" content="images/lots/street-view-main.jpg">
+    <meta property="og:image" content="https://dryad.land/images/lots/street-view-main.jpg">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#1A1C14">
+    <meta property="og:url" content="https://dryad.land">
+    <link rel="canonical" href="https://dryad.land/">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E29E4B' d='M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -46,9 +51,11 @@
 
         ::selection { background: var(--accent-amber); color: var(--bg); }
 
-        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(141, 166, 103, 0.4); transition: border-color 0.3s; }
         a:hover { border-bottom-color: var(--accent); }
         a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        /* Links inside text blocks always show underline for accessibility */
+        p a, li a, td a, .evidence-block a, .stat-context a { text-decoration: underline; text-underline-offset: 3px; }
 
         /* ── HERO — Terminal split panel ── */
         .hero {
@@ -73,6 +80,7 @@
             z-index: 100;
         }
 
+        .hero-header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.4); border-bottom-color: rgba(141,166,103,0.35); }
         .logo-area {
             display: flex;
             align-items: center;
@@ -88,8 +96,8 @@
         .logo-area svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: logo-spin 30s linear infinite; }
         @keyframes logo-spin { to { transform: rotate(360deg); } }
 
-        .hero-nav { display: flex; justify-content: flex-end; gap: 2.5rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
-        .hero-nav a { color: var(--text-muted); border-bottom: none; }
+        .hero-nav { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .hero-nav a { color: var(--text-muted); border-bottom: none; padding: 12px 14px; min-height: 44px; display: inline-flex; align-items: center; }
         .hero-nav a:hover { color: var(--accent-amber); text-decoration: underline; text-underline-offset: 4px; }
         .hero-nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
@@ -135,7 +143,7 @@
         }
 
         .hero-details {
-            font-size: 0.8rem;
+            font-size: max(0.8rem, 12px);
             color: var(--text-muted);
             line-height: 1.6;
             display: grid;
@@ -363,13 +371,13 @@
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
-        .hero-footer a { color: var(--text-muted); border-bottom: none; }
+        .hero-footer a { color: var(--text-muted); border-bottom: none; padding: 8px 6px; min-height: 44px; display: inline-flex; align-items: center; }
         .hero-footer a:hover { color: var(--accent-amber); }
         .blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
 
         /* ── CONTENT SECTIONS ── */
-        .content { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+        .content { max-width: 960px; margin: 0 auto; padding: 0 32px; overflow-wrap: break-word; word-wrap: break-word; }
 
         section {
             padding: 60px 0;
@@ -456,7 +464,7 @@
         }
         .crisis-stat .stat-source {
             font-family: var(--font-mono);
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.06em;
@@ -613,7 +621,7 @@
         th {
             font-weight: 600;
             color: var(--accent);
-            font-size: 0.72rem;
+            font-size: max(0.72rem, 12px);
             text-transform: uppercase;
             letter-spacing: 0.1em;
             font-family: var(--font-mono);
@@ -634,7 +642,7 @@
             .hero-nav a { padding: 14px 8px; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; min-height: 44px; display: flex; align-items: center; }
             .hero-nav a:last-child { border-bottom: none; }
             .hero-title { font-size: 2.4rem; }
-            .hero-details { font-size: 0.7rem; gap: 0.3rem 0.8rem; }
+            .hero-details { font-size: max(0.7rem, 12px); gap: 0.3rem 0.8rem; }
             .content { padding: 0 16px; }
             section { padding: 48px 0; }
             .photo-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
@@ -664,22 +672,23 @@
 <a href="#problem" class="skip-link" style="position:absolute;top:-40px;left:0;background:var(--accent);color:var(--bg);padding:8px 16px;z-index:999;font-size:0.9rem;transition:top 0.2s;">Skip to content</a>
 
 <!-- ═══════════════ STICKY NAV (outside hero for proper sticky behavior) ═══════════════ -->
-<header class="hero-header">
+<header class="hero-header" role="banner">
     <a href="#" class="logo-area" onclick="window.scrollTo({top:0,behavior:'smooth'});return false" style="text-decoration:none;border-bottom:none">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dryad logo"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
         dryad
     </a>
     <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false" role="button" onclick="var menu=document.getElementById('heroNav');menu.classList.toggle('open');var isOpen=menu.classList.contains('open');this.setAttribute('aria-expanded',isOpen?'true':'false');this.textContent=isOpen?'✕':'☰'">☰</button>
-    <div class="hero-nav" id="heroNav">
+    <nav class="hero-nav" id="heroNav" aria-label="Primary navigation">
         <a href="#problem">Problem</a>
         <a href="#evidence">Evidence</a>
         <a href="#architecture">How It Works</a>
         <a href="#land">Land</a>
         <a href="docs.html">Docs</a>
         <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a>
-    </div>
+    </nav>
 </header>
 <script>document.getElementById('heroNav').addEventListener('click',function(e){if(e.target.tagName==='A'){this.classList.remove('open');var btn=document.getElementById('menuToggle');btn.textContent='☰';btn.setAttribute('aria-expanded','false');}});</script>
+<script>window.addEventListener('scroll',function(){document.querySelector('.hero-header').classList.toggle('scrolled',window.scrollY>80);},{passive:true});</script>
 
 <!-- ═══════════════ HERO ═══════════════ -->
 <div class="hero" style="position:relative">
@@ -1239,9 +1248,9 @@ var kb=[{k:['what is dryad','about dryad','the project','what does dryad do'],r:
 </script>
 
 <!-- Leaflet Parcel Map -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 <script>
-(function(){const mapEl=document.getElementById('parcel-map');if(!mapEl)return;const map=L.map('parcel-map',{scrollWheelZoom:false}).setView([42.34174,-83.10007],18);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:20}).addTo(map);var parcels=[{addr:'4475',id:'12009490',coords:[[42.3414067,-83.1000727],[42.3415231,-83.099734],[42.3414534,-83.09969],[42.341337,-83.1000287]]},{addr:'4481',id:'12009489',coords:[[42.3414764,-83.1001167],[42.3415928,-83.099778],[42.3415231,-83.099734],[42.3414067,-83.1000727]]},{addr:'4487',id:'12009488',coords:[[42.3415709,-83.1001762],[42.3416864,-83.0998375],[42.3415928,-83.099778],[42.3414764,-83.1001167]]},{addr:'4493',id:'12009487',coords:[[42.3416507,-83.1002273],[42.3417662,-83.0998874],[42.3416864,-83.0998375],[42.3415709,-83.1001762]]},{addr:'4501',id:'12009486',coords:[[42.3417543,-83.1002927],[42.3418707,-83.0999541],[42.3417662,-83.0998874],[42.3416507,-83.1002273]]},{addr:'4509',id:'12009485',coords:[[42.341824,-83.1003367],[42.3419404,-83.0999981],[42.3418707,-83.0999541],[42.3417543,-83.1002927]]},{addr:'4513',id:'12009484',coords:[[42.3418937,-83.1003807],[42.3420092,-83.1000421],[42.3419404,-83.0999981],[42.341824,-83.1003367]]},{addr:'4521',id:'12009483',coords:[[42.3419634,-83.1004247],[42.3420789,-83.1000861],[42.3420092,-83.1000421],[42.3418937,-83.1003807]]},{addr:'4523',id:'12009482',coords:[[42.3420331,-83.1004687],[42.3421486,-83.1001301],[42.3420789,-83.1000861],[42.3419634,-83.1004247]]}];parcels.forEach(function(p){L.polygon(p.coords,{color:'#8DA667',fillColor:'#8DA667',fillOpacity:0.3,weight:2}).addTo(map).bindPopup('<b>'+p.addr+' 25th St</b><br>Dryad-managed');});L.rectangle([[42.3411,-83.1007],[42.3424,-83.0994]],{color:'#E29E4B',fillOpacity:0.05,weight:1,dashArray:'5,5'}).addTo(map);var legend=L.control({position:'bottomright'});legend.onAdd=function(){var div=L.DomUtil.create('div');div.style.cssText='background:rgba(26,28,20,0.9);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Space Mono,monospace;color:#D2D6C1';div.innerHTML='<span style="display:inline-block;width:12px;height:12px;background:#2d8a3e;opacity:0.6;border:1px solid #1a5c2a;margin-right:4px"></span> Dryad Parcels';return div;};legend.addTo(map);})();
+document.addEventListener('DOMContentLoaded',function(){const mapEl=document.getElementById('parcel-map');if(!mapEl)return;const map=L.map('parcel-map',{scrollWheelZoom:false}).setView([42.34174,-83.10007],18);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:20}).addTo(map);var parcels=[{addr:'4475',id:'12009490',coords:[[42.3414067,-83.1000727],[42.3415231,-83.099734],[42.3414534,-83.09969],[42.341337,-83.1000287]]},{addr:'4481',id:'12009489',coords:[[42.3414764,-83.1001167],[42.3415928,-83.099778],[42.3415231,-83.099734],[42.3414067,-83.1000727]]},{addr:'4487',id:'12009488',coords:[[42.3415709,-83.1001762],[42.3416864,-83.0998375],[42.3415928,-83.099778],[42.3414764,-83.1001167]]},{addr:'4493',id:'12009487',coords:[[42.3416507,-83.1002273],[42.3417662,-83.0998874],[42.3416864,-83.0998375],[42.3415709,-83.1001762]]},{addr:'4501',id:'12009486',coords:[[42.3417543,-83.1002927],[42.3418707,-83.0999541],[42.3417662,-83.0998874],[42.3416507,-83.1002273]]},{addr:'4509',id:'12009485',coords:[[42.341824,-83.1003367],[42.3419404,-83.0999981],[42.3418707,-83.0999541],[42.3417543,-83.1002927]]},{addr:'4513',id:'12009484',coords:[[42.3418937,-83.1003807],[42.3420092,-83.1000421],[42.3419404,-83.0999981],[42.341824,-83.1003367]]},{addr:'4521',id:'12009483',coords:[[42.3419634,-83.1004247],[42.3420789,-83.1000861],[42.3420092,-83.1000421],[42.3418937,-83.1003807]]},{addr:'4523',id:'12009482',coords:[[42.3420331,-83.1004687],[42.3421486,-83.1001301],[42.3420789,-83.1000861],[42.3419634,-83.1004247]]}];parcels.forEach(function(p){L.polygon(p.coords,{color:'#8DA667',fillColor:'#8DA667',fillOpacity:0.3,weight:2}).addTo(map).bindPopup('<b>'+p.addr+' 25th St</b><br>Dryad-managed');});L.rectangle([[42.3411,-83.1007],[42.3424,-83.0994]],{color:'#E29E4B',fillOpacity:0.05,weight:1,dashArray:'5,5'}).addTo(map);var legend=L.control({position:'bottomright'});legend.onAdd=function(){var div=L.DomUtil.create('div');div.style.cssText='background:rgba(26,28,20,0.9);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Space Mono,monospace;color:#D2D6C1';div.innerHTML='<span style="display:inline-block;width:12px;height:12px;background:#2d8a3e;opacity:0.6;border:1px solid #1a5c2a;margin-right:4px"></span> Dryad Parcels';return div;};legend.addTo(map);});
 </script>
 </body>
 </html>
