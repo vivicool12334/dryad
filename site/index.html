@@ -53,7 +53,7 @@
         /* ── HERO — Terminal split panel ── */
         .hero {
             width: 100%;
-            height: calc(100vh - 50px);
+            height: calc(100vh - 63px);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -298,7 +298,8 @@
             background: rgba(20,21,15,0.5);
         }
         .chat-sug-btn {
-            padding: 5px 10px;
+            padding: 8px 14px;
+            min-height: 36px;
             border: 1px solid rgba(141,166,103,0.3);
             border-radius: 14px;
             background: rgba(141,166,103,0.06);
@@ -662,27 +663,28 @@
 <body>
 <a href="#problem" class="skip-link" style="position:absolute;top:-40px;left:0;background:var(--accent);color:var(--bg);padding:8px 16px;z-index:999;font-size:0.9rem;transition:top 0.2s;">Skip to content</a>
 
+<!-- ═══════════════ STICKY NAV (outside hero for proper sticky behavior) ═══════════════ -->
+<header class="hero-header">
+    <a href="#" class="logo-area" onclick="window.scrollTo({top:0,behavior:'smooth'});return false" style="text-decoration:none;border-bottom:none">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dryad logo"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+        dryad
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false" role="button" onclick="var menu=document.getElementById('heroNav');menu.classList.toggle('open');var isOpen=menu.classList.contains('open');this.setAttribute('aria-expanded',isOpen?'true':'false');this.textContent=isOpen?'✕':'☰'">☰</button>
+    <div class="hero-nav" id="heroNav">
+        <a href="#problem">Problem</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#architecture">How It Works</a>
+        <a href="#land">Land</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a>
+    </div>
+</header>
+<script>document.getElementById('heroNav').addEventListener('click',function(e){if(e.target.tagName==='A'){this.classList.remove('open');var btn=document.getElementById('menuToggle');btn.textContent='☰';btn.setAttribute('aria-expanded','false');}});</script>
+
 <!-- ═══════════════ HERO ═══════════════ -->
 <div class="hero" style="position:relative">
     <div class="hero-grain" aria-hidden="true"></div>
     <canvas class="hero-ambient" id="hero-particles" aria-hidden="true"></canvas>
-
-    <header class="hero-header">
-        <a href="#" class="logo-area" onclick="window.scrollTo({top:0,behavior:'smooth'});return false" style="text-decoration:none;border-bottom:none">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dryad logo"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
-            dryad
-        </a>
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false" role="button" onclick="var menu=document.getElementById('heroNav');menu.classList.toggle('open');var isOpen=menu.classList.contains('open');this.setAttribute('aria-expanded',isOpen?'true':'false');this.textContent=isOpen?'✕':'☰'">☰</button>
-        <div class="hero-nav" id="heroNav">
-            <a href="#problem">Problem</a>
-            <a href="#evidence">Evidence</a>
-            <a href="#architecture">How It Works</a>
-            <a href="#land">Land</a>
-            <a href="docs.html">Docs</a>
-            <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a>
-        </div>
-    </header>
-    <script>document.getElementById('heroNav').addEventListener('click',function(e){if(e.target.tagName==='A'){this.classList.remove('open');var btn=document.getElementById('menuToggle');btn.textContent='☰';btn.setAttribute('aria-expanded','false');}});</script>
 
     <main class="hero-main">
         <section class="hero-left">
@@ -759,7 +761,7 @@
         <h2>The Problem</h2>
         <p style="font-size: 1.15rem; line-height: 1.7; margin-bottom: 32px; color: var(--text-main);">
             Detroit has over 100,000 vacant lots &mdash; 18 square miles. They trap heat, breed invasive species,
-            and compound a public health crisis that kills people. The city spends <strong style="color: var(--accent-amber);">$6.7 million a year</strong>
+            and compound a public health crisis with deadly consequences. The city spends <strong style="color: var(--accent-amber);">$6.7 million a year</strong>
             just to mow them. Not to restore. Not to plant. To mow.
         </p>
 
@@ -874,7 +876,7 @@
         <!-- ── HEAT & CLIMATE ── -->
         <div class="evidence-block">
             <h3>Heat &amp; Climate</h3>
-            <p style="max-width: 100%;">Detroit has the worst urban heat island burden of any major American city. 86% of neighborhoods run 8&deg;F+ hotter than surrounding areas. This kills people &mdash; disproportionately Black residents and people in poverty.</p>
+            <p style="max-width: 100%;">Detroit has the worst urban heat island burden of any major American city. 86% of neighborhoods run 8&deg;F+ hotter than surrounding areas. The health toll falls disproportionately on Black residents and people in poverty.</p>
             <div class="evidence-stat-row">
                 <div class="evidence-stat-card">
                     <div class="ev-number">107</div>
