@@ -2,7 +2,9 @@
 
 An autonomous AI agent that manages 9 vacant lots on 25th Street in Detroit for native habitat restoration. Dryad monitors biodiversity, coordinates invasive species removal, pays contractors, and records every milestone onchain — funded entirely by DeFi yield.
 
-**Built for [The Synthesis Hackathon](https://synthesis.builders) (March 2026)**
+**Live at [dryad.land](https://dryad.land)** · **Dashboard at [dashboard.dryad.land](https://dashboard.dryad.land/Dryad/dashboard)**
+
+Originally built for [The Synthesis Hackathon](https://synthesis.builders) (March 2026). Now a live, continuously running agent.
 
 ## How It Works
 
@@ -19,14 +21,15 @@ via iNaturalist app on the lots           and submit GPS-tagged proof photos
 │                    DRYAD AGENT                          │
 │  elizaOS v1.7.2 + Venice.ai (GLM 4.7 Flash)           │
 │                                                         │
-│  Decision Loop (every 24 hours):                       │
+│  Decision Loop (configurable — 24h prod, 2min demo):   │
 │  1. Check iNaturalist for on-parcel observations       │
 │  2. Detect invasives → email contractor via AgentMail  │
 │  3. Review proof-of-work submissions                   │
 │  4. Mint EAS attestations for verified work            │
-│  5. Check treasury health (USDC DeFi yield, DIEM stake)│
+│  5. Check treasury health (USDC yield via Aave/Morpho) │
 │  6. Record milestones onchain on Base L2               │
 │  7. Evaluate adaptive spending mode                    │
+│  8. Post to Twitter/X from curated tweet queue         │
 └─────────────────────────────────────────────────────────┘
          │                    │                    │
     Email via            USDC payment         Milestone
@@ -48,14 +51,14 @@ via iNaturalist app on the lots           and submit GPS-tagged proof photos
 
 **Annual operating cost (Year 3+):** $945/yr (property taxes $270, VPS $58, DIEM $62, contractors $500, LLC $50, gas $5)
 
-**Self-sustainability target:** $23,625 in USDC at ~4% APY = $945/yr yield. Cross-chain DeFi yield via Morpho vaults and Aave V3 on Base and Arbitrum. No ETH price risk.
+**Self-sustainability target:** $23,625 in USDC at ~4% APY = $945/yr yield. DeFi yield via Morpho vaults and Aave V3 on Base. No ETH price risk.
 
-**Treasury resilience:** 100% stablecoin (USDC). Deployed cross-chain wherever rates are highest. Morpho curators (Steakhouse, Gauntlet, RE7) regularly deliver 4-12% on USDC.
+**Current treasury:** ~$122 (USDC deployed in Aave V3 + wallet ETH). The agent actively monitors yield rates and rebalances between Morpho and Aave V3 to maximize APY.
 
 **Adaptive spending modes:**
 - **NORMAL** — all operations active, yield covers costs
 - **CONSERVATION** — pause discretionary contractor jobs, maintain monitoring + taxes + VPS
-- **CRITICAL** — steward intervention needed
+- **CRITICAL** — steward intervention needed (current mode — treasury below sustainability target)
 
 **Total funding needed: ~$41K** ($13.5K setup + $2.9K years 1-2 + $23.6K treasury + $1K buffer)
 
@@ -64,7 +67,8 @@ via iNaturalist app on the lots           and submit GPS-tagged proof photos
 | Action | Description |
 |--------|-------------|
 | `CHECK_BIODIVERSITY` | Pull iNaturalist observations filtered to parcel GPS bounding box, detect 7 invasive species, compute health score |
-| `MANAGE_STETH` | Check wstETH balance, calculate yield projections, enforce yield-only spending |
+| `MANAGE_STETH` | Check wstETH balance, calculate yield projections, enforce yield-only spending (legacy — treasury is now USDC-first) |
+| `DEFI_YIELD` | Monitor Aave V3 and Morpho vault APYs, deploy/withdraw USDC, rebalance when spread exceeds threshold |
 | `MANAGE_DIEM` | Monitor DIEM stake for Venice AI inference credits |
 | `PAY_CONTRACTOR` | USDC payments on Base ($50/tx, $200/day limits) |
 | `RECORD_MILESTONE` | Record SiteAssessment, InvasiveRemoval, SoilPrep, NativePlanting, Monitoring onchain |
@@ -72,25 +76,41 @@ via iNaturalist app on the lots           and submit GPS-tagged proof photos
 | `ATTEST_WORK` | Mint EAS attestation on Base for verified proof-of-work (contractor, work type, parcel, photo hash, vision score) |
 | `ATTEST_OBSERVATION` | Mint EAS attestation for research-grade iNaturalist observations (species, observer, GPS, quality grade) |
 | `SEND_EMAIL` / `CHECK_EMAIL` | AgentMail integration at dryad@agentmail.to |
+| `POST_TWEET` | Post to Twitter/X from a curated editorial queue (`data/tweet-queue.json`) |
 
 ## Web Pages
 
-| Path | Description |
-|------|-------------|
-| `/Dryad/dashboard` | Live dashboard: satellite map, health score, treasury, stress tests, milestones, iNaturalist observations |
-| `/Dryad/submit` | Contractor proof-of-work upload + community iNaturalist biodiversity survey |
+The static marketing site is served from Vercel at [dryad.land](https://dryad.land). The agent's API and dashboard run on a Hetzner VPS at [dashboard.dryad.land](https://dashboard.dryad.land).
+
+| Path | Host | Description |
+|------|------|-------------|
+| `/` | dryad.land | Public site: problem statement, architecture, parcels, financials, chat widget |
+| `/docs.html` | dryad.land | Extended documentation and technical details |
+| `/impact.html` | dryad.land | Impact projections and ecological analysis |
+| `/Dryad/dashboard` | dashboard.dryad.land | Live dashboard: Leaflet map, health score, treasury, stress tests, milestones, iNaturalist observations |
+| `/Dryad/submit` | dashboard.dryad.land | Contractor proof-of-work upload + community biodiversity survey |
+| `/Dryad/contractors` | dashboard.dryad.land | Contractor application portal |
+| `/Dryad/api/*` | dashboard.dryad.land | REST API: treasury, health-score, milestones, submissions |
+
+## Repo Notes
+
+- `site/` is the production web root for the static site. Vercel deploys from this directory via `deploy.py` (uses GitHub API to push to the `origin` remote).
+- `data/tweet-queue.json` is intentionally tracked. It is curated editorial content, not disposable runtime state.
+- `dryad-homepage.html` is a legacy snapshot and is intentionally left untracked. The active public site lives under `site/`.
+- The agent runs on a Hetzner VPS with Caddy as a reverse proxy (`dashboard.dryad.land` → `localhost:3000`).
 
 ## Tech Stack
 
 - **[elizaOS](https://elizaos.ai) v1.7.2** — Agent framework
 - **[Venice.ai](https://venice.ai)** — LLM inference (GLM 4.7 Flash), DIEM token for self-sustaining credits
 - **[Base L2](https://base.org)** — All onchain transactions
-- **[Lido](https://lido.fi)** — wstETH for yield-generating treasury
+- **[Aave V3](https://aave.com) / [Morpho](https://morpho.org)** — USDC yield strategies (treasury)
 - **[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004)** — Onchain agent identity standard
 - **[iNaturalist](https://inaturalist.org)** — Biodiversity data (community-sourced, research-grade)
 - **[EAS](https://attest.org)** — Ethereum Attestation Service for onchain work attestations on Base
 - **[AgentMail](https://agentmail.to)** — Agent email (dryad@agentmail.to)
-- **[Mapbox](https://mapbox.com)** — Satellite imagery on dashboard
+- **[Leaflet](https://leafletjs.com)** — Interactive maps on dashboard
+- **[Twitter/X API v2](https://developer.x.com)** — Automated posting from curated tweet queue
 
 ## Parcels
 
@@ -131,17 +151,6 @@ elizaos start
 | Garlic Mustard | *Alliaria petiolata* | Disrupts mycorrhizal networks |
 | Japanese Knotweed | *Reynoutria japonica* | Structural damage, near-impossible to eradicate |
 | Common Buckthorn | *Rhamnus cathartica* | Alters soil nitrogen cycles |
-
-## Bounties
-
-| Bounty | Target |
-|--------|--------|
-| Venice AI (~$5,750) | Venice inference + DIEM self-management |
-| Protocol Labs: Let the Agent Cook ($2,000) | Complete autonomous decision loop + ERC-8004 |
-| Protocol Labs: Agents With Receipts ($2,000) | Every action recorded onchain |
-| Lido: stETH Agent Treasury ($2,000) | Yield-only spending, cross-chain treasury |
-| Base: Agent Services ($1,667) | Attestations and milestones on Base mainnet |
-| Octant: Public Goods ($1,000) | Open-source urban ecology |
 
 ## License
 
