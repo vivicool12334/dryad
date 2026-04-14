@@ -44,6 +44,27 @@ const knowledgeProvider: Provider = {
       if (filename === 'invasives-research' && /invasive|ailanthus|tree of heaven|lanternfly|slf|knotweed|cascade|cost|billion|management|edrr|early detection|agriculture|grape/.test(messageText)) {
         relevantKnowledge.push(content);
       }
+      if (filename === 'the-human-cost' && /violence|gun|crime|safety|mental health|depression|anxiety|trauma|children|school|absentee|lead|broken windows|fear/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'economic-multiplier' && /cost|economic|tax|property value|blight|arson|roi|return on investment|tipping point|vacancy rate|dlba|budget|billion|million/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'ecological-crisis' && /lanternfly|slf|emerald ash|eab|seed bank|pollinator|bee|butterfly|monarch|agriculture|grape|orchard|cascade|extinction|endemic/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'heat-climate' && /heat|temperature|hot|cool|canopy|climate|mortality|death|heatwave|blackout|racial|disparity|urban heat island/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'health-pipeline' && /asthma|cardiovascular|heart|lung|life expectancy|hospitalization|ndvi|air quality|pollution|respiratory|health outcome|dose.response/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'structural-failure' && /fail|mortality|tree death|survival|maintenance|grant cycle|nonprofit|volunteer|burnout|greening of detroit|sustain|fund/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
+      if (filename === 'civic-identity' && /civic|community|ownership|steward|collective|efficacy|garden|vote|voter|participation|neighborhood pride|identity|belong/.test(messageText)) {
+        relevantKnowledge.push(content);
+      }
     }
 
     if (relevantKnowledge.length === 0) return { text: '', values: {}, data: {} };
