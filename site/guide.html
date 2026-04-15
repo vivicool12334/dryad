@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Practical Guide to Sustainable AI</title>
+<meta name="description" content="AI's environmental problems are real and solvable. This guide shows what's already working, what communities should demand, and how to lobby for the rules that make responsible AI possible.">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-dark: #171912;
+  --bg-alt: #1d2017;
+  --bg-card: rgba(31, 34, 24, 0.9);
+  --bg-card-strong: #23271c;
+  --border-accent: rgba(141, 166, 103, 0.18);
+  --border-strong: rgba(141, 166, 103, 0.34);
+  --text-primary: #e2e6d5;
+  --text-body: #cfd4c0;
+  --text-muted: rgba(226, 230, 213, 0.72);
+  --green-accent: #8da667;
+  --green-light: #b8d48c;
+  --amber-accent: #e29e4b;
+  --amber-soft: rgba(226, 158, 75, 0.12);
+  --red-danger: #cb5a43;
+  --shadow-soft: 0 22px 56px rgba(0, 0, 0, 0.22);
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(141, 166, 103, 0.12), transparent 28%),
+    radial-gradient(circle at 82% 8%, rgba(226, 158, 75, 0.08), transparent 24%),
+    linear-gradient(180deg, #151710 0%, #171912 100%);
+  color: var(--text-primary);
+  font-family: 'Manrope', sans-serif;
+  line-height: 1.7;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(141, 166, 103, 0.025) 48px),
+    repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(141, 166, 103, 0.025) 48px);
+  opacity: 0.7;
+}
+
+a { color: var(--green-light); text-decoration: underline; text-decoration-color: rgba(184, 212, 140, 0.4); text-underline-offset: 3px; }
+a:hover { color: #e9f5c8; text-decoration-color: currentColor; }
+p { margin: 0; font-size: 1rem; color: var(--text-body); }
+strong { color: var(--text-primary); }
+
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--green-light);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute; top: -100%; left: 20px; z-index: 200;
+  background: var(--green-light); color: #11130d;
+  padding: 10px 16px; border-radius: 0 0 12px 12px;
+  font-weight: 700; text-decoration: none;
+}
+.skip-link:focus { top: 0; }
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 120;
+  backdrop-filter: blur(16px);
+  background: rgba(23, 25, 18, 0.92);
+  border-bottom: 1px solid var(--border-accent);
+}
+.nav-inner, .shell, .footer-inner {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+}
+.nav-inner {
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+.nav a {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 52px; padding: 0 18px;
+  border-right: 1px solid rgba(141, 166, 103, 0.12);
+  color: var(--text-muted); text-decoration: none;
+  font-family: 'Space Mono', monospace; font-size: 0.76rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  transition: color 0.16s ease, background 0.16s ease;
+}
+.nav a:hover, .nav a.active { color: var(--amber-accent); background: rgba(141, 166, 103, 0.07); }
+.nav-logo { color: var(--green-light) !important; font-size: 0.78rem !important; }
+
+main { position: relative; z-index: 1; }
+
+#problem, #proof, #framework, #policy, #you, #local-ai, #dryad, #deep-dives,
+#investors, #advocacy, #politics, #michigan { scroll-margin-top: 96px; }
+
+/* MASTHEAD */
+.masthead { padding: 76px 0 56px; }
+.masthead-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  gap: 42px; align-items: start;
+}
+
+.eyebrow, .sec-eyebrow, .kicker {
+  display: inline-block;
+  font-family: 'Space Mono', monospace; font-size: 0.72rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--green-accent);
+}
+.eyebrow { margin-bottom: 18px; }
+
+.masthead h1, .sec-title {
+  margin: 0; font-family: 'Instrument Serif', serif;
+  font-weight: 400; letter-spacing: -0.03em; color: var(--amber-accent);
+}
+.masthead h1 { max-width: 12ch; font-size: clamp(3.35rem, 8vw, 6rem); line-height: 0.92; }
+
+.masthead-sub {
+  max-width: 62ch; margin-top: 24px;
+  font-size: 1.08rem; line-height: 1.78; color: var(--text-body);
+}
+
+.hero-pills, .tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.pill, .tag {
+  display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px;
+  border: 1px solid var(--border-accent); border-radius: 999px;
+  background: rgba(31, 34, 24, 0.55); color: var(--text-body);
+  font-family: 'Space Mono', monospace; font-size: 0.74rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid transparent; text-decoration: none; font-weight: 700;
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--green-accent); color: #11130d; border-color: var(--green-accent); }
+.btn-primary:hover { color: #11130d; background: var(--green-light); border-color: var(--green-light); }
+.btn-secondary { background: rgba(31, 34, 24, 0.5); color: var(--text-primary); border-color: var(--border-strong); }
+.btn-secondary:hover { color: var(--text-primary); border-color: var(--green-accent); }
+
+/* CARDS */
+.hero-panel, .surface, .surface-strong, .stat-card, .question-card, .step,
+.ai-tool, .habit, .company, .org, .pol-card, .ri, .scorecard, .ai-calc,
+.dryad-card, .compare-card, .proof-card, .policy-demand {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-panel {
+  padding: 28px;
+  background: linear-gradient(180deg, rgba(35, 39, 28, 0.96), rgba(27, 30, 21, 0.94));
+}
+.panel-label {
+  display: block; margin-bottom: 18px;
+  font-family: 'Space Mono', monospace; font-size: 0.72rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--green-accent);
+}
+
+.takeaway-list, .summary-list, .list-clean { display: grid; gap: 14px; }
+.takeaway { padding-bottom: 14px; border-bottom: 1px solid rgba(141, 166, 103, 0.14); }
+.takeaway:last-child { padding-bottom: 0; border-bottom: none; }
+.takeaway strong { display: block; margin-bottom: 4px; font-size: 1rem; }
+
+/* SECTIONS */
+.section, .band { padding: 80px 0; border-top: 1px solid rgba(141, 166, 103, 0.12); }
+.section-head { max-width: 760px; margin-bottom: 30px; }
+.sec-eyebrow { margin-bottom: 10px; }
+.sec-title { font-size: clamp(2.4rem, 5vw, 4.2rem); line-height: 1.02; }
+.sec-sub { margin-top: 16px; max-width: 68ch; font-size: 1.04rem; line-height: 1.78; color: var(--text-body); }
+
+.lede, .note, .prompt-card, .framework-extra, .warn-box { border-radius: var(--radius-md); }
+.lede { padding: 28px; background: rgba(31, 34, 24, 0.78); border: 1px solid var(--border-accent); }
+.lede p + p { margin-top: 18px; }
+
+.note, .prompt-card, .warn-box {
+  padding: 22px 24px;
+  background: rgba(34, 36, 26, 0.8);
+  border: 1px solid rgba(141, 166, 103, 0.2);
+  border-left: 3px solid var(--green-accent);
+}
+.note p, .prompt-card p, .warn-box p, .warn-box { font-size: 0.98rem; line-height: 1.72; }
+.warn-box { background: rgba(226, 158, 75, 0.08); border-color: rgba(226, 158, 75, 0.2); border-left-color: var(--amber-accent); }
+
+/* THESIS BAR */
+.thesis-bar {
+  padding: 28px 0;
+  background: linear-gradient(90deg, rgba(141, 166, 103, 0.08), rgba(141, 166, 103, 0.04), rgba(141, 166, 103, 0.08));
+  border-top: 1px solid rgba(141, 166, 103, 0.16);
+  border-bottom: 1px solid rgba(141, 166, 103, 0.16);
+}
+.thesis-bar .shell { display: flex; align-items: center; gap: 20px; }
+.thesis-bar-icon { font-size: 1.4rem; flex: 0 0 auto; }
+.thesis-bar-text { font-size: 1.06rem; line-height: 1.6; color: var(--text-body); }
+.thesis-bar-text strong { color: var(--green-light); }
+
+/* PROOF STRIP */
+.proof-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px; margin-top: 32px;
+}
+.proof-card { padding: 24px 20px; text-align: center; }
+.proof-card .proof-number {
+  display: block; margin-bottom: 6px;
+  font-family: 'Instrument Serif', serif; font-size: 2.6rem; line-height: 1;
+  color: var(--green-light); letter-spacing: -0.04em;
+}
+.proof-card .proof-label {
+  display: block; font-size: 0.88rem; color: var(--text-body); line-height: 1.5;
+}
+.proof-card .proof-source {
+  display: block; margin-top: 8px;
+  font-family: 'Space Mono', monospace; font-size: 0.68rem;
+  color: var(--text-muted); letter-spacing: 0.04em;
+}
+
+/* GRIDS */
+.split, .local-layout, .dryad-card { display: grid; gap: 24px; }
+.split { grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr); }
+
+.problem-grid, .question-grid, .framework-extra, .steps, .tool-grid, .habits,
+.investor-grid, .org-grid, .politics-grid, .res-cols, .sc-checks, .proof-strip { display: grid; gap: 16px; }
+
+.problem-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px; }
+
+.stat-card, .question-card, .step, .ai-tool, .habit, .company, .org, .pol-card { padding: 22px; }
+
+.stat-card strong, .step h3, .ai-tool h3, .habit h3, .company h3, .org h3, .pol-card h3 {
+  display: block; margin: 0 0 8px;
+  font-family: 'Instrument Serif', serif; font-size: 1.24rem; font-weight: 400;
+  color: var(--text-primary);
+}
+.stat-card p, .step p, .ai-tool p, .habit p, .company p, .org p, .pol-card p,
+.ri span, .question-card p, .framework-extra li { font-size: 0.97rem; line-height: 1.72; color: var(--text-body); }
+
+.stat-card .kicker, .step .kicker, .company .kicker, .org .kicker,
+.pol-card .kicker, .habit .kicker, .ai-tool .kicker { margin-bottom: 10px; }
+
+.concern-list { display: grid; gap: 14px; }
+.concern-item { padding-top: 14px; border-top: 1px solid rgba(141, 166, 103, 0.12); }
+.concern-item:first-child { padding-top: 0; border-top: none; }
+
+/* CHART */
+.compare-card { padding: 26px; }
+.chart-title { margin: 0 0 6px; font-family: 'Instrument Serif', serif; font-size: 1.28rem; font-weight: 400; color: var(--text-primary); }
+.chart-sub, .cite, .source-line { font-family: 'Space Mono', monospace; font-size: 0.76rem; color: var(--text-muted); letter-spacing: 0.02em; }
+.compare-list { display: grid; gap: 14px; margin-top: 20px; }
+.compare-row { display: grid; grid-template-columns: 114px minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.compare-label { font-size: 0.9rem; color: var(--text-primary); }
+.compare-bar { height: 12px; overflow: hidden; border-radius: 999px; border: 1px solid rgba(141, 166, 103, 0.16); background: rgba(255,255,255,0.04); }
+.compare-fill { display: block; height: 100%; border-radius: 999px; background: #444b39; }
+.compare-fill.data { background: linear-gradient(90deg, var(--green-accent), var(--green-light)); }
+
+/* PHOTOS */
+.stack, .photo-grid, .media-spotlight { display: grid; gap: 16px; }
+.photo-grid { margin-top: 28px; }
+.photo-grid-dual { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.photo-card { margin: 0; overflow: hidden; border: 1px solid rgba(141, 166, 103, 0.16); border-radius: var(--radius-md); background: rgba(29, 32, 23, 0.88); box-shadow: var(--shadow-soft); }
+.photo-frame { background: #12140e; }
+.photo-frame img { display: block; width: 100%; height: auto; }
+.photo-card-compact .photo-frame img { aspect-ratio: 16/10; object-fit: cover; }
+.photo-card figcaption { display: grid; gap: 10px; padding: 16px 18px 18px; }
+.photo-card strong { display: block; margin-bottom: 8px; font-family: 'Instrument Serif', serif; font-size: 1.18rem; font-weight: 400; line-height: 1.08; color: var(--text-primary); }
+.photo-card p, .photo-copy p { font-size: 0.95rem; line-height: 1.68; }
+.photo-credit { font-family: 'Space Mono', monospace; font-size: 0.71rem; letter-spacing: 0.03em; line-height: 1.55; color: var(--text-muted); }
+.photo-credit a { color: var(--text-muted); text-decoration-color: rgba(226, 230, 213, 0.26); }
+.photo-credit a:hover { color: var(--text-primary); }
+
+.media-spotlight { grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr); align-items: start; margin-top: 22px; }
+.photo-copy { padding: 24px; background: rgba(31, 34, 24, 0.78); border: 1px solid var(--border-accent); border-radius: var(--radius-md); }
+.photo-copy .kicker { margin-bottom: 12px; }
+.photo-copy h3 { margin: 0 0 10px; font-family: 'Instrument Serif', serif; font-size: 1.5rem; font-weight: 400; line-height: 1.08; color: var(--text-primary); }
+.photo-copy p + p { margin-top: 14px; }
+
+/* 5 STANDARDS */
+.question-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.question-card { display: flex; flex-direction: column; gap: 12px; }
+.question-card .kicker { margin-bottom: 4px; }
+.question-card h3 { margin: 0; font-family: 'Instrument Serif', serif; font-size: 1.32rem; font-weight: 400; color: var(--text-primary); line-height: 1.08; }
+.ask-line { margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(141, 166, 103, 0.12); font-size: 0.88rem; color: var(--text-muted); }
+
+.framework-extra { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 16px; padding: 22px; background: rgba(31, 34, 24, 0.58); border: 1px solid rgba(141, 166, 103, 0.14); }
+.framework-extra h3 { margin: 0 0 8px; font-family: 'Instrument Serif', serif; font-size: 1.02rem; font-weight: 400; color: var(--text-primary); }
+
+/* ACTION STEPS */
+.steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.step-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; height: 42px; margin-bottom: 14px; border-radius: 999px; background: rgba(141, 166, 103, 0.12); color: var(--green-light); font-family: 'Space Mono', monospace; font-size: 0.86rem; letter-spacing: 0.08em; }
+.prompt-card { margin-top: 18px; }
+.prompt-card strong { display: block; margin-bottom: 10px; font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green-accent); }
+
+/* POLICY DEMANDS */
+.policy-demand {
+  padding: 24px;
+  border-left: 3px solid var(--green-accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-left-width: 4px;
+}
+.policy-demand-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 32px; margin-bottom: 12px;
+  border-radius: 999px;
+  background: rgba(141, 166, 103, 0.15);
+  color: var(--green-light);
+  font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.policy-demand h3 { margin: 0 0 8px; font-family: 'Instrument Serif', serif; font-size: 1.2rem; font-weight: 400; color: var(--text-primary); }
+.policy-demand p { font-size: 0.95rem; line-height: 1.68; }
+.policy-demand .demand-example {
+  margin-top: 12px; padding: 12px 14px;
+  background: rgba(23, 25, 18, 0.7); border-radius: 10px;
+  border: 1px solid rgba(141, 166, 103, 0.15);
+  font-family: 'Space Mono', monospace; font-size: 0.74rem;
+  color: var(--text-muted); line-height: 1.6; letter-spacing: 0.02em;
+}
+.demand-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+
+/* EFFICIENCY BAND */
+.efficiency-band {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; margin-top: 28px;
+  background: rgba(141, 166, 103, 0.14);
+  border: 1px solid rgba(141, 166, 103, 0.14);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+.efficiency-cell {
+  padding: 24px 20px; background: var(--bg-card); text-align: center;
+}
+.efficiency-cell .eff-number {
+  display: block; font-family: 'Instrument Serif', serif;
+  font-size: 2.4rem; color: var(--amber-accent); letter-spacing: -0.04em; line-height: 1;
+  margin-bottom: 6px;
+}
+.efficiency-cell .eff-label { font-size: 0.9rem; color: var(--text-body); line-height: 1.5; }
+.efficiency-cell .eff-source { display: block; margin-top: 6px; font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--text-muted); }
+
+/* FRAMEWORK REAL-WORLD */
+.framework-realworld { margin-top: 24px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.realworld-card {
+  padding: 20px;
+  background: var(--bg-card); border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+}
+.realworld-card .rw-country { display: block; margin-bottom: 10px; font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber-accent); }
+.realworld-card h3 { margin: 0 0 8px; font-family: 'Instrument Serif', serif; font-size: 1.14rem; font-weight: 400; color: var(--text-primary); }
+.realworld-card p { font-size: 0.9rem; line-height: 1.65; }
+
+/* LOCAL AI */
+.local-layout { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: start; }
+.summary-list .summary-item { padding-top: 14px; border-top: 1px solid rgba(141, 166, 103, 0.12); }
+.summary-list .summary-item:first-child { padding-top: 0; border-top: none; }
+.tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ai-tool .tool-meta, .company .tool-meta, .org .tool-meta, .pol-card .tool-meta {
+  display: block; margin-bottom: 10px; color: var(--text-muted);
+  font-family: 'Space Mono', monospace; font-size: 0.76rem; letter-spacing: 0.04em;
+}
+.habits { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 22px; }
+.habit-label { display: inline-block; margin-bottom: 12px; font-family: 'Space Mono', monospace; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green-accent); }
+
+/* AI CALC */
+.ai-calc, .scorecard { padding: 26px; }
+.ai-calc { margin-top: 22px; }
+.ai-calc h3, .scorecard h3, .appendix-title { margin: 0 0 6px; font-family: 'Instrument Serif', serif; font-size: 1.42rem; font-weight: 400; color: var(--text-primary); }
+.scorecard-sub { margin-bottom: 18px; }
+.option-label { display: block; margin: 16px 0 10px; font-family: 'Space Mono', monospace; font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green-accent); }
+.option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.option-pill { position: relative; display: block; }
+.option-pill input { position: absolute; opacity: 0; inset: 0; }
+.option-pill span { display: block; min-height: 56px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--border-accent); background: rgba(23, 25, 18, 0.9); color: var(--text-body); font-size: 0.94rem; transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease; }
+.option-pill input:checked + span, .option-pill:focus-within span { background: rgba(141, 166, 103, 0.1); border-color: var(--green-accent); color: var(--text-primary); }
+.ai-result { display: none; margin-top: 18px; padding: 22px; border-radius: 16px; border: 1px solid rgba(141, 166, 103, 0.18); background: rgba(23, 25, 18, 0.92); }
+.ai-result.show { display: block; }
+.ai-rec-title { margin: 0 0 10px; font-family: 'Instrument Serif', serif; font-size: 1.2rem; font-weight: 400; color: var(--amber-accent); }
+.ai-rec-model { display: inline-block; margin-bottom: 10px; padding: 7px 12px; border-radius: 999px; background: rgba(141, 166, 103, 0.12); color: var(--green-light); font-family: 'Space Mono', monospace; font-size: 0.8rem; }
+.ai-rec-desc { font-size: 0.98rem; }
+.ai-rec-perf { margin-top: 10px; font-family: 'Space Mono', monospace; font-size: 0.76rem; color: var(--text-muted); }
+
+/* DRYAD */
+.dryad-card { grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr); padding: 28px; }
+.list-clean { padding-left: 18px; }
+.list-clean li { margin-bottom: 10px; color: var(--text-body); }
+
+/* APPENDIX */
+.appendix-stack { display: grid; gap: 18px; margin-top: 28px; }
+.appendix-panel { overflow: hidden; border: 1px solid rgba(141, 166, 103, 0.14); border-radius: 20px; background: rgba(29, 32, 23, 0.86); }
+.appendix-panel summary { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 22px 24px; cursor: pointer; list-style: none; }
+.appendix-panel summary::-webkit-details-marker { display: none; }
+.appendix-panel summary::after { content: '+'; flex: 0 0 auto; color: var(--green-accent); font-family: 'Space Mono', monospace; font-size: 1rem; }
+.appendix-panel[open] summary::after { content: '-'; }
+.appendix-panel[open] summary { border-bottom: 1px solid rgba(141, 166, 103, 0.12); }
+.appendix-summary h3 { margin: 4px 0 6px; font-family: 'Instrument Serif', serif; font-size: 1.5rem; font-weight: 400; color: var(--text-primary); }
+.appendix-summary p { max-width: 62ch; }
+.appendix-body { padding: 24px; }
+
+.investor-grid, .politics-grid, .res-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.org-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sc-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.company .row, .org .row, .pol-card .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.ticker { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; border-radius: 999px; background: rgba(141, 166, 103, 0.12); color: var(--green-light); font-family: 'Space Mono', monospace; font-size: 0.74rem; letter-spacing: 0.08em; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.tag-list span { padding: 6px 10px; border: 1px solid var(--border-accent); border-radius: 999px; background: rgba(23, 25, 18, 0.78); color: var(--text-body); font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.05em; }
+
+/* SCORECARD */
+.scorecard { margin-top: 18px; }
+.sc-input-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; margin-bottom: 16px; }
+.sc-input-row input { min-height: 48px; border-radius: 14px; border: 1px solid var(--border-accent); background: rgba(23, 25, 18, 0.92); color: var(--text-primary); padding: 0 14px; font: inherit; }
+.sc-reset { min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--border-accent); background: transparent; color: var(--text-body); font-family: 'Space Mono', monospace; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; }
+.sc-check { position: relative; display: flex; align-items: flex-start; gap: 12px; min-height: 72px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--border-accent); background: rgba(23, 25, 18, 0.92); }
+.sc-check input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.sc-check:focus-within, .sc-check.checked { border-color: var(--green-accent); background: rgba(141, 166, 103, 0.08); }
+.sc-checkbox { position: relative; flex: 0 0 auto; width: 20px; height: 20px; margin-top: 2px; border-radius: 5px; border: 1.5px solid rgba(141, 166, 103, 0.4); background: transparent; }
+.sc-check input:checked + .sc-checkbox { background: var(--green-accent); border-color: var(--green-accent); }
+.sc-check input:checked + .sc-checkbox::after { content: ''; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid #12140e; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.sc-check-label { font-size: 0.92rem; line-height: 1.45; color: var(--text-body); }
+.sc-result { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+.sc-bar-track { flex: 1; height: 30px; overflow: hidden; border-radius: 999px; border: 1px solid var(--border-accent); background: rgba(23, 25, 18, 0.92); }
+.sc-bar-fill { height: 100%; width: 0; min-width: 0; border-radius: 999px; color: #11130d; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 0.74rem; font-weight: 700; transition: width 0.3s ease, background 0.2s ease; }
+.sc-verdict { min-width: 150px; font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.03em; text-align: right; color: var(--text-muted); }
+
+/* FOOTER / MISC */
+.ri { padding: 18px; }
+.ri strong { display: block; margin-bottom: 6px; color: var(--text-primary); }
+.footer { padding: 34px 0 52px; border-top: 1px solid rgba(141, 166, 103, 0.12); }
+.footer-inner { display: flex; justify-content: space-between; gap: 24px; font-size: 0.9rem; color: var(--text-muted); }
+.footer small, .footer .source-line { display: block; margin-top: 8px; }
+
+/* RESPONSIVE */
+@media (max-width: 1120px) {
+  .masthead-inner, .split, .local-layout, .dryad-card { grid-template-columns: 1fr; }
+  .question-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .photo-grid-dual, .media-spotlight { grid-template-columns: 1fr; }
+  .steps, .habits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .proof-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .efficiency-band { grid-template-columns: 1fr; }
+  .framework-realworld { grid-template-columns: 1fr 1fr; }
+  .demand-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 820px) {
+  .nav-inner, .shell, .footer-inner { width: min(100% - 32px, 1160px); }
+  .masthead { padding: 56px 0 42px; }
+  .section, .band { padding: 62px 0; }
+  .problem-grid, .tool-grid, .investor-grid, .org-grid, .politics-grid, .res-cols, .framework-extra, .sc-checks { grid-template-columns: 1fr; }
+  .question-grid { grid-template-columns: 1fr 1fr; }
+  .steps, .habits { grid-template-columns: 1fr; }
+  .sc-result, .footer-inner { flex-direction: column; align-items: stretch; }
+  .sc-verdict { min-width: 0; text-align: left; }
+  .framework-realworld { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .masthead h1 { font-size: 2.9rem; }
+  .sec-title { font-size: 2.25rem; }
+  .hero-panel, .surface, .surface-strong, .stat-card, .question-card, .step,
+  .ai-tool, .habit, .company, .org, .pol-card, .ri, .scorecard, .ai-calc,
+  .dryad-card, .compare-card, .lede, .note, .prompt-card, .warn-box { padding-left: 18px; padding-right: 18px; }
+  .nav a { min-height: 48px; padding: 0 12px; font-size: 0.68rem; }
+  .question-grid { grid-template-columns: 1fr; }
+  .compare-row { grid-template-columns: 1fr; gap: 8px; }
+  .option-grid { grid-template-columns: 1fr; }
+  .sc-input-row { grid-template-columns: 1fr; }
+  .proof-strip { grid-template-columns: 1fr 1fr; }
+  .thesis-bar .shell { flex-direction: column; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#problem">Skip to content</a>
+
+<nav class="nav" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#top">Sustainable AI Guide</a>
+    <a href="#problem">The Problem</a>
+    <a href="#proof">It Already Works</a>
+    <a href="#framework">5 Demands</a>
+    <a href="#policy">Policy Asks</a>
+    <a href="#you">What You Can Do</a>
+    <a href="#local-ai">Use Less Cloud AI</a>
+    <a href="#dryad">About Dryad</a>
+    <a href="#deep-dives">Deep Dive</a>
+  </div>
+</nav>
+
+<main id="top">
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <div>
+        <div class="eyebrow">Practical Guide - April 2026</div>
+        <h1>Sustainable AI is achievable.</h1>
+        <p class="masthead-sub">
+          AI's environmental problems are real: power demand is rising, water is being consumed, and communities are being asked to absorb costs they didn't choose. But none of these problems are unsolvable. This guide shows what's already working, what demands communities should make, and how to push for the rules that make responsible AI possible rather than optional.
+        </p>
+        <div class="hero-pills">
+          <span class="pill">Not a ban. A standard.</span>
+          <span class="pill">Verified proof points</span>
+          <span class="pill">Specific policy asks</span>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#proof">See what's already working</a>
+          <a class="btn btn-secondary" href="#framework">See the 5 demands</a>
+        </div>
+      </div>
+
+      <aside class="hero-panel" aria-label="Quick summary">
+        <span class="panel-label">What this guide argues</span>
+        <div class="takeaway-list">
+          <div class="takeaway">
+            <strong>The problems are real and measurable.</strong>
+            <p>Energy use, water consumption, and rate cost-shifting are documented harms that communities are right to resist.</p>
+          </div>
+          <div class="takeaway">
+            <strong>Solutions already exist and are deployed.</strong>
+            <p>40+ GW of new renewable energy has been built specifically to power AI. Near-zero-water data centers are operational now, not theoretical.</p>
+          </div>
+          <div class="takeaway">
+            <strong>The right response is standards, not bans.</strong>
+            <p>Communities with specific, enforceable demands get better outcomes. Blanket opposition weakens regulatory leverage without stopping the industry.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <!-- THESIS BAR -->
+  <div class="thesis-bar">
+    <div class="shell">
+      <div class="thesis-bar-icon">&#8594;</div>
+      <p class="thesis-bar-text">
+        <strong>The central argument:</strong> A data center that brings its own new clean energy online, uses closed-loop cooling, sits on a brownfield, participates in demand response, and signs a binding community benefits agreement is not an environmental problem. It is a model. The question is whether communities and regulators demand that standard rather than accepting anything less.
+      </p>
+    </div>
+  </div>
+
+  <!-- 01: PROBLEM -->
+  <section id="problem" class="section">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">01 - The problem</div>
+        <h2 class="sec-title">The concerns are legitimate. The scale is real.</h2>
+        <p class="sec-sub">
+          Data centers consumed <strong>415 terawatt-hours of electricity globally in 2024</strong>, about 1.5% of all electricity on Earth. The IEA projects that could rise to <strong>945 TWh by 2030</strong>. In Michigan alone, utilities announced <strong>6.4 gigawatts of new data center power</strong> in October 2025. That is large enough to affect household utility bills, water systems, and land use. The people worried about this are not wrong.
+        </p>
+      </div>
+
+      <div class="photo-grid photo-grid-dual" aria-label="Photo context for land, water, and AI infrastructure">
+        <figure class="photo-card photo-card-compact">
+          <div class="photo-frame">
+            <img src="assets/sustainable-ai-photos/michigan-shoreline.jpg" alt="A sandy shoreline on Lake Superior in Michigan with spring ice along the water and forest beyond the beach." loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <div>
+              <strong>Michigan's water and shoreline are part of what siting decisions put at stake.</strong>
+              <p>Data center expansion is not only a technology story. It is also a land, water, and public-resource story.</p>
+            </div>
+            <div class="photo-credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Gfp-michigan-pictured-rocks-national-lakeshore-scenic-shoreline.jpg" target="_blank" rel="noreferrer">Yinan Chen, via Wikimedia Commons</a> - Public domain</div>
+          </figcaption>
+        </figure>
+
+        <figure class="photo-card photo-card-compact">
+          <div class="photo-frame">
+            <img src="assets/sustainable-ai-photos/data-center-roof.jpg" alt="Cooling equipment, pipes, and paved surfaces on the roof and grounds of a large data center complex." loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <div>
+              <strong>AI infrastructure has a visible footprint long before anyone mentions a chatbot.</strong>
+              <p>Cooling gear, backup systems, transmission links, and land conversion are what communities are being asked to host.</p>
+            </div>
+            <div class="photo-credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Data_center_roof.jpg" target="_blank" rel="noreferrer">Rsparks3, via Wikimedia Commons</a> - <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noreferrer">CC0</a></div>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="problem-grid">
+        <div class="stat-card">
+          <div class="kicker">Three legitimate concerns</div>
+          <strong>Power, water, and cost-shifting to residents.</strong>
+          <div class="concern-list">
+            <div class="concern-item">
+              <p><strong>Power:</strong> when data centers draw from an existing grid instead of funding new clean energy, households end up subsidizing growth they didn't choose. Texas's S.B. 6 (2025) was written specifically to stop this cost-shifting.</p>
+            </div>
+            <div class="concern-item">
+              <p><strong>Water:</strong> evaporative cooling systems can consume millions of gallons annually. Lancaster, Pennsylvania's 2025 community benefits agreement capped a data center's municipal water use at 20,000 gallons per day - proof the standard is enforceable.</p>
+            </div>
+            <div class="concern-item">
+              <p><strong>Land:</strong> Michigan has brownfields and former industrial sites. Communities should not sacrifice farmland or wetlands when better sites exist and project developers have not had to prove they looked.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="kicker">What this guide is not arguing</div>
+          <strong>This is not a case for banning AI infrastructure.</strong>
+          <div class="concern-list">
+            <div class="concern-item">
+              <p>Data centers are among the most tractable large energy consumers to clean up. Unlike aviation or heavy manufacturing, they can run entirely on clean electricity today, and the technology to do so is deployed, not experimental.</p>
+            </div>
+            <div class="concern-item">
+              <p>Blanket bans trigger federal deregulation as pushback, reducing the regulatory leverage communities actually have. Between May 2024 and March 2025, local opposition canceled $64 billion in data center projects - but those fights also produced federal deregulation bills preempting local zoning authority.</p>
+            </div>
+            <div class="concern-item">
+              <p>Communities with specific, enforceable standards consistently get better outcomes than communities armed only with opposition. Winning the standard is the goal.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card" style="margin-top: 24px;">
+        <h3 class="chart-title">AI energy growth in context: data centers are a serious driver, not the dominant one</h3>
+        <p class="chart-sub">Projected additional electricity demand growth by source, to 2030 (TWh). Data centers are significant - but EVs, AC, and industry demand more. The question is pace and concentration, not panic.</p>
+        <div class="compare-list" aria-label="Electricity demand growth comparison">
+          <div class="compare-row">
+            <div class="compare-label">Industry</div>
+            <div class="compare-bar"><span class="compare-fill" style="width:100%;"></span></div>
+            <div class="source-line">1,936 TWh</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">EVs</div>
+            <div class="compare-bar"><span class="compare-fill" style="width:43.3%;"></span></div>
+            <div class="source-line">838 TWh</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">Air conditioning</div>
+            <div class="compare-bar"><span class="compare-fill" style="width:33.6%;"></span></div>
+            <div class="source-line">651 TWh</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">Data centers</div>
+            <div class="compare-bar"><span class="compare-fill data" style="width:27.4%;"></span></div>
+            <div class="source-line">530 TWh</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">Transport</div>
+            <div class="compare-bar"><span class="compare-fill" style="width:20.7%;"></span></div>
+            <div class="source-line">~400 TWh</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">Buildings</div>
+            <div class="compare-bar"><span class="compare-fill" style="width:18.1%;"></span></div>
+            <div class="source-line">~350 TWh</div>
+          </div>
+        </div>
+        <p class="source-line" style="margin-top: 18px;">
+          Sources: <a href="https://www.iea.org/reports/energy-and-ai/energy-demand-from-ai" target="_blank" rel="noreferrer">IEA Energy and AI, 2025</a> and
+          <a href="https://www.carbonbrief.org/ai-five-charts-that-put-data-centre-energy-use-and-emissions-into-context/" target="_blank" rel="noreferrer">Carbon Brief, 2025</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02: PROOF IT WORKS -->
+  <section id="proof" class="band">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">02 - It already works</div>
+        <h2 class="sec-title">Responsible AI infrastructure is not a theory. It is deployed.</h2>
+        <p class="sec-sub">
+          Before communities can demand standards, they need to know those standards are achievable. They are. The technology exists. Operators are using it. Regulators in other jurisdictions have required it. Here is the evidence.
+        </p>
+      </div>
+
+      <div class="proof-strip">
+        <div class="proof-card">
+          <span class="proof-number">40+ GW</span>
+          <span class="proof-label">New renewable energy contracted by Microsoft, Meta, Google, and Amazon in 2025 - real projects that financed construction, not paper credits</span>
+          <span class="proof-source">BloombergNEF / ESG Today, Feb 2026</span>
+        </div>
+        <div class="proof-card">
+          <span class="proof-number">33x</span>
+          <span class="proof-label">Reduction in energy per Google AI query in 12 months (May 2024 to May 2025) - efficiency is improving faster than usage is growing</span>
+          <span class="proof-source">Google Cloud Blog, 2025</span>
+        </div>
+        <div class="proof-card">
+          <span class="proof-number">~0</span>
+          <span class="proof-label">Water evaporated per year by Applied Digital's North Dakota campuses - closed-loop liquid cooling at scale, already operational</span>
+          <span class="proof-source">Applied Digital SEC filing, Oct 2025</span>
+        </div>
+        <div class="proof-card">
+          <span class="proof-number">3</span>
+          <span class="proof-label">Countries (Ireland, Singapore, Netherlands) that have implemented binding sustainability requirements for data center grid connections</span>
+          <span class="proof-source">CRU, IMDA, Dutch Data Centre Assoc., 2025</span>
+        </div>
+      </div>
+
+      <div class="efficiency-band" style="margin-top: 32px;">
+        <div class="efficiency-cell">
+          <span class="eff-number">33x</span>
+          <span class="eff-label">Energy reduction per median AI query in 12 months (Google, 2024-2025)</span>
+          <span class="eff-source">Source: Google Cloud</span>
+        </div>
+        <div class="efficiency-cell">
+          <span class="eff-number">280x</span>
+          <span class="eff-label">Cost reduction in GPT-3.5-level inference in 22 months (Nov 2022 - Oct 2024)</span>
+          <span class="eff-source">Source: Stanford HAI 2025</span>
+        </div>
+        <div class="efficiency-cell">
+          <span class="eff-number">40%</span>
+          <span class="eff-label">Cooling energy reduction across all Google data centers using DeepMind's ML optimization system</span>
+          <span class="eff-source">Source: Google DeepMind</span>
+        </div>
+      </div>
+
+      <div class="warn-box" style="margin-top: 24px;">
+        <p><strong>The efficiency trajectory matters:</strong> AI models are becoming dramatically more efficient per task. Google's Gemini reduced energy per query by 33x in one year. DeepSeek-V3 activated only 5-10% of parameters per token via Mixture-of-Experts architecture. When critics say AI energy use is rising, they are right about total demand - but efficiency per unit of work is improving faster, and that gap is widening with each model generation.</p>
+      </div>
+
+      <div style="margin-top: 32px;">
+        <div class="kicker" style="margin-bottom: 14px;">Real-world regulatory frameworks that are working</div>
+        <div class="framework-realworld">
+          <div class="realworld-card">
+            <span class="rw-country">Ireland - Dec 2025</span>
+            <h3>Grid connection is conditional on bringing new clean energy</h3>
+            <p>Ireland's Commission for Regulation of Utilities now requires data centers over 10 MW to source 80% of electricity from <em>new</em> Irish renewable generation they helped finance - not from existing projects. Facilities cannot operate at full capacity until their promised generation is delivered and online. This is the gold standard for additionality enforcement.</p>
+          </div>
+          <div class="realworld-card">
+            <span class="rw-country">Singapore - Aug 2025</span>
+            <h3>Performance-based standards, not blanket bans</h3>
+            <p>Singapore lifted its data center moratorium and replaced it with strict performance gates. New approvals require demonstrated energy efficiency, at least 50% green energy sourcing, and compliance with SS 715:2025 - the world's first tropical-climate data center IT efficiency standard, targeting 30%+ energy reduction over conventional designs.</p>
+          </div>
+          <div class="realworld-card">
+            <span class="rw-country">Michigan - Apr 2025</span>
+            <h3>90% clean energy law - and environmental groups fighting to strengthen it</h3>
+            <p>Michigan law (HB 4906) requires data centers seeking tax exemptions to certify 90% clean energy procurement. Environmental groups including CUB Michigan, NRDC, and Sierra Club are actively litigating to close a utility interpretation loophole - which is exactly what effective regulation looks like. A standard with active enforcement battles is a standard with teeth.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top: 24px;">
+        <p><strong>The IEA's finding on AI and climate:</strong> AI applications could achieve <strong>1,400 megatons of CO2 emissions reductions by 2035</strong> through grid optimization, materials science, transport, and buildings efficiency. That is 3-4 times larger than total projected data center emissions for the same year. The question is not whether AI is a net climate asset or liability - it is whether we build the infrastructure under standards that make it one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03: 5 STANDARDS -->
+  <section id="framework" class="section">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">03 - What to demand</div>
+        <h2 class="sec-title">Five standards any community can bring to any hearing.</h2>
+        <p class="sec-sub">
+          Think of these like building codes. A project asking to use shared resources - electricity, water, land, grid capacity - should have to meet a minimum public-interest standard before it gets approved. These five questions can be asked by a resident, a zoning board member, or a state legislator.
+        </p>
+      </div>
+
+      <div class="note">
+        <p><strong>Plain-language rule:</strong> if the project cannot answer these questions in simple, verifiable terms, it is not ready for approval. Vague commitments are not commitments.</p>
+      </div>
+
+      <div class="media-spotlight">
+        <figure class="photo-card">
+          <div class="photo-frame">
+            <img src="assets/sustainable-ai-photos/solar-panels.jpg" alt="Rows of solar panels filling a former farm field in Minnesota." loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <div>
+              <strong>New clean power is physical infrastructure, not a line item.</strong>
+              <p>When a project says it will run on clean energy, the right question is: what gets built that would not exist otherwise?</p>
+            </div>
+            <div class="photo-credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Solar_panels_(48306990857).jpg" target="_blank" rel="noreferrer">U.S. Fish and Wildlife Service, via Wikimedia Commons</a> - Public domain</div>
+          </figcaption>
+        </figure>
+
+        <div class="photo-copy">
+          <div class="kicker">RECs vs. PPAs: the difference that matters</div>
+          <h3>Paper credits are not the same as new power.</h3>
+          <p>A Renewable Energy Certificate (REC) is an accounting claim on power that may already exist. A Power Purchase Agreement (PPA) provides the revenue certainty that actually finances new solar, wind, or storage construction. Ireland now explicitly bans RECs from previously subsidized projects from counting toward compliance - that is the right standard. When a company says it "runs on 100% renewables," ask which one.</p>
+          <p>The gold standard is 24/7 Carbon-Free Energy matching: clean supply matched to actual consumption on an hourly basis, every day. Google and Microsoft have publicly committed to this. Most have not.</p>
+        </div>
+      </div>
+
+      <div class="question-grid" style="margin-top: 22px;">
+        <article class="question-card">
+          <div class="kicker">01 - Clean power</div>
+          <h3>Does it fund new clean energy, not just buy credits?</h3>
+          <p>Serious projects fund new solar, wind, or storage that would not exist without the PPA. RECs for existing projects do not reduce emissions - they shift accounting.</p>
+          <div class="ask-line"><strong>Ask:</strong> "What new clean capacity gets built because of this project, and when does it come online?"</div>
+        </article>
+
+        <article class="question-card">
+          <div class="kicker">02 - Water</div>
+          <h3>Does it protect water through closed-loop cooling?</h3>
+          <p>Applied Digital runs campuses with near-zero water evaporation. Microsoft is designing all new facilities from 2024 onward with zero water consumption for cooling. This is not aspirational - it is available now.</p>
+          <div class="ask-line"><strong>Ask:</strong> "What is the daily water draw limit, in gallons, and is it binding?"</div>
+        </article>
+
+        <article class="question-card">
+          <div class="kicker">03 - Land</div>
+          <h3>Is it on land already disturbed?</h3>
+          <p>Michigan has brownfields and former industrial sites. Communities should not absorb farmland or habitat conversion when better sites exist and developers have not had to prove they looked.</p>
+          <div class="ask-line"><strong>Ask:</strong> "Why this site, and what brownfield alternatives were evaluated and ruled out?"</div>
+        </article>
+
+        <article class="question-card">
+          <div class="kicker">04 - Grid strain</div>
+          <h3>Can it curtail when the grid is stressed?</h3>
+          <p>Demand-response agreements let large loads reduce consumption during peak periods, protecting households. PJM deployed over 4,000 MW of demand response during June 2025 heat events. Data centers can participate.</p>
+          <div class="ask-line"><strong>Ask:</strong> "Is automated curtailment written into the grid connection agreement?"</div>
+        </article>
+
+        <article class="question-card">
+          <div class="kicker">05 - Community terms</div>
+          <h3>Are the promises legally binding?</h3>
+          <p>Lancaster, PA's November 2025 data center CBA included a hard cap of 20,000 gallons/day water use, a $5M contingent clean energy fund, and successorship clauses. That is the template - enforceable, not aspirational.</p>
+          <div class="ask-line"><strong>Ask:</strong> "Which commitments are in the legally binding agreement, and who enforces them?"</div>
+        </article>
+      </div>
+
+      <div class="framework-extra">
+        <div>
+          <h3>Three more signs of a serious project</h3>
+          <p>These strengthen a proposal but are easier to evaluate once the five core standards above are established.</p>
+        </div>
+        <div>
+          <h3>Waste heat recovery</h3>
+          <p>Some facilities can export waste heat to district heating, greenhouses, or industrial users. Equinix does this at scale in Europe and North America. Ask if it is feasible for the site.</p>
+        </div>
+        <div>
+          <h3>No diesel backup dependence and public reporting</h3>
+          <p>Diesel generators are a significant hidden pollution source. Projects should commit to alternatives and publish quarterly energy and water reports so performance can be verified.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04: POLICY DEMANDS -->
+  <section id="policy" class="band">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">04 - Lobby for these</div>
+        <h2 class="sec-title">Specific policy changes worth fighting for.</h2>
+        <p class="sec-sub">
+          These are not aspirational positions. They are grounded in frameworks that regulators have already adopted in Ireland, Singapore, Michigan, Pennsylvania, and Texas. Each demand below has a real-world precedent you can point to.
+        </p>
+      </div>
+
+      <div class="demand-grid">
+        <div class="policy-demand">
+          <div class="policy-demand-num">01</div>
+          <h3>Grid connection conditioned on new renewable generation</h3>
+          <p>Require that data centers above a threshold capacity source a majority of their electricity from <em>newly built</em> renewable generation they helped finance, not from existing projects or paper credits. Make grid connection contingent on delivery - facilities cannot reach full capacity until the promised generation is built and online.</p>
+          <div class="demand-example">Model: Ireland's CRU December 2025 decision - 80% new renewables required for facilities above 10 MVA; connection restricted until generation delivered. Explicit ban on previously subsidized renewable projects counting toward the requirement.</div>
+        </div>
+
+        <div class="policy-demand">
+          <div class="policy-demand-num">02</div>
+          <h3>Mandatory demand-response participation</h3>
+          <p>Large data center loads must participate in automated demand response programs operated by their regional grid operator. Curtailment capability equal to at least 10-15% of maximum capacity should be automated - not manual and not optional. This converts a grid liability into a grid asset.</p>
+          <div class="demand-example">Model: FERC's 2025 Annual Demand Response Assessment; PJM's industrial load program (2,068 MW of manufacturing demand response already enrolled). Language: "participation in regional ISO/RTO demand response programs is a condition of large load interconnection."</div>
+        </div>
+
+        <div class="policy-demand">
+          <div class="policy-demand-num">03</div>
+          <h3>Binding water caps and closed-loop cooling requirements</h3>
+          <p>Set a maximum daily municipal water draw limit in writing, in the operating permit - not in a press release. Require closed-loop or liquid cooling systems for new construction. The technology exists and is cost-competitive; it simply needs to be required rather than optional.</p>
+          <div class="demand-example">Model: Lancaster, Pennsylvania November 2025 CBA - 20,000 gallon/day cap, legally binding, with a $5M contingent fund if clean energy commitments fail. Applied Digital's operational campuses demonstrate near-zero water evaporation is achievable at commercial scale.</div>
+        </div>
+
+        <div class="policy-demand">
+          <div class="policy-demand-num">04</div>
+          <h3>Developer pays for transmission upgrades they cause</h3>
+          <p>Data center developers should bear the cost of grid infrastructure upgrades their load requires. When utilities socialize these costs across the rate base, residential customers subsidize industrial growth they didn't choose. Texas's S.B. 6 (2025) created a "reasonable share" cost allocation framework for large new loads - that model should spread.</p>
+          <div class="demand-example">Model: Texas S.B. 6 (enacted June 2025) - codifies ERCOT's Large Load Interconnection Study process, requiring PUC to determine the "reasonable share" of upgrade costs attributable to new large loads. Reduces speculative interconnection filings and prevents cost-shifting to ratepayers.</div>
+        </div>
+
+        <div class="policy-demand">
+          <div class="policy-demand-num">05</div>
+          <h3>Mandatory public environmental reporting</h3>
+          <p>Data centers above 500 kW IT power should be required to publish quarterly reports on energy consumption, renewable sourcing, water use, and carbon emissions - in a standardized format, publicly accessible. The EU Energy Efficiency Directive already requires this for data centers operating in member states. The US has no equivalent federal standard.</p>
+          <div class="demand-example">Federal ask: Support the Data Center Transparency Act (Reps. Menendez and Casar, 2025), which would require EPA/EIA collection and publication of comprehensive data center environmental data. State-level alternative: mirror the EU EED reporting framework in state utility commission rules.</div>
+        </div>
+
+        <div class="policy-demand">
+          <div class="policy-demand-num">06</div>
+          <h3>Community benefits agreements with real teeth</h3>
+          <p>A CBA is only as good as its enforcement mechanism. Demand: quantified resource caps (not "minimize"), financial penalty mechanisms, independent third-party monitors, successorship clauses that bind future owners, and the right to seek injunctive relief - not just capped monetary damages - when terms are violated.</p>
+          <div class="demand-example">Model: Lancaster CBA's contingent clean energy fund (developer-funded, $5M minimum if energy targets fail), combined with material breach remedies under Article 9. Successorship clause ensures the agreement binds any future facility owner, not just the signing developer.</div>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top: 24px;">
+        <p><strong>The additionality standard in plain language:</strong> "Additional" renewable energy means a project that would <em>not have been built without this PPA</em>. It is newly constructed capacity that the data center's purchase made financially viable. Energy that was already going to be built, already subsidized, or already contracted is not additional - it is just a claim on existing resources. Demanding additionality is the single most important technical concept in clean energy procurement for data centers.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05: WHAT YOU CAN DO -->
+  <section id="you" class="section">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">05 - What you can do</div>
+        <h2 class="sec-title">Turn the standards into action.</h2>
+        <p class="sec-sub">
+          You do not need to be technical to be effective. The most useful thing a resident can bring to a hearing is a short list of specific, verifiable questions and a refusal to accept vague answers. Here is where the leverage is.
+        </p>
+      </div>
+
+      <div class="steps">
+        <article class="step">
+          <div class="step-badge">01</div>
+          <h3>Comment at the MPSC</h3>
+          <p>The Michigan Public Service Commission is where major utility agreements are reviewed. Written comments become part of the public record and are referenced in commission decisions.</p>
+          <a href="https://www.michigan.gov/mpsc" target="_blank" rel="noreferrer">michigan.gov/mpsc</a>
+        </article>
+
+        <article class="step">
+          <div class="step-badge">02</div>
+          <h3>Show up before permits are issued</h3>
+          <p>Local siting, zoning, and water permits are where communities have the most leverage. These decisions happen long before ribbon-cuttings. The Lancaster CBA was negotiated at the zoning stage.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-badge">03</div>
+          <h3>Join a group already doing the work</h3>
+          <p>CUB Michigan, Michigan United, and the Michigan Environmental Justice Coalition already track filings, organize testimony, and translate technical language. They have more impact with more people.</p>
+          <a href="https://cubofmichigan.org" target="_blank" rel="noreferrer">cubofmichigan.org</a>
+        </article>
+
+        <article class="step">
+          <div class="step-badge">04</div>
+          <h3>Ask the same six questions, every time</h3>
+          <p>Use the five standards from this guide plus the additionality standard at every meeting, every hearing, every candidate forum. Consistency makes evasive answers visible and comparable.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-badge">05</div>
+          <h3>Support local reporting</h3>
+          <p>Journalism is part of the accountability infrastructure. Planet Detroit, Bridge Michigan, and Michigan Public Radio are doing the work residents rely on to track what utilities and developers actually do.</p>
+          <a href="https://planetdetroit.org" target="_blank" rel="noreferrer">planetdetroit.org</a>
+        </article>
+
+        <article class="step">
+          <div class="step-badge">06</div>
+          <h3>Track whether promised benefits arrive</h3>
+          <p>Michigan's data center tax incentive was structured with review points. The environmental groups fighting the 90% clean energy enforcement are doing exactly this - holding the standard to what the law says, not what utilities prefer it to say.</p>
+        </article>
+      </div>
+
+      <div class="prompt-card">
+        <strong>One question worth taking to every meeting</strong>
+        <p>
+          "Will you support a data center only if it brings demonstrably new clean energy online, uses closed-loop cooling with a binding daily water cap, avoids new pressure on household utility bills through developer cost allocation, participates in demand response, and signs a community benefits agreement with enforceable remedies?"
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06: LOCAL AI -->
+  <section id="local-ai" class="band">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">06 - Individual action</div>
+        <h2 class="sec-title">You do not have to send every AI task to a data center.</h2>
+        <p class="sec-sub">
+          For drafting, summarizing, document review, and research, local AI is now genuinely good enough for many everyday tasks. It is also private and subscription-free once set up. This does not replace cloud AI for complex work - it just shifts the most routine tasks off the grid.
+        </p>
+      </div>
+
+      <div class="local-layout">
+        <div class="stack">
+          <figure class="photo-card photo-card-compact">
+            <div class="photo-frame">
+              <img src="assets/sustainable-ai-photos/apple-desk-laptop.jpg" alt="An open laptop resting on a desk in a simple workspace." loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <div>
+                <strong>Some everyday AI work can stay on your own machine.</strong>
+                <p>That does not replace frontier systems for complex tasks. It does cover drafting, summarizing, and document review without a constant trip to a remote data center.</p>
+              </div>
+              <div class="photo-credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Apple-desk-laptop-working_(23698803763).jpg" target="_blank" rel="noreferrer">www.Pixel.la Free Stock Photos, via Wikimedia Commons</a> - <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noreferrer">CC0</a></div>
+            </figcaption>
+          </figure>
+
+          <div class="surface" style="padding: 24px;">
+            <div class="kicker" style="margin-bottom: 12px;">Cloud vs. local AI</div>
+            <div class="summary-list">
+              <div class="summary-item">
+                <p><strong>Cloud AI:</strong> your prompt goes to a remote data center, is processed there, and the response comes back. Every query uses remote infrastructure.</p>
+              </div>
+              <div class="summary-item">
+                <p><strong>Local AI:</strong> the model runs on your own computer. Routine tasks happen without that round trip. Your data does not leave your machine.</p>
+              </div>
+              <div class="summary-item">
+                <p><strong>Honest tradeoff:</strong> local models are weaker than frontier cloud systems, but often sufficient for everyday writing, summarizing, and research tasks.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-grid">
+          <article class="ai-tool">
+            <div class="kicker">Easiest</div>
+            <h3>LM Studio</h3>
+            <span class="tool-meta">Best for non-technical users</span>
+            <p>Download a model, open a desktop app, and start chatting without touching the command line. Works on Mac, Windows, and Linux.</p>
+            <a href="https://lmstudio.ai" target="_blank" rel="noreferrer">lmstudio.ai</a>
+          </article>
+
+          <article class="ai-tool">
+            <div class="kicker">Most flexible</div>
+            <h3>Ollama</h3>
+            <span class="tool-meta">Best for people comfortable with simple commands</span>
+            <p>Runs open-source models locally with a straightforward setup. Wide model selection including Llama, Gemma, and Mistral variants.</p>
+            <a href="https://ollama.com" target="_blank" rel="noreferrer">ollama.com</a>
+          </article>
+
+          <article class="ai-tool">
+            <div class="kicker">Privacy-first</div>
+            <h3>GPT4All</h3>
+            <span class="tool-meta">Good for sensitive document work</span>
+            <p>Works completely offline once set up. Strong option for medical, legal, or proprietary materials you would not want sent to a cloud server.</p>
+            <a href="https://www.nomic.ai/gpt4all" target="_blank" rel="noreferrer">nomic.ai/gpt4all</a>
+          </article>
+
+          <article class="ai-tool">
+            <div class="kicker">Closest to cloud-style UI</div>
+            <h3>Open WebUI + Ollama</h3>
+            <span class="tool-meta">For people who want a polished local interface</span>
+            <p>A familiar chat experience that still runs on your own hardware. Supports conversation history, file uploads, and multiple models.</p>
+            <a href="https://github.com/open-webui/open-webui" target="_blank" rel="noreferrer">open-webui on GitHub</a>
+          </article>
+        </div>
+      </div>
+
+      <div class="ai-calc" id="ai-calc">
+        <h3>Find a reasonable local setup</h3>
+        <p class="scorecard-sub">Pick your machine and your main use case. The recommendation stays simple on purpose.</p>
+
+        <span class="option-label">Your machine</span>
+        <div class="option-grid" id="calc-machine">
+          <label class="option-pill"><input type="radio" name="calc-machine" value="mac-m"><span>MacBook M1, M2, M3 or newer</span></label>
+          <label class="option-pill"><input type="radio" name="calc-machine" value="win-gpu"><span>Windows laptop or desktop with a GPU</span></label>
+          <label class="option-pill"><input type="radio" name="calc-machine" value="older"><span>Older laptop or no dedicated GPU</span></label>
+        </div>
+
+        <span class="option-label">Primary use</span>
+        <div class="option-grid" id="calc-use">
+          <label class="option-pill"><input type="radio" name="calc-use" value="writing"><span>Writing and drafting</span></label>
+          <label class="option-pill"><input type="radio" name="calc-use" value="coding"><span>Coding assistance</span></label>
+          <label class="option-pill"><input type="radio" name="calc-use" value="research"><span>Research and Q&amp;A</span></label>
+          <label class="option-pill"><input type="radio" name="calc-use" value="privacy"><span>Private document work</span></label>
+        </div>
+
+        <div class="ai-result" id="calc-result" aria-live="polite">
+          <div class="ai-rec-title" id="calc-rec-title"></div>
+          <div class="ai-rec-model" id="calc-rec-model"></div>
+          <p class="ai-rec-desc" id="calc-rec-desc"></p>
+          <div class="ai-rec-perf" id="calc-rec-perf"></div>
+        </div>
+      </div>
+
+      <div class="habits">
+        <article class="habit">
+          <span class="habit-label">Habit 01</span>
+          <h3>Use the smallest model that works</h3>
+          <p>Not every task needs the most capable or most power-hungry model. A smaller model that handles your actual task uses a fraction of the energy.</p>
+        </article>
+        <article class="habit">
+          <span class="habit-label">Habit 02</span>
+          <h3>Write careful prompts, not throwaway reruns</h3>
+          <p>Prompt quality reduces wasted compute. A well-constructed prompt that works the first time costs far less than iterating through five drafts.</p>
+        </article>
+        <article class="habit">
+          <span class="habit-label">Habit 03</span>
+          <h3>Keep sensitive files local</h3>
+          <p>Medical, legal, or proprietary materials are strong candidates for local inference. You protect both your privacy and reduce remote data center load.</p>
+        </article>
+        <article class="habit">
+          <span class="habit-label">Habit 04</span>
+          <h3>Reward transparency</h3>
+          <p>Ask cloud AI providers to publish real energy and water data. Favor the ones that do. Transparency is a market signal when enough people send it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07: DRYAD -->
+  <section id="dryad" class="section">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">07 - A counterexample</div>
+        <h2 class="sec-title">AI used to restore land instead of extract from it.</h2>
+        <p class="sec-sub">
+          This guide comes from a project built on the premise that the right question about AI is not whether it should exist, but whether it is being used to build something worth the energy it draws. Dryad is an attempt to answer that question in the affirmative.
+        </p>
+      </div>
+
+      <div class="dryad-card">
+        <div>
+          <div class="kicker" style="margin-bottom: 12px;">What Dryad is doing</div>
+          <p>
+            Dryad is an autonomous AI agent managing native habitat restoration on 9 vacant lots in Detroit's Chadsey-Condon neighborhood. It uses iNaturalist biodiversity data, coordinates restoration work with verified local contractors, pays them on-chain when work is confirmed, and maintains a continuous record of ecological outcomes. No grant dependency. No human scheduler required.
+          </p>
+          <p style="margin-top: 16px;">
+            Detroit has more than 100,000 vacant lots. Most restoration projects get planted and abandoned when the grant cycle ends, because no one funds stewardship after the photo opportunity. Dryad runs continuously - observe, assess, dispatch, verify, pay, repeat - because the agent does not need a salary, a grant renewal, or a project manager checking in.
+          </p>
+          <p style="margin-top: 16px;">
+            This is the counterexample to "AI only consumes." AI can run on a few dollars of compute per day and produce public ecological value that human organizations struggle to maintain at any cost.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="https://dryad.land" target="_blank" rel="noreferrer">Visit dryad.land</a>
+            <a class="btn btn-secondary" href="https://dryad.land/docs.html" target="_blank" rel="noreferrer">Read the docs</a>
+          </div>
+        </div>
+
+        <div class="stack">
+          <figure class="photo-card">
+            <div class="photo-frame">
+              <img src="assets/sustainable-ai-photos/detroit-vacant-lot.jpg" alt="An overgrown vacant lot in Detroit with broken concrete and industrial remnants in the background." loading="lazy" decoding="async">
+            </div>
+            <figcaption>
+              <div>
+                <strong>Detroit has land that can be restored, not just extracted from.</strong>
+                <p>Dryad's argument: AI should be judged by the public value it helps produce, not only by how much infrastructure it consumes.</p>
+              </div>
+              <div class="photo-credit">Photo: <a href="https://commons.wikimedia.org/wiki/File:Empty_Studebaker_lot_Piquette_Avenue_-_Detroit_Michigan.jpg" target="_blank" rel="noreferrer">Andrew Jameson, via Wikimedia Commons</a> - <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noreferrer">CC BY-SA 3.0</a></div>
+            </figcaption>
+          </figure>
+
+          <div class="surface" style="padding: 24px;">
+            <div class="kicker" style="margin-bottom: 12px;">Why this belongs in a sustainability guide</div>
+            <ul class="list-clean">
+              <li>It grounds the question in public value, not novelty or capability.</li>
+              <li>It connects AI to measurable ecological restoration that humans struggle to sustain.</li>
+              <li>It demonstrates that small AI compute footprints can produce meaningful civic outcomes.</li>
+              <li>It offers a practical counterexample to the claim that AI always means extraction.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08: DEEP DIVE APPENDIX -->
+  <section id="deep-dives" class="band">
+    <div class="shell">
+      <div class="section-head">
+        <div class="sec-eyebrow">08 - Deep dive appendix</div>
+        <h2 class="sec-title">For investors, organizers, and policy watchers who want the full picture.</h2>
+        <p class="sec-sub">
+          The sections below keep specialist material available without forcing every reader through it on the first pass.
+        </p>
+      </div>
+
+      <div class="appendix-stack">
+        <details class="appendix-panel" id="investors-panel">
+          <summary>
+            <div class="appendix-summary" id="investors">
+              <div class="sec-eyebrow">Investor Guide</div>
+              <h3>Companies with stronger sustainability signals than their peers</h3>
+              <p>Publicly traded operators who have made verifiable commitments beyond marketing language. None is perfect.</p>
+            </div>
+          </summary>
+          <div class="appendix-body">
+            <div class="investor-grid">
+              <article class="company">
+                <div class="row">
+                  <div><h3>Equinix</h3><span class="tool-meta">Colocation Operator - REIT</span></div>
+                  <span class="ticker">EQIX</span>
+                </div>
+                <p>The most credible large-scale operator in this set. Reported <a href="https://www.prnewswire.com/news-releases/equinix-named-a-leader-in-the-idc-marketscape-worldwide-datacenter-services-sustainability-2025-2026-vendor-assessment-302636280.html" target="_blank" rel="noreferrer">96% renewable energy in 2024</a> and expanded waste-heat export to district heating systems in Europe and North America. PPA-first procurement strategy - not REC-dependent.</p>
+                <div class="tag-list"><span>Renewable additionality</span><span>Waste heat export</span><span>PPA-first</span></div>
+              </article>
+
+              <article class="company">
+                <div class="row">
+                  <div><h3>Alphabet / Google</h3><span class="tool-meta">Hyperscale Operator</span></div>
+                  <span class="ticker">GOOGL</span>
+                </div>
+                <p>Michigan plan includes <a href="https://blog.google/innovation-and-ai/infrastructure-and-cloud/global-network/clean-energy-reliability-michigan/" target="_blank" rel="noreferrer">2.7 GW of new solar, storage, and demand flexibility</a>. Also the leader on AI efficiency: 33x energy reduction per query in 12 months, 40% cooling energy reduction via DeepMind optimization. Publicly committed to 24/7 carbon-free energy matching.</p>
+                <div class="tag-list"><span>24/7 CFE committed</span><span>Demand response</span><span>New renewables</span></div>
+              </article>
+
+              <article class="company">
+                <div class="row">
+                  <div><h3>Applied Digital</h3><span class="tool-meta">AI Infrastructure</span></div>
+                  <span class="ticker">APLD</span>
+                </div>
+                <p>Leading on water efficiency. Closed-loop direct-to-chip liquid cooling with <a href="https://ir.applieddigital.com/sec-filings/all-sec-filings/content/0001144879-25-000076/0001144879-25-000076.pdf" target="_blank" rel="noreferrer">near-zero water consumption</a> and design PUE of 1.18. Campuses in Jamestown and Ellendale, ND are operational. Their water model is the reference point for what communities should demand.</p>
+                <div class="tag-list"><span>Near-zero water</span><span>PUE 1.18</span><span>Liquid cooling</span></div>
+              </article>
+
+              <article class="company">
+                <div class="row">
+                  <div><h3>Iron Mountain</h3><span class="tool-meta">Data Center REIT</span></div>
+                  <span class="ticker">IRM</span>
+                </div>
+                <p><a href="https://resources.ironmountain.com/en-gb/blogs-and-articles/t/the-future-of-data-centre-sustainability" target="_blank" rel="noreferrer">Auditable targets</a> around clean electricity, climate neutrality, and BREEAM building certification. More transparent than firms using looser language - targets are specific enough to hold them to.</p>
+                <div class="tag-list"><span>Auditable targets</span><span>BREEAM certified</span><span>Climate reporting</span></div>
+              </article>
+            </div>
+
+            <div class="warn-box" style="margin-top: 18px;">
+              <p><strong>Watch for greenwashing:</strong> a Renewable Energy Certificate can claim clean power on paper without funding new clean capacity. A Power Purchase Agreement is much closer to the real question - did this money build something new? The gold standard is 24/7 Carbon-Free Energy matching, which Google and Microsoft have publicly committed to. Most companies have not.</p>
+            </div>
+
+            <div class="scorecard" id="scorecard">
+              <h3>Full 8-point scorecard</h3>
+              <p class="scorecard-sub">Use this checklist to evaluate any company, developer, or proposed project in detail. The more boxes checked, the closer the project is to the standard.</p>
+              <div class="sc-input-row">
+                <input type="text" id="sc-company" placeholder="Project or company name" autocomplete="off">
+                <button class="sc-reset" id="sc-reset" type="button">Reset</button>
+              </div>
+              <div class="sc-checks" id="sc-checks">
+                <label class="sc-check"><input type="checkbox" data-i="0"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">New renewable energy via PPAs, not just paper RECs</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="1"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Automated demand-response for grid peak periods</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="2"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Closed-loop or liquid cooling (near-zero water evaporation)</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="3"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Waste heat recovery when site conditions allow</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="4"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Brownfield or previously developed siting</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="5"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Cleaner backup power than diesel dependence</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="6"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Binding community benefits agreement with enforceable remedies</span></label>
+                <label class="sc-check"><input type="checkbox" data-i="7"><span class="sc-checkbox" aria-hidden="true"></span><span class="sc-check-label">Public quarterly water and energy reports</span></label>
+              </div>
+              <div class="sc-result">
+                <div class="sc-bar-track"><div class="sc-bar-fill" id="sc-bar"></div></div>
+                <div class="sc-verdict" id="sc-verdict">Select criteria above</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="appendix-panel" id="advocacy-panel">
+          <summary>
+            <div class="appendix-summary" id="advocacy">
+              <div class="sec-eyebrow">Advocacy</div>
+              <h3>Who is already doing this work in Michigan</h3>
+              <p>Some groups are industry-backed, some community-led, some focused on ratepayer or environmental justice. Know the difference.</p>
+            </div>
+          </summary>
+          <div class="appendix-body">
+            <div class="org-grid">
+              <article class="org">
+                <h3>Citizens Utility Board of Michigan</h3>
+                <span class="tool-meta">Ratepayer advocacy</span>
+                <p><a href="https://cubofmichigan.org/blog/new-standards-set-for-data-center-power-agreements-in-consumers-energy-service-territory/" target="_blank" rel="noreferrer">CUB pushed the 90% clean energy threshold</a> now in Michigan law, and is actively fighting to close the utility interpretation loophole that would let utilities' existing transition timelines satisfy it. The most technical and persistent group on this specific issue.</p>
+              </article>
+
+              <article class="org">
+                <h3>Northern Michigan Alliance for Responsible Development</h3>
+                <span class="tool-meta">Community coalition - Upper Peninsula focus</span>
+                <p><a href="https://miunited.org/2026/01/community-leaders-and-environmental-groups-raise-urgent-concerns-about-cryptomining-and-ai-data-centers-across-michigan/" target="_blank" rel="noreferrer">Community-led organizing</a> on water, energy rates, and rural siting. Represents communities in the Upper Peninsula where large-load proposals have concentrated. Practical, non-technical entry point for residents new to this issue.</p>
+              </article>
+
+              <article class="org">
+                <h3>Michigan Environmental Justice Coalition</h3>
+                <span class="tool-meta">Environmental justice and policy research</span>
+                <p><a href="https://stpp.fordschool.umich.edu/sites/stpp/files/2025-07/stpp-data-centers-2025.pdf" target="_blank" rel="noreferrer">Co-authored the U of M Ford School brief</a> that modeled Michigan-level impacts and policy options. Strongest on the intersection of data center siting and frontline community exposure. The Ford School brief is the best single technical document on Michigan's situation.</p>
+              </article>
+
+              <article class="org">
+                <h3>Union of Concerned Scientists</h3>
+                <span class="tool-meta">Science advocacy</span>
+                <p><a href="https://blog.ucs.org/lee-shaver/powering-the-future-why-michigans-data-center-debate-is-critical-for-clean-energy-and-your-wallet/" target="_blank" rel="noreferrer">UCS argues projects should bring their own clean energy</a> rather than slow Michigan's existing clean-energy transition. Provides credible scientific framing for the additionality argument.</p>
+              </article>
+
+              <article class="org">
+                <h3>Michigan for Responsible Data Centers</h3>
+                <span class="tool-meta">Industry coalition - launched March 2026</span>
+                <p><a href="https://www.michamber.com/news/michigan-chamber-helps-launch-new-coalition-supporting-responsible-data-center-development/" target="_blank" rel="noreferrer">Formed with chamber, utility, and labor backing.</a> Worth monitoring, but read alongside independent reporting. Its policy positions reflect industry interests, which may or may not align with community standards.</p>
+              </article>
+
+              <article class="org">
+                <h3>Planet Detroit</h3>
+                <span class="tool-meta">Independent journalism</span>
+                <p><a href="https://planetdetroit.org/2026/03/data-center-news-michigan-chamber/" target="_blank" rel="noreferrer">Among the most useful ongoing coverage</a> of Michigan's data center situation. Follow them if you want to track what is actually happening in real time rather than what press releases say is happening.</p>
+              </article>
+            </div>
+          </div>
+        </details>
+
+        <details class="appendix-panel" id="politics-panel">
+          <summary>
+            <div class="appendix-summary" id="politics">
+              <div class="sec-eyebrow">Politics</div>
+              <h3>Which Michigan candidates have offered concrete standards</h3>
+              <p>Snapshot of the 2026 debate. The useful test is whether any platform includes specific, verifiable conditions - not generalities about "responsible development."</p>
+            </div>
+          </summary>
+          <div class="appendix-body">
+            <div class="politics-grid">
+              <article class="pol-card">
+                <h3>Mallory McMorrow</h3>
+                <span class="tool-meta">D - U.S. Senate candidate</span>
+                <p><a href="https://bridgemi.com/michigan-government/in-senate-race-mallory-mcmorrow-pitches-plan-to-do-data-centers-right/" target="_blank" rel="noreferrer">Released a 7-point plan</a> including renewable energy requirements, infrastructure cost coverage, NDA bans, audits, and reinvestment commitments. The most detailed platform in the field. Still worth asking whether the commitments are enforceable as written.</p>
+              </article>
+
+              <article class="pol-card">
+                <h3>Abdul El-Sayed</h3>
+                <span class="tool-meta">D - U.S. Senate candidate</span>
+                <p><a href="https://planetdetroit.org/2026/01/el-sayed-data-centers-senate/" target="_blank" rel="noreferrer">Called for zero rate hikes, binding environmental commitments, and closed-loop cooling</a> requirements. Specific on the cooling standard, which most candidates have not engaged with.</p>
+              </article>
+
+              <article class="pol-card">
+                <h3>Jocelyn Benson</h3>
+                <span class="tool-meta">D - Governor candidate</span>
+                <p><a href="https://bridgemi.com/michigan-government/where-michigan-gubernatorial-candidates-stand-on-data-centers/" target="_blank" rel="noreferrer">Supports development with guardrails</a> including public hearings, transparency, and developer cost coverage. Less specific on the clean energy additionality question - worth pressing.</p>
+              </article>
+
+              <article class="pol-card">
+                <h3>Dana Nessel</h3>
+                <span class="tool-meta">Michigan Attorney General</span>
+                <p><a href="https://bridgemi.com/michigan-environment-watch/michigan-data-center-review-looks-like-rush-job-dana-nessel-says/" target="_blank" rel="noreferrer">Pressed for contested review process and greater transparency</a> in Michigan utility deals. Useful as an enforcement advocate regardless of electoral outcome.</p>
+              </article>
+            </div>
+
+            <div class="note" style="margin-top: 18px;">
+              <p><strong>The useful test for any candidate:</strong> do they support <em>specific standards</em> - new clean power with additionality, closed-loop cooling with binding water caps, developer-paid infrastructure, mandatory demand response, enforceable CBAs - or do they speak in generalities? Generalities are not commitments.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="appendix-panel" id="resources-panel">
+          <summary>
+            <div class="appendix-summary" id="michigan">
+              <div class="sec-eyebrow">Resources</div>
+              <h3>Where to keep learning</h3>
+              <p>Policy, regulation, journalism, and research sources worth bookmarking.</p>
+            </div>
+          </summary>
+          <div class="appendix-body">
+            <div class="res-cols">
+              <div class="surface" style="padding: 22px;">
+                <div class="kicker" style="margin-bottom: 12px;">Policy and regulation</div>
+                <div class="ri">
+                  <strong>Michigan Public Service Commission</strong>
+                  <span>Public comments and utility review proceedings. Written comments become part of the official record.</span>
+                  <a href="https://www.michigan.gov/mpsc" target="_blank" rel="noreferrer">michigan.gov/mpsc</a>
+                </div>
+                <div class="ri">
+                  <strong>Citizens Utility Board of Michigan</strong>
+                  <span>Ratepayer advocacy, technical filings on data center energy standards, and guidance on how to comment effectively.</span>
+                  <a href="https://cubofmichigan.org" target="_blank" rel="noreferrer">cubofmichigan.org</a>
+                </div>
+                <div class="ri">
+                  <strong>Michigan Environmental Justice Coalition</strong>
+                  <span>Policy research and environmental justice framing for data center siting decisions.</span>
+                  <a href="https://www.mijustice.org" target="_blank" rel="noreferrer">mijustice.org</a>
+                </div>
+                <div class="ri">
+                  <strong>Ireland CRU December 2025 Decision</strong>
+                  <span>The most comprehensive model for grid connection conditionality. Reference this when advocating for similar requirements in Michigan.</span>
+                  <a href="https://www.cru.ie/about-us/news/the-cru-publishes-its-decision-on-new-electricity-connection-policy-for-data-centres/" target="_blank" rel="noreferrer">Read the decision</a>
+                </div>
+              </div>
+
+              <div class="surface" style="padding: 22px;">
+                <div class="kicker" style="margin-bottom: 12px;">Research and journalism</div>
+                <div class="ri">
+                  <strong>U of M Ford School STPP brief</strong>
+                  <span>The best single technical document on Michigan's data center situation and policy options. Dense but comprehensive.</span>
+                  <a href="https://stpp.fordschool.umich.edu/sites/stpp/files/2025-07/stpp-data-centers-2025.pdf" target="_blank" rel="noreferrer">Read the brief</a>
+                </div>
+                <div class="ri">
+                  <strong>IEA Energy and AI Report, 2025</strong>
+                  <span>The primary global dataset on data center energy demand growth and AI's potential emissions reduction impact (1,400 Mt by 2035).</span>
+                  <a href="https://www.iea.org/reports/energy-and-ai" target="_blank" rel="noreferrer">iea.org</a>
+                </div>
+                <div class="ri">
+                  <strong>Bridge Michigan</strong>
+                  <span>Investigative reporting on Michigan politics, utility deals, and state oversight of data center development.</span>
+                  <a href="https://bridgemi.com" target="_blank" rel="noreferrer">bridgemi.com</a>
+                </div>
+                <div class="ri">
+                  <strong>Lancaster, PA Community Benefits Agreement</strong>
+                  <span>The November 2025 CBA template with binding water caps, clean energy funds, and successorship clauses. Use it as a model when advocating locally.</span>
+                  <a href="https://climate.law.columbia.edu/sites/climate.law.columbia.edu/files/content/CBAs/Town%20of%20Lancaster%20-%20AI%20Hub%20CBA%20-%20Nov%202025%20.pdf" target="_blank" rel="noreferrer">Read the CBA</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div>Compiled April 2026 - Published by <a href="https://dryad.land" target="_blank" rel="noreferrer">Dryad</a></div>
+      <small>Educational use only. Not investment advice.</small>
+      <small class="source-line">
+        Key sources: <a href="https://www.iea.org/reports/energy-and-ai" target="_blank" rel="noreferrer">IEA Energy and AI</a>,
+        <a href="https://www.carbonbrief.org/ai-five-charts-that-put-data-centre-energy-use-and-emissions-into-context/" target="_blank" rel="noreferrer">Carbon Brief</a>,
+        <a href="https://www.esgtoday.com/amazon-meta-google-microsoft-account-for-half-of-global-clean-energy-purchase-deals-in-2025-report/" target="_blank" rel="noreferrer">BloombergNEF/ESG Today</a>,
+        <a href="https://cloud.google.com/blog/products/infrastructure/measuring-the-environmental-impact-of-ai-inference/" target="_blank" rel="noreferrer">Google Cloud Blog</a>,
+        <a href="https://cubofmichigan.org" target="_blank" rel="noreferrer">CUB Michigan</a>,
+        <a href="https://bridgemi.com" target="_blank" rel="noreferrer">Bridge Michigan</a>,
+        <a href="https://planetdetroit.org" target="_blank" rel="noreferrer">Planet Detroit</a>,
+        <a href="https://stpp.fordschool.umich.edu/sites/stpp/files/2025-07/stpp-data-centers-2025.pdf" target="_blank" rel="noreferrer">U of M Ford School</a>.
+      </small>
+    </div>
+    <div>
+      <div class="source-line">Citizen-first edition</div>
+      <small>Primary narrative: proof it works, public standards, policy asks, civic action, and lower-cloud alternatives.</small>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---- SCORECARD ---- */
+  var checks = document.querySelectorAll('#sc-checks input[type="checkbox"]');
+  var bar = document.getElementById('sc-bar');
+  var verdict = document.getElementById('sc-verdict');
+  var resetBtn = document.getElementById('sc-reset');
+  var verdicts = ['Not ready', 'Weak', 'Marginal', 'Marginal', 'Partial', 'Partial', 'Strong', 'Strong', 'Meets the standard'];
+  var colors = ['#cb5a43','#cb5a43','#c88834','#c88834','#a8a836','#a8a836','#8da667','#8da667','#b8d48c'];
+
+  function updateScorecard() {
+    var count = 0;
+    checks.forEach(function (c) { if (c.checked) count++; c.closest('.sc-check').classList.toggle('checked', c.checked); });
+    var pct = Math.round((count / 8) * 100);
+    bar.style.width = pct + '%';
+    bar.style.background = colors[count];
+    bar.textContent = count > 0 ? count + '/8' : '';
+    verdict.textContent = verdicts[count];
+    verdict.style.color = colors[count];
+  }
+
+  checks.forEach(function (c) { c.addEventListener('change', updateScorecard); });
+  resetBtn.addEventListener('click', function () {
+    checks.forEach(function (c) { c.checked = false; });
+    document.getElementById('sc-company').value = '';
+    updateScorecard();
+  });
+  updateScorecard();
+
+  /* ---- LOCAL AI RECOMMENDER ---- */
+  var recs = {
+    'mac-m_writing':  { title: 'LM Studio + Llama 3.2 3B', model: 'Llama 3.2 3B Instruct', desc: 'Download LM Studio (free), search for "Llama 3.2 3B Instruct" inside the app, and download it. Good drafting and editing quality, runs fast on Apple Silicon.', perf: 'Memory: ~2 GB VRAM - Speed: fast - Offline: yes' },
+    'mac-m_coding':   { title: 'LM Studio + Qwen 2.5 Coder 7B', model: 'Qwen 2.5 Coder 7B', desc: 'Qwen 2.5 Coder is the best small coding model available locally. Download via LM Studio. Handles Python, JavaScript, and most common languages well.', perf: 'Memory: ~4.5 GB VRAM - Speed: moderate - Offline: yes' },
+    'mac-m_research': { title: 'LM Studio + Mistral 7B Instruct', model: 'Mistral 7B Instruct', desc: 'Mistral 7B has strong reasoning for its size. Good for structured Q&A, summarizing documents, and research synthesis.', perf: 'Memory: ~4.5 GB VRAM - Speed: moderate - Offline: yes' },
+    'mac-m_privacy':  { title: 'GPT4All + Mistral 7B', model: 'GPT4All + Mistral 7B', desc: 'GPT4All runs fully offline. Download it, select Mistral 7B inside the app. You can load local documents for analysis without them ever leaving your machine.', perf: 'Memory: ~4 GB RAM - Speed: moderate - Offline: yes (complete)' },
+    'win-gpu_writing':  { title: 'Ollama + Llama 3.2 3B', model: 'Llama 3.2 3B Instruct', desc: 'Install Ollama, then run "ollama run llama3.2:3b" in a terminal. Good everyday writing assistant.', perf: 'Memory: ~2 GB VRAM - Speed: fast with GPU - Offline: yes' },
+    'win-gpu_coding':   { title: 'Ollama + Qwen 2.5 Coder 7B', model: 'Qwen 2.5 Coder 7B Instruct', desc: 'Run "ollama run qwen2.5-coder:7b" in a terminal. Pairs well with VS Code via the Continue extension for inline coding assistance.', perf: 'Memory: ~5 GB VRAM - Speed: fast with GPU - Offline: yes' },
+    'win-gpu_research': { title: 'Open WebUI + Ollama + Mistral 7B', model: 'Mistral 7B Instruct', desc: 'Install Ollama, then Open WebUI. You get a polished browser-based chat interface running entirely on your own hardware. Supports conversation history and document uploads.', perf: 'Memory: ~5 GB VRAM - Speed: fast with GPU - Offline: yes' },
+    'win-gpu_privacy':  { title: 'GPT4All desktop', model: 'Mistral 7B (via GPT4All)', desc: 'GPT4All is the simplest fully offline option. Download the desktop app and load documents directly - nothing leaves your machine.', perf: 'Memory: ~4 GB RAM - Speed: moderate - Offline: yes (complete)' },
+    'older_writing':    { title: 'GPT4All + Phi-3 Mini', model: 'Phi-3 Mini (3.8B)', desc: "Microsoft's Phi-3 Mini is designed to run efficiently on limited hardware. GPT4All makes it easy to load. Expect slower responses but usable quality for drafting.", perf: 'Memory: ~2 GB RAM - Speed: slow on CPU - Offline: yes' },
+    'older_coding':     { title: 'GitHub Copilot Free Tier (cloud)', model: 'Cloud-based (free tier)', desc: "Local coding models on older hardware are too slow to be practical. GitHub Copilot's free tier gives you 2,000 code completions per month. Consider this a limited cloud option.", perf: 'Cloud-based - Free tier available - Requires internet' },
+    'older_research':   { title: 'GPT4All + Phi-3 Mini', model: 'Phi-3 Mini (3.8B)', desc: 'For CPU-only machines, Phi-3 Mini via GPT4All is the most practical option. Responses will be slow. Set realistic expectations.', perf: 'Memory: ~2 GB RAM - Speed: slow on CPU - Offline: yes' },
+    'older_privacy':    { title: 'GPT4All + Phi-3 Mini (fully offline)', model: 'Phi-3 Mini (3.8B) via GPT4All', desc: 'GPT4All running Phi-3 Mini is your best local and fully offline option on older hardware. Slow but private. Good for analyzing a document when you cannot send it to the cloud.', perf: 'Memory: ~2 GB RAM - Speed: slow on CPU - Offline: yes (complete)' }
+  };
+
+  function getCheckedValue(name) {
+    var input = document.querySelector('input[name="' + name + '"]:checked');
+    return input ? input.value : null;
+  }
+
+  function updateCalc() {
+    var machine = getCheckedValue('calc-machine');
+    var use = getCheckedValue('calc-use');
+    var result = document.getElementById('calc-result');
+    if (!machine || !use) { result.classList.remove('show'); return; }
+    var rec = recs[machine + '_' + use];
+    if (!rec) { result.classList.remove('show'); return; }
+    document.getElementById('calc-rec-title').textContent = rec.title;
+    document.getElementById('calc-rec-model').textContent = rec.model;
+    document.getElementById('calc-rec-desc').textContent = rec.desc;
+    document.getElementById('calc-rec-perf').textContent = rec.perf;
+    result.classList.add('show');
+  }
+
+  document.querySelectorAll('input[name="calc-machine"], input[name="calc-use"]').forEach(function (input) {
+    input.addEventListener('change', updateCalc);
+  });
+
+  /* ---- NAV ACTIVE STATE ---- */
+  var sections = document.querySelectorAll('section[id], header[id]');
+  var navLinks = document.querySelectorAll('.nav a[href^="#"]');
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        navLinks.forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(function (s) { observer.observe(s); });
+})();
+</script>
+</body>
+</html>
