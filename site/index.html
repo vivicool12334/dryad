@@ -442,32 +442,98 @@
             margin-top: 4px;
         }
 
-        /* ── Crisis stats - large impact numbers ── */
+        /* ── Crisis stats - editorial impact band ── */
+        .crisis-band {
+            display: grid;
+            gap: 22px;
+        }
+        .crisis-band-intro {
+            max-width: 620px;
+        }
+        .crisis-band-kicker {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            margin-bottom: 10px;
+        }
+        .crisis-band-intro p {
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.65;
+            color: var(--text-muted);
+            max-width: 58ch;
+            margin-bottom: 0;
+        }
+        .crisis-grid {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+            padding-top: 22px;
+            border-top: 1px solid rgba(141,166,103,0.16);
+        }
         .crisis-stat {
-            text-align: center;
-            padding: 32px 16px;
+            padding-left: 20px;
+            border-left: 1px solid rgba(141,166,103,0.14);
+        }
+        .crisis-stat:first-child {
+            padding-left: 0;
+            border-left: none;
+        }
+        .crisis-stat .stat-kicker {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            margin-bottom: 12px;
         }
         .crisis-stat .stat-number {
             font-family: var(--font-display);
-            font-size: clamp(3rem, 5vw, 4.5rem);
+            font-size: clamp(2.9rem, 5vw, 4.4rem);
             font-weight: 400;
             color: var(--accent-amber);
-            line-height: 1;
-            margin-bottom: 8px;
+            line-height: 0.95;
+            margin-bottom: 10px;
         }
         .crisis-stat .stat-context {
             font-family: var(--font-body);
-            font-size: 0.95rem;
+            font-size: 1rem;
             color: var(--text-main);
-            line-height: 1.4;
-            margin-bottom: 4px;
+            line-height: 1.35;
+            margin-bottom: 8px;
+            max-width: 18ch;
+        }
+        .crisis-stat .stat-subtext {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--text-body);
+            max-width: 28ch;
+            margin-bottom: 10px;
         }
         .crisis-stat .stat-source {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-family: var(--font-body);
+            font-size: 0.78rem;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            line-height: 1.45;
+            letter-spacing: 0.01em;
+        }
+        .crisis-stat.crisis-stat-lead .stat-number {
+            font-size: clamp(4.4rem, 8vw, 6.4rem);
+            margin-bottom: 12px;
+        }
+        .crisis-stat.crisis-stat-lead .stat-context {
+            font-size: 1.35rem;
+            line-height: 1.1;
+            max-width: 14ch;
+        }
+        .crisis-stat.crisis-stat-lead .stat-subtext {
+            font-size: 0.98rem;
+            max-width: 34ch;
         }
 
         /* ── Deep-dive evidence section ── */
@@ -631,6 +697,9 @@
 
         @media (max-width: 768px) {
             .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .crisis-grid { grid-template-columns: 1fr; gap: 18px; }
+            .crisis-stat { padding-left: 0; padding-top: 18px; border-left: none; border-top: 1px solid rgba(141,166,103,0.14); }
+            .crisis-stat:first-child { padding-top: 0; border-top: none; }
             .hero { height: auto; min-height: 100vh; }
             .hero-main { grid-template-columns: 1fr; }
             .hero-left { padding: 1.4rem 1.2rem; min-height: auto; }
@@ -652,6 +721,11 @@
             .hero-footer { flex-wrap: wrap; justify-content: center; gap: 6px; padding: 0.5rem 1rem; font-size: 0.65rem; }
             .chat-input-area input { font-size: 16px; }
             .chat-input-area button { min-width: 60px; min-height: 44px; }
+            .loop-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+            .loop-grid > div { border-radius: 0 !important; border-bottom: none !important; }
+            .loop-grid > div:first-child { border-radius: 10px 10px 0 0 !important; }
+            .loop-grid > div:last-child { border-radius: 0 0 10px 10px !important; border-bottom: 1px solid var(--card-border) !important; }
+            .loop-grid .loop-arrow { display: none; }
         }
         @media (max-width: 480px) {
             .hero-title { font-size: 2rem; }
@@ -737,28 +811,41 @@
 </div>
 
 <!-- ═══════════════ CRISIS STATS ═══════════════ -->
-<section id="crisis-stats" style="padding: 48px 0; border-bottom: 1px solid var(--card-border); background: linear-gradient(180deg, rgba(26,28,20,1) 0%, rgba(34,36,26,0.5) 100%);">
+<section id="crisis-stats" style="padding: 40px 0 44px; border-bottom: 1px solid var(--card-border); background: linear-gradient(180deg, rgba(26,28,20,1) 0%, rgba(34,36,26,0.5) 100%);">
     <div class="content">
-        <div class="grid-4">
-            <div class="crisis-stat">
-                <div class="stat-number">86%</div>
-                <div class="stat-context">of Detroit neighborhoods sit in severe heat islands</div>
-                <div class="stat-source">Planet Detroit, 2025</div>
+        <div class="crisis-band">
+            <div class="crisis-band-intro">
+                <span class="crisis-band-kicker">What Detroit Is Carrying</span>
+                <p>Vacant land is not a background condition. It shows up as heat, respiratory illness, and budget waste before any restoration work even begins.</p>
             </div>
-            <div class="crisis-stat">
-                <div class="stat-number">28.6%</div>
-                <div class="stat-context">of Detroit children have asthma, 3&times; the state hospitalization rate</div>
-                <div class="stat-source">AAFA, 2024</div>
-            </div>
-            <div class="crisis-stat">
-                <div class="stat-number">50%</div>
-                <div class="stat-context">of planted trees are dead within 15 years</div>
-                <div class="stat-source">Roman et al., Urban Forestry</div>
-            </div>
-            <div class="crisis-stat">
-                <div class="stat-number">$6.7M</div>
-                <div class="stat-context">spent every year mowing vacant lots, not restoring them</div>
-                <div class="stat-source">City of Detroit GSD</div>
+            <div class="crisis-grid">
+                <div class="crisis-stat crisis-stat-lead">
+                    <div class="stat-kicker">Scale</div>
+                    <div class="stat-number">100,000+</div>
+                    <div class="stat-context">vacant lots across Detroit</div>
+                    <div class="stat-subtext">18 square miles of unmanaged land woven through the city.</div>
+                    <div class="stat-source">Detroit Future City, 2025</div>
+                </div>
+                <div class="crisis-stat">
+                    <div class="stat-kicker">Heat</div>
+                    <div class="stat-number">86%</div>
+                    <div class="stat-context">of neighborhoods sit in severe heat islands</div>
+                    <div class="stat-source">Planet Detroit, 2025</div>
+                </div>
+                <div class="crisis-stat">
+                    <div class="stat-kicker">Health</div>
+                    <div class="stat-number">28.6%</div>
+                    <div class="stat-context">of Detroit children have asthma</div>
+                    <div class="stat-subtext">Three times the state hospitalization rate.</div>
+                    <div class="stat-source">AAFA, 2024</div>
+                </div>
+                <div class="crisis-stat">
+                    <div class="stat-kicker">Cost</div>
+                    <div class="stat-number">$6.7M</div>
+                    <div class="stat-context">spent mowing vacant lots every year</div>
+                    <div class="stat-subtext">Spent containing neglect, not restoring land.</div>
+                    <div class="stat-source">City of Detroit GSD</div>
+                </div>
             </div>
         </div>
     </div>
@@ -1005,54 +1092,56 @@
 <section id="architecture" style="padding: 60px 0;">
     <div class="content">
         <h2>How It Works</h2>
-        <p style="margin-bottom: 32px;">Dryad is a single autonomous agent connecting five systems: ecological monitoring, contractor coordination, onchain records, a self-funding treasury, and community data. Every loop runs without human intervention.</p>
-        <svg viewBox="0 0 1000 710" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
-          <defs>
-            <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <style>
-              @keyframes df { to { stroke-dashoffset: -40; } }
-              @keyframes df-r { to { stroke-dashoffset: 40; } }
-              @keyframes df-f { to { stroke-dashoffset: -28; } }
-              @keyframes df-fr { to { stroke-dashoffset: 28; } }
-              @keyframes df-s { to { stroke-dashoffset: -56; } }
-              @keyframes df-sr { to { stroke-dashoffset: 56; } }
-              .cn { fill:none; stroke:#3d4d2e; stroke-width:2; stroke-dasharray:8,7; animation:df 3s linear infinite }
-              .cn-r { animation:df-r 3.5s linear infinite }
-              .cn-f { animation:df-f 1.5s linear infinite; stroke-dasharray:6,5 }
-              .cn-fr { animation:df-fr 1.8s linear infinite; stroke-dasharray:6,5 }
-              .cn-s { animation:df-s 5s linear infinite; stroke-dasharray:10,8 }
-              .cn-sr { animation:df-sr 5.5s linear infinite; stroke-dasharray:10,8 }
-            </style>
-          </defs>
-          <path class="cn cn-f" d="M440,370 Q300,270 190,190"/><path class="cn cn-fr" d="M440,375 Q302,275 192,195"/>
-          <path class="cn" d="M560,370 Q700,270 810,190"/><path class="cn cn-r" d="M558,375 Q698,275 808,195"/>
-          <path class="cn" d="M420,415 Q280,415 170,415"/><path class="cn cn-r" d="M420,425 Q280,425 170,425"/>
-          <path class="cn" d="M580,415 Q720,410 830,395"/><path class="cn cn-r" d="M580,425 Q720,420 830,405"/>
-          <path class="cn cn-s" d="M495,350 Q495,250 495,130"/><path class="cn cn-sr" d="M505,350 Q505,250 505,130"/>
-          <circle cx="440" cy="375" r="38" fill="none" stroke="#8DA667" stroke-width="2" opacity="0.6"/>
-          <text x="440" y="375" text-anchor="middle" dy="0.3em" fill="#8DA667" font-family="Space Mono" font-size="13" font-weight="600">DRYAD</text>
-          <text x="440" y="395" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="9" opacity="0.6">Agent</text>
-          <circle cx="190" cy="190" r="32" fill="none" stroke="#8DA667" stroke-width="2" opacity="0.4"/>
-          <text x="190" y="185" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="11" font-weight="600">Venice</text>
-          <text x="190" y="200" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="8" opacity="0.5">LLM</text>
-          <circle cx="810" cy="190" r="32" fill="none" stroke="#8DA667" stroke-width="2" opacity="0.4"/>
-          <text x="810" y="190" text-anchor="middle" dy="0.3em" fill="#8DA667" font-family="Space Mono" font-size="10" font-weight="600">Base</text>
-          <text x="810" y="205" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="8" opacity="0.5">Contracts</text>
-          <circle cx="170" cy="415" r="32" fill="none" stroke="#8DA667" stroke-width="2" opacity="0.4"/>
-          <text x="170" y="410" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="9" font-weight="600">iNaturalist</text>
-          <text x="170" y="425" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="8" opacity="0.5">API</text>
-          <circle cx="830" cy="395" r="32" fill="none" stroke="#8DA667" stroke-width="2" opacity="0.4"/>
-          <text x="830" y="390" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="10" font-weight="600">Email</text>
-          <text x="830" y="405" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="8" opacity="0.5">AgentMail</text>
-          <circle cx="495" cy="120" r="28" fill="none" stroke="#8DA667" stroke-width="2" opacity="0.4"/>
-          <text x="495" y="115" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="10" font-weight="600">DLBA</text>
-          <text x="495" y="130" text-anchor="middle" fill="#8DA667" font-family="Space Mono" font-size="8" opacity="0.5">Parcels</text>
-          <text x="180" y="520" text-anchor="start" fill="#8DA667" font-family="Space Mono" font-size="16" opacity="0.9" font-weight="600">→  iNaturalist observations feed biodiversity data</text>
-          <text x="180" y="555" text-anchor="start" fill="#8DA667" font-family="Space Mono" font-size="16" opacity="0.9" font-weight="600">→  Agent computes health score &amp; detects invasives</text>
-          <text x="180" y="590" text-anchor="start" fill="#8DA667" font-family="Space Mono" font-size="16" opacity="0.9" font-weight="600">→  Email contractors with verified work orders</text>
-          <text x="180" y="625" text-anchor="start" fill="#8DA667" font-family="Space Mono" font-size="16" opacity="0.9" font-weight="600">→  Record milestones &amp; pay in USDC on Base</text>
-          <text x="180" y="660" text-anchor="start" fill="#8DA667" font-family="Space Mono" font-size="16" opacity="0.9" font-weight="600">→  Mint EAS attestations for verified work</text>
-        </svg>
+        <p style="margin-bottom: 12px;">Dryad runs a continuous stewardship loop. Every 24 hours, the agent observes the land, assesses what it finds, dispatches work if needed, verifies completion, and records everything on-chain. No human triggers it. No grant funds it.</p>
+
+        <div style="text-align: center; margin: 40px 0 16px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">The Operating Loop</div>
+
+        <div class="loop-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px;">
+
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
+                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 1</div>
+                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Observe</div>
+                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">iNaturalist observations feed biodiversity data from all 9 parcels</div>
+                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
+            </div>
+
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
+                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 2</div>
+                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Assess</div>
+                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">Agent computes health score, detects invasive pressure, flags intervention needs</div>
+                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
+            </div>
+
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
+                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 3</div>
+                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Dispatch</div>
+                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">Emails verified work orders to local contractors via AgentMail</div>
+                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
+            </div>
+
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
+                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 4</div>
+                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Verify</div>
+                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">GPS-tagged photo proof checked against work order specs</div>
+                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
+            </div>
+
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center;">
+                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 5</div>
+                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Pay + Record</div>
+                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">USDC payment on Base, EAS attestation minted on-chain</div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 8px;">
+            <span style="color: var(--accent); opacity: 0.6;">&#8635;</span> Loop repeats every 24 hours. Treasury yield funds each cycle indefinitely.
+        </div>
+
+        <div style="text-align: center; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); opacity: 0.6; letter-spacing: 0.06em; margin-top: 16px;">
+            Dependencies: Venice (LLM inference) &bull; DLBA (land acquisition)
+        </div>
+
     </div>
 </section>
 
