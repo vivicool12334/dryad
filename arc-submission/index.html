@@ -639,17 +639,24 @@
 <div class="content">
     <h2>Powered by Arc's Agentic Economy</h2>
     <p style="max-width:720px;margin-bottom:1.6rem">
-        Dryad-Arc demonstrates what becomes possible when autonomous agents have access to a DeFi stack built for them. The same agent that monitors ecology and schedules plantings now buys ecological data from specialist APIs, opens on-chain job contracts for verified restoration work, and builds a reputation for reliable stewardship - all without human approval, all settled in USDC.
+        Dryad-Arc demonstrates the full arc of autonomous agent economics: earn yield on Arc's DeFi stack, spend that yield buying ecological data via x402 nanopayments, escrow restoration job funds on-chain via ERC-8183, and build a verifiable reputation via ERC-8004 - all without a bank account, a legal entity, or a human approving any transaction.
     </p>
 
     <div class="arc-flow">
-        <div class="arc-flow-title">// Dryad-Arc operating loop (every 60 seconds)</div>
-        <div class="flow-steps">
+        <div class="arc-flow-title">// Dryad-Arc full economic loop (every 60 seconds)</div>
+        <div class="flow-steps" style="grid-template-columns: repeat(6, 1fr)">
             <div class="flow-step">
-                <div class="flow-icon">&#127973;</div>
+                <div class="flow-icon" style="background:rgba(141,166,103,0.1);border-color:rgba(141,166,103,0.3)">&#128200;</div>
                 <div class="flow-label">
-                    <strong>Observe</strong>
-                    Sensor reads for Yosemite/Detroit coordinates
+                    <strong style="color:var(--accent)">USYC Yield</strong>
+                    $23.6K in T-bill vault earns ~$944/yr at 4% APY
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-icon" style="background:rgba(141,166,103,0.1);border-color:rgba(141,166,103,0.3)">&#9878;</div>
+                <div class="flow-label">
+                    <strong style="color:var(--accent)">Rebalance</strong>
+                    Redeem USYC&rarr;USDC when float &lt; $5
                 </div>
             </div>
             <div class="flow-step">
@@ -663,58 +670,75 @@
                 <div class="flow-icon">&#9989;</div>
                 <div class="flow-label">
                     <strong>Verify</strong>
-                    $0.001 USDC to verification-api if score high
+                    $0.001 to verification-api if score &ge; threshold
                 </div>
             </div>
             <div class="flow-step">
                 <div class="flow-icon">&#128274;</div>
                 <div class="flow-label">
                     <strong>ERC-8183</strong>
-                    $0.10 USDC locked in escrow for restoration job
+                    $0.10 USDC escrowed for restoration job
                 </div>
             </div>
             <div class="flow-step">
                 <div class="flow-icon">&#11088;</div>
                 <div class="flow-label">
                     <strong>ERC-8004</strong>
-                    Reputation event recorded on-chain after completion
+                    Reputation recorded on-chain after completion
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="grid-3" style="margin-bottom:1.4rem">
+    <div class="grid-4" style="margin-bottom:1.4rem">
+        <div class="card arc-card" style="border-color:rgba(141,166,103,0.3);background:rgba(141,166,103,0.04)">
+            <h3 style="color:var(--accent)">USYC Treasury Yield</h3>
+            <p style="font-size:0.83rem">The agent's $23,600 USDC treasury is parked in <strong>USYC</strong> (US Yield Coin by Hashnote) on Arc - a T-bill-backed ERC-4626 vault earning ~4% APY. Every cycle, <code style="color:var(--accent)">treasury.rebalance()</code> checks if the operational USDC float is low. If it is, it redeems USYC shares back to USDC to fund the next round of payments.</p>
+            <p style="font-size:0.8rem;color:var(--text-muted)">~$944/yr yield covers full Year 3+ maintenance budget exactly.<br>USYC: 0xe9185...da86C on Arc Testnet</p>
+        </div>
         <div class="card arc-card">
             <h3>x402 Nanopayments</h3>
-            <p style="font-size:0.85rem">Every ecological data request is a micropayment. The agent calls <code style="color:var(--arc-blue)">GatewayClient.pay(url)</code> from Circle's x402 SDK - the HTTP response IS the purchased data. No approval step, no invoice, no wallet popup. The API price is embedded in the 402 header; the agent pays or moves on.</p>
-            <p style="font-size:0.82rem;color:var(--text-muted)">Loop A: $0.001 per ecology risk score<br>Loop B: $0.001 per verification call</p>
+            <p style="font-size:0.83rem">Every ecological data request is a micropayment. The agent calls <code style="color:var(--arc-blue)">GatewayClient.pay(url)</code> - the HTTP response IS the purchased data. No approval, no invoice, no wallet popup. The API price lives in the 402 header; the agent pays or moves on.</p>
+            <p style="font-size:0.8rem;color:var(--text-muted)">$0.001 per ecology risk score<br>$0.001 per verification call</p>
         </div>
         <div class="card arc-card">
             <h3>ERC-8183 Job Protocol</h3>
-            <p style="font-size:0.85rem">When two models agree a wildfire risk is high, the agent opens an on-chain job contract. USDC flows into escrow at <code style="color:var(--arc-blue)">createJob</code>, locks through <code style="color:var(--arc-blue)">fund</code>, releases to the provider at <code style="color:var(--arc-blue)">complete</code>. Full 6-state machine: Created, BudgetSet, Funded, Submitted, Completed.</p>
-            <p style="font-size:0.82rem;color:var(--text-muted)">$0.10 USDC per verified alert event<br>Contract: 0x0747...4583 on Arc Testnet</p>
+            <p style="font-size:0.83rem">When two models agree a risk is real, the agent opens an on-chain job contract. USDC flows into escrow at <code style="color:var(--arc-blue)">fund()</code>, releases to the provider at <code style="color:var(--arc-blue)">complete()</code>. Full 6-state machine, fully autonomous. In CONSERVATION mode the agent skips jobs to protect the treasury.</p>
+            <p style="font-size:0.8rem;color:var(--text-muted)">$0.10 USDC per verified alert<br>0x0747...4583 on Arc Testnet</p>
         </div>
         <div class="card arc-card">
             <h3>ERC-8004 Identity</h3>
-            <p style="font-size:0.85rem">Agents are ERC-721 tokens with discoverable metadata: capabilities, service URLs, payment terms. Dryad-Arc discovers ecology and verification APIs by scanning on-chain mint events - no hardcoded URLs. After each job, a reputation event is recorded for the verifying agent.</p>
-            <p style="font-size:0.82rem;color:var(--text-muted)">Discoverable service registry<br>Reputation grows with each verified job</p>
+            <p style="font-size:0.83rem">Agents are ERC-721 tokens with discoverable metadata: capabilities, service URLs, payment terms. Dryad-Arc scans on-chain mint events to find ecology and verification APIs - no hardcoded URLs. After each job completes, a reputation event is recorded for the verifying agent.</p>
+            <p style="font-size:0.8rem;color:var(--text-muted)">Discoverable service registry<br>Reputation grows per completed job</p>
         </div>
     </div>
 
-    <!-- Live Cycle Monitor -->
-    <div class="cycle-monitor">
-        <div class="cycle-hdr">
-            <div class="cycle-hdr-dot"></div>
-            <strong>Live Risk Cycle</strong>
-            <span style="margin-left:auto">Arc Testnet - refreshes every 30s</span>
+    <!-- Live Cycle + Treasury Monitor -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem">
+        <div class="cycle-monitor">
+            <div class="cycle-hdr">
+                <div class="cycle-hdr-dot"></div>
+                <strong>Live Risk Cycle</strong>
+                <span style="margin-left:auto">Arc Testnet - 30s refresh</span>
+            </div>
+            <div class="cycle-body" id="cycle-body">
+                <div class="cycle-loading">Connecting to Dryad-Arc agent...</div>
+            </div>
         </div>
-        <div class="cycle-body" id="cycle-body">
-            <div class="cycle-loading">Connecting to Dryad-Arc agent...</div>
+        <div class="cycle-monitor" style="border-color:rgba(141,166,103,0.25)">
+            <div class="cycle-hdr" style="border-color:rgba(141,166,103,0.15)">
+                <div class="cycle-hdr-dot" style="background:var(--accent)"></div>
+                <strong style="color:var(--accent)">Treasury (USYC)</strong>
+                <span style="margin-left:auto">Arc Testnet - 30s refresh</span>
+            </div>
+            <div class="cycle-body" id="treasury-body">
+                <div class="cycle-loading">Loading treasury state...</div>
+            </div>
         </div>
     </div>
 
-    <div class="callout" style="margin-top:1.4rem;border-left-color:var(--arc-blue)">
-        <strong>Why this matters for the Agentic Economy:</strong> Today Dryad-Arc manages 9 lots. The same architecture works for any autonomous agent that needs to buy specialized data, contract real-world work, and build a verifiable reputation - without a bank account, a legal entity, or a human approving every transaction. Arc's DeFi stack makes agents first-class economic participants.
+    <div class="callout" style="margin-top:0;border-left-color:var(--arc-blue)">
+        <strong>The closed loop:</strong> T-bill yield earned in USYC &rarr; redeemed to USDC &rarr; spent on ecological data (x402) &rarr; verified alerts trigger ERC-8183 escrow &rarr; jobs complete, reputation grows (ERC-8004) &rarr; idle USDC deposited back to USYC. The forest funds itself from T-bill yield, pays for its own intelligence, and builds a verifiable track record - all on Arc, all in USDC.
     </div>
 </div>
 </section>
@@ -841,25 +865,40 @@
 <div class="content">
     <h2>Treasury and Operating Model</h2>
 
-    <div class="grid-2">
+    <div class="grid-2" style="margin-bottom:1.4rem">
         <div>
-            <h3>Funding Model</h3>
-            <p>Total capitalization needed: ~$41,000</p>
-            <p>Setup: $13,500 (land acquisition at DLBA rates, mastication, seed stock, LLC filing). Establishment: $2,900 (years 1-2 active mowing and invasive removal). Perpetual treasury: $23,600 USDC earning ~4% APY via cross-chain DeFi yield. Buffer: $1,000.</p>
-            <p>The USDC treasury runs through Morpho and Aave V3 on Base and Arbitrum. The agent manages rebalancing across protocols, adjusting spending mode (NORMAL, CONSERVATION, CRITICAL) based on treasury health.</p>
+            <h3>Arc-Native Yield: USYC</h3>
+            <p>The $23,600 USDC treasury is deposited into <strong>USYC</strong> on Arc - Hashnote's US Yield Coin, backed by short-duration US Treasuries. USYC is an ERC-4626 vault: deposit USDC, receive shares that appreciate as T-bill interest accrues. Redeem shares back to USDC whenever the operational wallet runs low.</p>
+            <p>At ~4% APY: <strong style="color:var(--accent)">$23,600 &times; 0.04 = $944/yr</strong>. The Year 3+ maintenance budget is exactly $945/yr. The forest pays for itself from T-bill yield, perpetually, with no external revenue needed.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">Also live on Arc testnet: Aave V3 (3-6%), Morpho (4-7%), Superform (yield aggregator). Dryad-Arc uses USYC as the primary source for its simplicity and direct Circle integration.</p>
         </div>
         <div>
             <h3>Spending Autonomy</h3>
-            <p>Three spending modes govern autonomous payments:</p>
-            <p><strong style="color:var(--accent)">NORMAL:</strong> Full autonomous operation. Tax payments from yield, contractor payments up to $200/day, iNaturalist monitoring, ecological data purchases via x402.</p>
-            <p><strong style="color:var(--accent-amber)">CONSERVATION:</strong> Essential spending only. Tax payments continue, emergency invasive removal only.</p>
-            <p><strong style="color:#c44">CRITICAL:</strong> Tax payments only. Human governance required before any restoration spending.</p>
-            <p style="font-size:0.82rem;color:var(--text-muted)">Designed to run 50+ years on the $23.6K treasury at current yield rates.</p>
+            <p>Three spending modes govern all autonomous payments, determined by treasury health at each cycle start:</p>
+            <p><strong style="color:var(--accent)">NORMAL:</strong> Full operations. Property taxes from yield, x402 ecology data ($0.001/call), ERC-8183 restoration jobs ($0.10/event), iNaturalist monitoring.</p>
+            <p><strong style="color:var(--accent-amber)">CONSERVATION:</strong> x402 data purchases continue (cheap), ERC-8183 jobs suspended to protect treasury. Triggered when USDC float &lt; $5 and USYC &lt; $10 total.</p>
+            <p><strong style="color:#c44">CRITICAL:</strong> All non-essential spending suspended. Human governance required. Triggered when total treasury &lt; $2 USDC.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">Designed to run 50+ years on the $23.6K treasury at current T-bill rates.</p>
         </div>
     </div>
 
-    <div class="callout" style="margin-top:1.4rem">
-        <strong>Detroit accepts crypto for taxes</strong> via PayPal at checkout. Dryad pays property taxes (~$30/lot/year for vacant land) autonomously from DeFi yield. Under proposed Land Value Tax reform, urban farms and community gardens are exempt - the restored prairie qualifies.
+    <div class="grid-3" style="margin-bottom:1.4rem">
+        <div class="card" style="border-left:3px solid var(--accent)">
+            <h3>USYC (Primary)</h3>
+            <p style="font-size:0.82rem">~4% APY. Hashnote Short Duration Fund - T-bills. ERC-4626 vault on Arc. 24/7 redemptions. <code style="color:var(--accent)">0xe9185...da86C</code>. Circle-integrated, mainnet planned for 2026.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--arc-blue)">
+            <h3>Aave V3 (Alternative)</h3>
+            <p style="font-size:0.82rem">3-6% APY via USDC lending. Active on Arc testnet. Same Aave V3 interface as Base/Arbitrum - same agent code, different RPC. Could serve as overflow yield when USYC is at capacity.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--accent-amber)">
+            <h3>Morpho / Superform</h3>
+            <p style="font-size:0.82rem">4-7% APY via optimized lending. Superform aggregates across USYC, Aave, Morpho to route to best rate automatically. Future: agent uses Superform to maximize yield without managing individual vault positions.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:0">
+        <strong>Detroit accepts crypto for taxes</strong> via PayPal at checkout. Dryad pays property taxes (~$30/lot/year for vacant land) autonomously from USYC yield. Under proposed Land Value Tax reform, urban farms and community gardens are exempt - the restored prairie qualifies. The agent handles the paperwork.
     </div>
 </div>
 </section>
@@ -1151,37 +1190,36 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 })();
 </script>
 
-<!-- LIVE CYCLE MONITOR -->
+<!-- LIVE CYCLE + TREASURY MONITOR -->
 <script>
 (function() {
     var STATUS_URL = 'http://5.75.225.23:3010/api/status';
     var el = document.getElementById('cycle-body');
-    if (!el) return;
+    var tel = document.getElementById('treasury-body');
 
-    function render(data) {
-        if (!data) { el.innerHTML = '<div class="cycle-loading">Agent offline - showing last known state</div>'; return; }
+    function renderCycle(data) {
+        if (!el) return;
+        if (!data) { el.innerHTML = '<div class="cycle-loading">Agent offline</div>'; return; }
         var rows = [
             ['Cycle count', data.cycleCount || 0, 'green'],
             ['Threshold', data.threshold !== undefined ? data.threshold : '--', ''],
-            ['Ecology API', (data.ecologyApiUrl || '').replace('http://',''), 'blue'],
-            ['Verification API', (data.verificationApiUrl || '').replace('http://',''), 'blue'],
         ];
         var recent = (data.recentCycles || []).slice(-1)[0];
         if (recent) {
             rows.push(['Last cycle', recent.timestamp ? recent.timestamp.split('T')[1].split('.')[0] + ' UTC' : '--', '']);
+            rows.push(['Spending mode', recent.spendingMode || 'NORMAL', recent.spendingMode === 'CRITICAL' ? 'amber' : recent.spendingMode === 'CONSERVATION' ? 'amber' : 'green']);
             rows.push(['Ecology score', recent.ecologyScore !== undefined ? recent.ecologyScore : '--', recent.ecologyScore >= (data.threshold || 10) ? 'amber' : 'green']);
             rows.push(['Ecology cost', recent.ecologyCost ? '$' + recent.ecologyCost.toFixed(3) + ' USDC' : '--', '']);
             if (recent.verificationScore !== undefined) {
-                rows.push(['Verification score', recent.verificationScore, 'amber']);
-                rows.push(['Verification cost', recent.verificationCost ? '$' + recent.verificationCost.toFixed(3) + ' USDC' : '--', '']);
+                rows.push(['Verified score', recent.verificationScore, 'amber']);
             }
             if (recent.jobId) {
                 rows.push(['Job ID', '#' + recent.jobId, 'blue']);
                 rows.push(['Job outcome', recent.jobOutcome || '--', recent.jobOutcome === 'completed' ? 'green' : 'amber']);
-                rows.push(['Job cost', recent.jobCost ? '$' + recent.jobCost.toFixed(2) + ' USDC' : '--', '']);
             }
-            rows.push(['Total cost', '$' + (recent.totalCost || 0).toFixed(3) + ' USDC', 'amber']);
-            if (recent.error) rows.push(['Error', recent.error.slice(0, 60) + '...', 'amber']);
+            rows.push(['Cycle cost', '$' + (recent.totalCost || 0).toFixed(3) + ' USDC', 'amber']);
+            if (recent.treasuryRebalance) rows.push(['Rebalance', recent.treasuryRebalance.slice(0, 40), 'green']);
+            if (recent.error) rows.push(['Error', recent.error.slice(0, 50), 'amber']);
         }
         var html = '';
         rows.forEach(function(r) {
@@ -1190,11 +1228,38 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
         el.innerHTML = html;
     }
 
+    function renderTreasury(t) {
+        if (!tel) return;
+        if (!t) { tel.innerHTML = '<div class="cycle-loading">Treasury data unavailable</div>'; return; }
+        var modeColor = t.spendingMode === 'CRITICAL' ? 'amber' : t.spendingMode === 'CONSERVATION' ? 'amber' : 'green';
+        var rows = [
+            ['Mode', t.spendingMode || 'NORMAL', modeColor],
+            ['USDC float', '$' + parseFloat(t.usdcBalance || 0).toFixed(2), 'green'],
+            ['USYC value', '$' + parseFloat(t.usycValueUsdc || 0).toFixed(2) + ' USDC', 'green'],
+            ['Total treasury', '$' + parseFloat(t.totalValueUsdc || 0).toFixed(2), 'green'],
+            ['Yield earned', '$' + parseFloat(t.yieldEarnedUsdc || 0).toFixed(4) + ' USDC', 'amber'],
+            ['Annual yield', '~$' + (t.annualYieldUsdc || '944') + '/yr', 'amber'],
+            ['APY', ((t.apy || 0.04) * 100).toFixed(1) + '%', ''],
+            ['Last rebalance', t.lastRebalance ? t.lastRebalance.split('T')[1].split('.')[0] + ' UTC' : 'none yet', ''],
+        ];
+        var html = '';
+        rows.forEach(function(r) {
+            html += '<div class="cycle-row"><span class="cycle-key">' + r[0] + '</span><span class="cycle-val ' + (r[2] || '') + '">' + r[1] + '</span></div>';
+        });
+        tel.innerHTML = html;
+    }
+
     function load() {
         fetch(STATUS_URL, {signal: AbortSignal.timeout(5000)})
             .then(function(r) { return r.json(); })
-            .then(render)
-            .catch(function() { el.innerHTML = '<div class="cycle-loading">Agent unreachable - live data unavailable</div>'; });
+            .then(function(data) {
+                renderCycle(data);
+                renderTreasury(data.treasury || null);
+            })
+            .catch(function() {
+                if (el) el.innerHTML = '<div class="cycle-loading">Agent unreachable - live data unavailable</div>';
+                if (tel) tel.innerHTML = '<div class="cycle-loading">Agent unreachable</div>';
+            });
     }
 
     load();
