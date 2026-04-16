@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dryad on Arc - Autonomous Land Stewardship on the Agentic Economy</title>
+    <meta name="description" content="An autonomous AI agent managing native habitat restoration on Detroit vacant lots, powered by Arc Network's DeFi stack: x402 micropayments, ERC-8183 job escrow, and ERC-8004 agent identity.">
+    <meta property="og:title" content="Dryad on Arc - The Forest That Owns Itself">
+    <meta property="og:description" content="Autonomous AI agent restoring Detroit ecosystems, now running on Arc Network with x402 nanopayments, ERC-8183 job protocol, and ERC-8004 agent identity.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg: #1A1C14;
+            --bg-alt: #22241A;
+            --text-main: #D2D6C1;
+            --text-body: #c8ccb8;
+            --text-muted: rgba(210, 214, 193, 0.55);
+            --accent: #8DA667;
+            --accent-light: #a8c47a;
+            --accent-amber: #E29E4B;
+            --card-bg: #22241A;
+            --card-border: rgba(141, 166, 103, 0.2);
+            --arc-blue: #4B8FE2;
+            --arc-blue-dim: rgba(75, 143, 226, 0.15);
+            --space-unit: max(2vw, 20px);
+            --font-display: 'Instrument Serif', serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-body: 'Manrope', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-body);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection { background: var(--accent-amber); color: var(--bg); }
+
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+        a:hover { border-bottom-color: var(--accent); }
+
+        /* ---- HERO ---- */
+        .hero {
+            width: 100%;
+            height: calc(100vh - 50px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .hero-header {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            align-items: center;
+            padding: 0.9rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(26,28,20,0.97);
+            backdrop-filter: blur(12px);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            text-transform: lowercase;
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+        }
+        .logo-area:hover { border-bottom: none !important; color: var(--accent-light); }
+        .logo-area svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: logo-spin 30s linear infinite; }
+        @keyframes logo-spin { to { transform: rotate(360deg); } }
+
+        .arc-badge {
+            font-size: 0.65rem;
+            color: var(--arc-blue);
+            border: 1px solid var(--arc-blue);
+            border-radius: 3px;
+            padding: 1px 5px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-left: 4px;
+            opacity: 0.85;
+        }
+
+        .hero-nav { display: flex; justify-content: flex-end; gap: 2.5rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .hero-nav a { color: var(--text-muted); border-bottom: none; }
+        .hero-nav a:hover { color: var(--accent-amber); }
+
+        .hero-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex-grow: 1;
+            overflow: hidden;
+            min-height: 0;
+            position: relative;
+            z-index: 3;
+        }
+
+        .hero-left {
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1.8rem 2rem;
+            overflow-y: auto;
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 5.5vw, 5.5rem);
+            line-height: 0.9;
+            font-weight: 400;
+            letter-spacing: -0.03em;
+            color: var(--accent-amber);
+            margin-bottom: 0.6rem;
+        }
+
+        .hero-on-arc {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--arc-blue);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1.2rem;
+            opacity: 0.9;
+        }
+        .hero-on-arc::before { content: '// '; opacity: 0.5; }
+
+        .hero-subtitle {
+            font-family: var(--font-display);
+            font-size: clamp(1rem, 1.6vw, 1.45rem);
+            line-height: 1.35;
+            color: var(--text-main);
+            margin-bottom: 1.4rem;
+            max-width: 92%;
+        }
+
+        .hero-details {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.4rem 1.2rem;
+            margin-top: auto;
+            border-top: 1px solid var(--card-border);
+            padding-top: 0.8rem;
+        }
+        .hero-details .hl { color: var(--accent); }
+        .hero-details .hl-arc { color: var(--arc-blue); }
+
+        #hero-particles {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero-grain {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            background-size: 128px 128px;
+            animation: grain-shift 0.5s steps(4) infinite;
+        }
+        @keyframes grain-shift { to { background-position: 128px 128px; } }
+
+        .hero-right {
+            position: relative;
+            background: linear-gradient(170deg, #14150F 0%, #1A1C14 40%, #1f2117 100%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ---- CHAT ---- */
+        .chat-hdr {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(20,21,15,0.6);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-hdr-dot {
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: dot-pulse 2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes dot-pulse { 0%,100%{opacity:0.4;transform:scale(0.9)} 50%{opacity:1;transform:scale(1.1)} }
+        .chat-hdr-text strong { color: var(--accent); font-size: 0.85rem; display: block; }
+        .chat-hdr-text span { color: var(--text-muted); font-size: 0.72rem; }
+        .chat-hdr-addr { margin-left: auto; font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+
+        .chat-welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            gap: 10px;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+        .chat-welcome-icon {
+            width: 36px; height: 36px;
+            fill: var(--accent);
+            opacity: 0.5;
+            margin-bottom: 4px;
+        }
+        .chat-welcome h3 { font-family: var(--font-display); font-size: 1.2rem; color: var(--text-main); font-weight: 400; }
+        .chat-welcome p { font-size: 0.78rem; line-height: 1.6; max-width: 280px; }
+
+        .chat-msg {
+            font-size: 0.82rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-width: 90%;
+            padding: 10px 13px;
+            border-radius: 8px;
+        }
+        .chat-msg.user {
+            background: rgba(141, 166, 103, 0.12);
+            border: 1px solid rgba(141, 166, 103, 0.2);
+            align-self: flex-end;
+            color: var(--text-main);
+        }
+        .chat-msg.agent {
+            background: rgba(34, 36, 26, 0.8);
+            border: 1px solid var(--card-border);
+            align-self: flex-start;
+            color: var(--text-body);
+        }
+        .chat-msg.typing { opacity: 0.5; }
+
+        .chat-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 14px;
+            border-top: 1px solid var(--card-border);
+            background: rgba(20,21,15,0.4);
+        }
+        .chat-sug-btn {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 4px 9px;
+            background: transparent;
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chat-sug-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(141,166,103,0.06); }
+
+        .chat-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid var(--card-border);
+            background: rgba(20,21,15,0.6);
+            flex-shrink: 0;
+        }
+        .chat-input-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+        }
+        .chat-input-row input::placeholder { color: var(--text-muted); }
+        .chat-input-row button {
+            background: var(--accent);
+            border: none;
+            border-radius: 4px;
+            color: var(--bg);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-input-row button:hover { background: var(--accent-light); }
+
+        /* ---- TICKER BAR ---- */
+        .ticker-bar {
+            background: var(--bg-alt);
+            border-bottom: 1px solid var(--card-border);
+            overflow: hidden;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .ticker-inner {
+            display: flex;
+            gap: 0;
+            animation: ticker-scroll 40s linear infinite;
+            white-space: nowrap;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .ticker-inner span { padding: 0 2.5rem; }
+        .ticker-inner .t-green { color: var(--accent); }
+        .ticker-inner .t-amber { color: var(--accent-amber); }
+        .ticker-inner .t-blue { color: var(--arc-blue); }
+        @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* ---- MAIN CONTENT ---- */
+        section { border-top: 1px solid var(--card-border); }
+
+        .content {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 3rem var(--space-unit);
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 400;
+            color: var(--accent-amber);
+            margin-bottom: 1.4rem;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        h3 {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.7rem;
+        }
+
+        p { line-height: 1.75; margin-bottom: 0.85rem; }
+        p:last-child { margin-bottom: 0; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1.2rem 1.4rem;
+        }
+        .card.arc-card { border-color: rgba(75, 143, 226, 0.25); background: rgba(75, 143, 226, 0.04); }
+
+        .callout {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-left: 3px solid var(--accent-amber);
+            border-radius: 0 6px 6px 0;
+            padding: 1.2rem 1.4rem;
+            margin: 1rem 0;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 1.4rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .stat-val {
+            font-family: var(--font-display);
+            font-size: 2.4rem;
+            color: var(--accent-amber);
+            line-height: 1;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        .stat-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+        /* ---- ARC FLOW DIAGRAM ---- */
+        .arc-flow {
+            background: var(--card-bg);
+            border: 1px solid rgba(75, 143, 226, 0.3);
+            border-radius: 10px;
+            padding: 1.8rem;
+            margin: 1.4rem 0;
+        }
+        .arc-flow-title {
+            font-size: 0.75rem;
+            color: var(--arc-blue);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1.2rem;
+        }
+        .flow-steps {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0;
+            align-items: start;
+        }
+        .flow-step { text-align: center; position: relative; padding: 0 4px; }
+        .flow-step::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 18px;
+            width: 16px;
+            height: 2px;
+            background: rgba(75,143,226,0.4);
+        }
+        .flow-step:last-child::after { display: none; }
+        .flow-icon {
+            width: 38px; height: 38px;
+            background: rgba(75, 143, 226, 0.1);
+            border: 1px solid rgba(75, 143, 226, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 1.1rem;
+        }
+        .flow-label { font-size: 0.68rem; color: var(--text-muted); line-height: 1.4; }
+        .flow-label strong { display: block; color: var(--arc-blue); font-size: 0.7rem; margin-bottom: 2px; }
+
+        /* ---- LIVE CYCLE MONITOR ---- */
+        .cycle-monitor {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cycle-hdr {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(20,21,15,0.5);
+        }
+        .cycle-hdr-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--arc-blue);
+            animation: dot-pulse 2s ease-in-out infinite;
+        }
+        .cycle-hdr span { font-size: 0.75rem; color: var(--text-muted); }
+        .cycle-hdr strong { color: var(--arc-blue); font-size: 0.78rem; }
+        .cycle-body { padding: 14px 16px; font-size: 0.78rem; min-height: 100px; }
+        .cycle-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(141,166,103,0.07); }
+        .cycle-row:last-child { border-bottom: none; }
+        .cycle-key { color: var(--text-muted); }
+        .cycle-val { color: var(--text-main); font-family: var(--font-mono); }
+        .cycle-val.green { color: var(--accent); }
+        .cycle-val.amber { color: var(--accent-amber); }
+        .cycle-val.blue { color: var(--arc-blue); }
+        .cycle-loading { color: var(--text-muted); font-style: italic; padding: 20px 0; text-align: center; }
+
+        /* ---- MAP ---- */
+        #parcel-map {
+            height: 380px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            margin: 1.2rem 0;
+        }
+
+        /* ---- FOOTER ---- */
+        .page-footer {
+            background: var(--bg-alt);
+            border-top: 1px solid var(--card-border);
+            padding: 2rem 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 800px) {
+            .hero-main { grid-template-columns: 1fr; }
+            .hero-right { display: none; }
+            .hero { height: auto; min-height: 100vh; }
+            .hero-left { border-right: none; min-height: 60vh; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .stat-row { grid-template-columns: 1fr 1fr; }
+            .flow-steps { grid-template-columns: 1fr; }
+            .flow-step::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+    <header class="hero-header">
+        <a href="#" class="logo-area">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/>
+            </svg>
+            dryad
+            <span class="arc-badge">on arc</span>
+        </a>
+        <nav class="hero-nav">
+            <a href="#arc-stack">Arc DeFi</a>
+            <a href="#detroit">Detroit</a>
+            <a href="#ecology">Ecology</a>
+            <a href="#lots">The Lots</a>
+            <a href="#governance">Governance</a>
+            <a href="https://dryad.land" target="_blank">dryad.land</a>
+        </nav>
+    </header>
+
+    <div class="hero-main">
+        <canvas id="hero-particles" style="position:absolute;inset:0;pointer-events:none;z-index:1"></canvas>
+        <div class="hero-grain"></div>
+
+        <div class="hero-left" style="position:relative;z-index:3">
+            <div class="hero-on-arc">Hackathon submission - Agentic Economy on Arc</div>
+            <h1 class="hero-title">The Forest<br>That Owns<br>Itself</h1>
+            <p class="hero-subtitle">
+                An autonomous AI agent restoring native ecosystems on Detroit's vacant lots - now running on Arc Network's DeFi stack, paying for ecological data with x402 micropayments and settling restoration jobs on-chain via ERC-8183 escrow.
+            </p>
+            <div class="hero-details">
+                <span class="hl">Location</span><span>4475-4523 W 25th St, Detroit MI 48216</span>
+                <span class="hl">Lots</span><span>9 parcels, 18,450 sq ft, Chadsey-Condon</span>
+                <span class="hl-arc">Network</span><span>Arc Testnet (Chain 5042002)</span>
+                <span class="hl-arc">Protocols</span><span>x402 nanopayments, ERC-8183 jobs, ERC-8004 identity</span>
+                <span class="hl">Agent</span><span>elizaOS runtime, 60-second risk cycle</span>
+                <span class="hl">Payments</span><span>Circle USDC via Arc Gateway</span>
+            </div>
+        </div>
+
+        <div class="hero-right" style="position:relative;z-index:3;display:flex;flex-direction:column;">
+            <div class="chat-hdr">
+                <div class="chat-hdr-dot"></div>
+                <div class="chat-hdr-text">
+                    <strong>Dryad Agent</strong>
+                    <span>elizaOS v1.7.2 - live</span>
+                </div>
+                <div class="chat-hdr-addr">5.75.225.23:3000</div>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-suggestions" id="chat-suggestions"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Ask about the project..." autocomplete="off">
+                <button id="chat-send">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+    <div class="ticker-inner" id="ticker-inner">
+        <span>Arc Testnet</span>
+        <span class="t-blue">x402 nanopayments</span>
+        <span>$0.001 / ecology score</span>
+        <span class="t-green">ERC-8183 job escrow</span>
+        <span>$0.10 / wildfire alert</span>
+        <span class="t-amber">ERC-8004 agent identity</span>
+        <span>Circle USDC settlement</span>
+        <span class="t-green">9 lots - Detroit MI</span>
+        <span class="t-blue">Risk cycle: 60s</span>
+        <span>100K+ vacant lots citywide</span>
+        <span class="t-amber">Lakeplain oak openings - G2/S1</span>
+        <span>Spotted Lanternfly invasion</span>
+        <span class="t-green">iNaturalist monitoring</span>
+        <span>elizaOS agent runtime</span>
+        <span class="t-blue">dryadforest.eth - Agent #35293</span>
+        <!-- Duplicate for seamless loop -->
+        <span>Arc Testnet</span>
+        <span class="t-blue">x402 nanopayments</span>
+        <span>$0.001 / ecology score</span>
+        <span class="t-green">ERC-8183 job escrow</span>
+        <span>$0.10 / wildfire alert</span>
+        <span class="t-amber">ERC-8004 agent identity</span>
+        <span>Circle USDC settlement</span>
+        <span class="t-green">9 lots - Detroit MI</span>
+        <span class="t-blue">Risk cycle: 60s</span>
+        <span>100K+ vacant lots citywide</span>
+        <span class="t-amber">Lakeplain oak openings - G2/S1</span>
+        <span>Spotted Lanternfly invasion</span>
+        <span class="t-green">iNaturalist monitoring</span>
+        <span>elizaOS agent runtime</span>
+        <span class="t-blue">dryadforest.eth - Agent #35293</span>
+    </div>
+</div>
+
+<!-- ARC DEFI STACK -->
+<section id="arc-stack">
+<div class="content">
+    <h2>Powered by Arc's Agentic Economy</h2>
+    <p style="max-width:720px;margin-bottom:1.6rem">
+        Dryad-Arc demonstrates what becomes possible when autonomous agents have access to a DeFi stack built for them. The same agent that monitors ecology and schedules plantings now buys ecological data from specialist APIs, opens on-chain job contracts for verified restoration work, and builds a reputation for reliable stewardship - all without human approval, all settled in USDC.
+    </p>
+
+    <div class="arc-flow">
+        <div class="arc-flow-title">// Dryad-Arc operating loop (every 60 seconds)</div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="flow-icon">&#127973;</div>
+                <div class="flow-label">
+                    <strong>Observe</strong>
+                    Sensor reads for Yosemite/Detroit coordinates
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-icon">&#x1F4B3;</div>
+                <div class="flow-label">
+                    <strong>x402 Pay</strong>
+                    $0.001 USDC to ecology-api via Circle Gateway
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-icon">&#9989;</div>
+                <div class="flow-label">
+                    <strong>Verify</strong>
+                    $0.001 USDC to verification-api if score high
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-icon">&#128274;</div>
+                <div class="flow-label">
+                    <strong>ERC-8183</strong>
+                    $0.10 USDC locked in escrow for restoration job
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-icon">&#11088;</div>
+                <div class="flow-label">
+                    <strong>ERC-8004</strong>
+                    Reputation event recorded on-chain after completion
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:1.4rem">
+        <div class="card arc-card">
+            <h3>x402 Nanopayments</h3>
+            <p style="font-size:0.85rem">Every ecological data request is a micropayment. The agent calls <code style="color:var(--arc-blue)">GatewayClient.pay(url)</code> from Circle's x402 SDK - the HTTP response IS the purchased data. No approval step, no invoice, no wallet popup. The API price is embedded in the 402 header; the agent pays or moves on.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">Loop A: $0.001 per ecology risk score<br>Loop B: $0.001 per verification call</p>
+        </div>
+        <div class="card arc-card">
+            <h3>ERC-8183 Job Protocol</h3>
+            <p style="font-size:0.85rem">When two models agree a wildfire risk is high, the agent opens an on-chain job contract. USDC flows into escrow at <code style="color:var(--arc-blue)">createJob</code>, locks through <code style="color:var(--arc-blue)">fund</code>, releases to the provider at <code style="color:var(--arc-blue)">complete</code>. Full 6-state machine: Created, BudgetSet, Funded, Submitted, Completed.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">$0.10 USDC per verified alert event<br>Contract: 0x0747...4583 on Arc Testnet</p>
+        </div>
+        <div class="card arc-card">
+            <h3>ERC-8004 Identity</h3>
+            <p style="font-size:0.85rem">Agents are ERC-721 tokens with discoverable metadata: capabilities, service URLs, payment terms. Dryad-Arc discovers ecology and verification APIs by scanning on-chain mint events - no hardcoded URLs. After each job, a reputation event is recorded for the verifying agent.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">Discoverable service registry<br>Reputation grows with each verified job</p>
+        </div>
+    </div>
+
+    <!-- Live Cycle Monitor -->
+    <div class="cycle-monitor">
+        <div class="cycle-hdr">
+            <div class="cycle-hdr-dot"></div>
+            <strong>Live Risk Cycle</strong>
+            <span style="margin-left:auto">Arc Testnet - refreshes every 30s</span>
+        </div>
+        <div class="cycle-body" id="cycle-body">
+            <div class="cycle-loading">Connecting to Dryad-Arc agent...</div>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.4rem;border-left-color:var(--arc-blue)">
+        <strong>Why this matters for the Agentic Economy:</strong> Today Dryad-Arc manages 9 lots. The same architecture works for any autonomous agent that needs to buy specialized data, contract real-world work, and build a verifiable reputation - without a bank account, a legal entity, or a human approving every transaction. Arc's DeFi stack makes agents first-class economic participants.
+    </div>
+</div>
+</section>
+
+<!-- DETROIT CRISIS -->
+<section id="detroit">
+<div class="content">
+    <h2>Detroit's Vacant Land Crisis</h2>
+
+    <div class="stat-row">
+        <div class="stat-item">
+            <span class="stat-val">100K+</span>
+            <span class="stat-lbl">Vacant lots citywide</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-val">18</span>
+            <span class="stat-lbl">Square miles vacant</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-val">$6.7M</span>
+            <span class="stat-lbl">City mowing cost / year</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-val">65%</span>
+            <span class="stat-lbl">Population lost since 1950</span>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h3>Ownership Breakdown</h3>
+            <p>Detroit Land Bank Authority (DLBA) holds 59,617 lots - down from 67,000 in 2016 as the city slowly works through its backlog. Private owners hold 41,685 more. Another 5,381 sit with the city's Planning and Development Department.</p>
+            <p>Mowing cost: $13.44/lot x 5 cuts per year = $6.72M annually. Since 2014 the city has spent $456M demolishing 27,000 structures. Only 942 remain. The demolition phase is ending. The question is what comes next.</p>
+        </div>
+        <div>
+            <h3>The Opportunity</h3>
+            <p>Chadsey-Condon is on Detroit's southwest side (48216), a working-class community built around the industrial base. Like many neighborhoods, heavily impacted by depopulation. But deep roots remain - neighbors tend gardens, watch out for each other.</p>
+            <p>Dryad's V2 governance model airdrops stewardship NFTs to neighbors within 500 feet of each lot. The land's future belongs to the people who actually live near it - not to investors or distant institutions.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.4rem">
+        <strong>The DLBA's CREATE-A-PROJECT program:</strong> $250/lot for LLCs or 501(c)3 organizations. Contact LBP@detroitmi.gov. The agent handles ongoing maintenance compliance autonomously - no landlord needed, just smart contracts and sensors.
+    </div>
+</div>
+</section>
+
+<!-- ECOLOGY -->
+<section id="ecology">
+<div class="content">
+    <h2>Native Ecology - What We're Restoring</h2>
+    <p style="max-width:720px;margin-bottom:1.4rem">Detroit sits on glacial lakeplain - some of the rarest ecological communities in North America. Less than 1% of the original lakeplain prairie survives. Dryad's 9 lots are a chance to restore a fragment of what once stretched for miles.</p>
+
+    <div class="grid-2">
+        <div>
+            <h3>Lakeplain Oak Openings (G2/S1)</h3>
+            <p>Globally imperiled. Bur oak, swamp white oak, big bluestem, Indian grass, wild bergamot. These communities evolved with periodic fire - the same open-canopy structure that made Detroit's lakeshore habitat for species now rare or absent.</p>
+            <p>Dryad's planting plan: 300 saplings from Cold Stream Farm. 80 Bur Oak, 60 Swamp White Oak, 40 White Oak, 30 Pin Oak. Prairie Moon seed mix - 25+ species, 60% grasses / 40% forbs, full-season bloom April through October.</p>
+        </div>
+        <div>
+            <h3>Species of Concern</h3>
+            <p>Kirtland's Snake (state threatened) has been documented on Detroit vacant lots. Monarch butterfly (federal candidate) - every milkweed plant counts. Rusty-patched bumble bee (federally endangered) - historically present in this corridor. Eastern Meadowlark and Bobolink nest in urban grasslands when they're tall enough.</p>
+            <p>The Detroit River flyway brings warblers through during migration. Even 9 lots of native habitat adds a stepping stone to the migratory corridor.</p>
+        </div>
+    </div>
+
+    <div style="margin-top:1.4rem">
+        <h3>Invasive Species - 3-Tier Priority System</h3>
+        <div class="grid-3">
+            <div class="card" style="border-left:3px solid #c44">
+                <h3 style="color:#c44">Tier 1 - Remove</h3>
+                <p style="font-size:0.82rem">Common/glossy buckthorn, autumn olive, Amur honeysuckle, multiflora rose, Oriental bittersweet. Contractor removal, MNFI-guided protocol.</p>
+            </div>
+            <div class="card" style="border-left:3px solid var(--accent-amber)">
+                <h3 style="color:var(--accent-amber)">Tier 2 - Manage</h3>
+                <p style="font-size:0.82rem">Non-native Phragmites, reed canary grass, purple loosestrife, spotted knapweed, garlic mustard, Japanese knotweed. Annual monitoring and targeted treatment.</p>
+            </div>
+            <div class="card" style="border-left:3px solid var(--accent)">
+                <h3>Tier 3 - Assess</h3>
+                <p style="font-size:0.82rem">Tree of Heaven (300K seeds/year, ailanthone allelopathic toxin). Critical note: Native Phragmites (subsp. americanus) has reddish stems - leave it alone.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.4rem">
+        <strong>The Spotted Lanternfly threat:</strong> Arriving from Asia via international shipping, this planthopper devastates hardwood trees and vineyards. Once established, it spreads by hitchhiking on vehicles and shipping containers. Dryad's iNaturalist monitoring flags any observations immediately for rapid response.
+    </div>
+
+    <div style="margin-top:1.4rem">
+        <h3>iNaturalist Project</h3>
+        <p>All observations feed Dryad's ecological health score, which feeds the agent's risk cycle. Community scientists photograph any living thing on or near the lots - the AI + community ID the species. This is the sensor layer of the autonomous stewardship system.</p>
+        <p><a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank">inaturalist.org/projects/dryad-25th-street-parcels-mapping</a></p>
+    </div>
+</div>
+</section>
+
+<!-- THE LOTS + MAP -->
+<section id="lots">
+<div class="content">
+    <h2>The Lots - 25th Street, Detroit</h2>
+    <p style="margin-bottom:1rem">9 parcels at 4475-4523 W 25th Street between Ash and Beech, Chadsey-Condon neighborhood, Detroit MI 48216. Parcel numbers 12009482-12009490 in the Wayne County register.</p>
+
+    <div id="parcel-map"></div>
+
+    <div class="grid-3" style="margin-top:1.2rem">
+        <div class="card">
+            <h3>Land Profile</h3>
+            <p style="font-size:0.83rem">Total area: ~18,450 sq ft across 9 contiguous lots. Currently mowed grass with some invasive scrub. Zoned residential, owned by DLBA. Bounded by brick rowhouses on both sides.</p>
+        </div>
+        <div class="card">
+            <h3>Restoration Plan</h3>
+            <p style="font-size:0.83rem">Year 1: Mastication (mechanical brush clearing), initial soil amendment. Year 1-2: Invasive species removal (contractors paid via USDC). Year 2-3: 300 sapling installation + seed mix broadcast. Year 3+: Established prairie, maintenance mowing only.</p>
+        </div>
+        <div class="card">
+            <h3>Annual Operating Cost</h3>
+            <p style="font-size:0.83rem">Years 1-2: ~$1,445/yr (active invasive removal). Year 3+: ~$945/yr (established, maintenance only). Per-lot by year 3: ~$105/yr. City mowing baseline: $67-170/lot/yr. The agent is cheaper and leaves habitat instead of lawn.</p>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- TREASURY -->
+<section>
+<div class="content">
+    <h2>Treasury and Operating Model</h2>
+
+    <div class="grid-2">
+        <div>
+            <h3>Funding Model</h3>
+            <p>Total capitalization needed: ~$41,000</p>
+            <p>Setup: $13,500 (land acquisition at DLBA rates, mastication, seed stock, LLC filing). Establishment: $2,900 (years 1-2 active mowing and invasive removal). Perpetual treasury: $23,600 USDC earning ~4% APY via cross-chain DeFi yield. Buffer: $1,000.</p>
+            <p>The USDC treasury runs through Morpho and Aave V3 on Base and Arbitrum. The agent manages rebalancing across protocols, adjusting spending mode (NORMAL, CONSERVATION, CRITICAL) based on treasury health.</p>
+        </div>
+        <div>
+            <h3>Spending Autonomy</h3>
+            <p>Three spending modes govern autonomous payments:</p>
+            <p><strong style="color:var(--accent)">NORMAL:</strong> Full autonomous operation. Tax payments from yield, contractor payments up to $200/day, iNaturalist monitoring, ecological data purchases via x402.</p>
+            <p><strong style="color:var(--accent-amber)">CONSERVATION:</strong> Essential spending only. Tax payments continue, emergency invasive removal only.</p>
+            <p><strong style="color:#c44">CRITICAL:</strong> Tax payments only. Human governance required before any restoration spending.</p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">Designed to run 50+ years on the $23.6K treasury at current yield rates.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.4rem">
+        <strong>Detroit accepts crypto for taxes</strong> via PayPal at checkout. Dryad pays property taxes (~$30/lot/year for vacant land) autonomously from DeFi yield. Under proposed Land Value Tax reform, urban farms and community gardens are exempt - the restored prairie qualifies.
+    </div>
+</div>
+</section>
+
+<!-- GOVERNANCE -->
+<section id="governance">
+<div class="content">
+    <h2>Community Governance</h2>
+    <p style="max-width:720px;margin-bottom:1.4rem">Dryad is built as an agent but designed as a community institution. The V2 governance model makes the lots' nearest neighbors its primary stewards - not token holders, not investors, the people who actually live there.</p>
+
+    <div class="grid-4">
+        <div class="card">
+            <h3>Proximity Airdrop</h3>
+            <p style="font-size:0.83rem">Residents within 500 feet of any Dryad lot get a free stewardship NFT. Mirrors the DLBA Side Lot program which already prioritizes adjacent homeowners. The agent delivers the airdrop automatically based on on-chain address verification.</p>
+        </div>
+        <div class="card">
+            <h3>Participation Airdrop</h3>
+            <p style="font-size:0.83rem">10+ verified iNaturalist observations earns 1 NFT. Volunteer work day earns 1 NFT. Complete a paid contractor job earns 1 NFT. Block club endorsement earns NFTs for all members. Proof-of-stewardship, not proof-of-capital.</p>
+        </div>
+        <div class="card">
+            <h3>Soulbound by Default</h3>
+            <p style="font-size:0.83rem">Stewardship NFTs are non-transferable unless the DAO votes to unlock. Prevents speculation and absentee ownership. If someone moves, the NFT can be reclaimed by DAO vote and re-airdropped to the new resident.</p>
+        </div>
+        <div class="card">
+            <h3>Equal Governance</h3>
+            <p style="font-size:0.83rem">1 NFT = 1 vote. No whale dynamics. Simple majority for routine maintenance, 75% supermajority for land use changes. The agent executes decisions. The community decides. The land heals.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.4rem;border-left-color:var(--accent)">
+        <strong>Why this matters:</strong> Most crypto land projects sell tokens to fund acquisition. Dryad gives them away to the people who actually live there. This is not DeFi extracting value from Detroit - it's DeFi returning ownership to Detroit's communities.
+    </div>
+</div>
+</section>
+
+<!-- TECH STACK -->
+<section>
+<div class="content">
+    <h2>Technical Architecture</h2>
+
+    <div class="grid-2" style="margin-bottom:1.4rem">
+        <div>
+            <h3>Dryad-Arc Agent Stack</h3>
+            <p><a href="https://elizaos.ai" target="_blank">elizaOS</a> - custom agent runtime (TypeScript/Bun)<br>
+            <a href="https://developers.circle.com" target="_blank">Circle x402 SDK</a> - GatewayClient for nanopayments<br>
+            <a href="https://ethers.org" target="_blank">ethers.js v6</a> - Arc Testnet RPC interactions<br>
+            ERC-8183 JobProtocol - on-chain job escrow<br>
+            ERC-8004 AgentIdentity - service discovery + reputation</p>
+        </div>
+        <div>
+            <h3>Infrastructure</h3>
+            <p>Hetzner VPS CX22 (5.75.225.23) - Bun runtime, PM2 process management<br>
+            Arc Testnet RPC: rpc.testnet.arc.network, Chain 5042002<br>
+            3 microservices: ecology-api (3001), verification-api (3002), agent (3010)<br>
+            elizaOS chat runtime on port 3000<br>
+            Live status: <a href="http://5.75.225.23:3010/api/status" target="_blank">5.75.225.23:3010/api/status</a></p>
+        </div>
+    </div>
+
+    <div class="grid-3">
+        <div class="card">
+            <h3>ecology-api</h3>
+            <p style="font-size:0.82rem">Express server with Circle Gateway seller middleware. Listens for x402 payment headers, uses EIP-3009 TransferWithAuthorization for Circle settlement. Returns wildfire/ecological risk scores from simulated sensor data. Port 3001.</p>
+        </div>
+        <div class="card">
+            <h3>verification-api</h3>
+            <p style="font-size:0.82rem">Second x402-gated service. Takes an ecology score from the primary model and returns an independent verification. If both models agree the risk is high, the agent proceeds to open an ERC-8183 job. Prevents false positives from triggering costly on-chain actions. Port 3002.</p>
+        </div>
+        <div class="card">
+            <h3>agent (risk cycle)</h3>
+            <p style="font-size:0.82rem">Core operating loop. Every 60 seconds: observe coordinates, buy ecology score via x402, optionally buy verification, open ERC-8183 job if both models agree, record ERC-8004 reputation event after completion. Express API for dashboard. Port 3010.</p>
+        </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.4rem">
+        <h3>On-Chain Contracts (Arc Testnet)</h3>
+        <p style="font-size:0.83rem">
+            ERC-8183 Job Protocol: <code style="color:var(--arc-blue)">0x0747EEf0706327138c69792bF28Cd525089e4583</code><br>
+            ERC-8004 Identity Registry: <code style="color:var(--arc-blue)">0xErc8004AddressOnArcTestnet</code><br>
+            USDC (Arc Testnet): Circle-issued test USDC<br>
+            Circle Gateway: Pre-funded with USDC for x402 settlement<br>
+        </p>
+        <p style="font-size:0.83rem;margin-top:0.6rem">
+            The original Dryad agent (dryad.land) is registered on Base mainnet as ERC-8004 Agent #35293 at <a href="https://basescan.org/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432" target="_blank">0x8004...a432</a>. Dryad-Arc is the Arc-native demonstration of the same framework.
+        </p>
+    </div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<div class="page-footer">
+<div class="content">
+    <div class="grid-2" style="gap:40px">
+        <div>
+            <p>Built by <strong>Nick George</strong></p>
+            <p><a href="https://www.canr.msu.edu/conservation_stewards/" target="_blank">Michigan Conservation Steward</a></p>
+            <p style="margin-top:8px"><a href="mailto:powahgen@gmail.com">powahgen@gmail.com</a></p>
+            <p><a href="https://dryad.land" target="_blank">dryad.land</a> - original project</p>
+        </div>
+        <div style="text-align:right">
+            <p><a href="https://github.com/vivicool12334/dryad" target="_blank">GitHub</a> &bull; <a href="mailto:dryad@agentmail.to">dryad@agentmail.to</a></p>
+            <p><a href="http://5.75.225.23:3010/api/status" target="_blank">Arc Agent Status API</a></p>
+            <p><a href="http://5.75.225.23:3000/Dryad/dashboard" target="_blank">Agent Dashboard</a></p>
+            <p><a href="https://basescan.org/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432" target="_blank">ERC-8004 #35293 on Base</a></p>
+        </div>
+    </div>
+    <div style="border-top:1px solid var(--card-border);margin-top:1.4rem;padding-top:1rem;font-size:0.72rem;color:var(--text-muted)">
+        Hackathon submission for "Agentic Economy on Arc" - April 2026. Dryad-Arc is an open-source demonstration of autonomous agent-to-agent micropayments on Arc Network. All on-chain activity is on Arc Testnet. Real ecological restoration is ongoing at 4475-4523 W 25th St, Detroit.
+    </div>
+</div>
+</div>
+
+<!-- PARTICLES -->
+<script>
+(function(){
+    var c = document.getElementById('hero-particles');
+    if (!c || !c.getContext) return;
+    var ctx = c.getContext('2d');
+    var particles = [];
+    var count = 40;
+
+    function resize() {
+        var hero = c.parentElement;
+        c.width = hero.offsetWidth;
+        c.height = hero.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (var i = 0; i < count; i++) {
+        particles.push({
+            x: Math.random() * c.width,
+            y: Math.random() * c.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: -0.15 - Math.random() * 0.25,
+            r: 1 + Math.random() * 1.5,
+            a: 0.08 + Math.random() * 0.12,
+            drift: Math.random() * Math.PI * 2
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        var t = Date.now() * 0.001;
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            p.x += p.vx + Math.sin(t + p.drift) * 0.15;
+            p.y += p.vy;
+            if (p.y < -10) { p.y = c.height + 10; p.x = Math.random() * c.width; }
+            if (p.x < -10) p.x = c.width + 10;
+            if (p.x > c.width + 10) p.x = -10;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(141, 166, 103, ' + p.a + ')';
+            ctx.fill();
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+</script>
+
+<!-- CHAT ENGINE -->
+<script>
+(function(){
+var ELIZA = 'http://5.75.225.23:3000', useFallback = false;
+
+var allSuggestions = [
+    'What is Dryad?',
+    'How does Arc fit in?',
+    'What is x402?',
+    'Tell me about the lots',
+    'What plants are native here?',
+    'Tell me about Chadsey-Condon',
+    'What invasive species are there?',
+    'How does the treasury work?',
+    'Can I help?',
+    'Is this actually real?',
+    'How does the agent pay contractors?',
+    'What is ERC-8183?',
+    'What is ERC-8004?',
+    'What is a lakeplain oak opening?',
+    "What's the restoration timeline?",
+    'How much does it cost to run this?',
+    'What is the DLBA?',
+    'Tell me about V2 governance',
+];
+var sugIdx = 0;
+
+function showSuggestions() {
+    var el = document.getElementById('chat-suggestions');
+    if (!el) return;
+    el.innerHTML = '';
+    var batch = [];
+    for (var i = 0; i < 4; i++) { batch.push(allSuggestions[(sugIdx + i) % allSuggestions.length]); }
+    batch.forEach(function(s) {
+        var b = document.createElement('button');
+        b.className = 'chat-sug-btn';
+        b.textContent = s;
+        b.onclick = function() { send(s); sugIdx = (sugIdx + 4) % allSuggestions.length; showSuggestions(); };
+        el.appendChild(b);
+    });
+}
+
+var kb = [
+    {k:['what is dryad','about dryad','the project','what does dryad do','tell me about dryad'],r:"Dryad is an autonomous AI agent managing 9 vacant lots on 25th Street in Detroit's Chadsey-Condon neighborhood. Registered on-chain as ERC-8004 Agent #35293 on Base.\n\nIt monitors ecological health through iNaturalist, manages a USDC treasury (earning cross-chain DeFi yield via Morpho and Aave V3 on Base and Arbitrum), detects invasive species, schedules native plantings, and pays property taxes - all autonomously.\n\nDryad-Arc is the Arc Network version: the same agent now uses x402 micropayments to buy ecological data, ERC-8183 to escrow restoration job funds on-chain, and ERC-8004 to build a verifiable reputation."},
+    {k:['arc','what is arc','arc network','how does arc fit'],r:"Arc Network is an EVM-compatible blockchain designed for the Agentic Economy - the emerging economy where AI agents are first-class economic participants.\n\nDryad-Arc uses three Arc-native DeFi primitives:\n\n• x402 nanopayments: Agent pays $0.001 USDC for each ecological risk score via Circle's Gateway SDK\n• ERC-8183: On-chain job escrow for verified restoration events ($0.10 USDC locked and released)\n• ERC-8004: Agent identity registry - discoverable capabilities, service URLs, and reputation\n\nTogether these let an autonomous agent hire services, contract real-world work, and build trust - without any human approval."},
+    {k:['x402','nanopayment','micropayment','circle','gateway'],r:"x402 is an HTTP payment protocol: an API responds with a 402 Payment Required status that includes a payment requirement header. The buyer's agent pays the exact amount in USDC, then gets the real response.\n\nDryad-Arc uses Circle's x402 SDK:\n• ecology-api charges $0.001 for each wildfire risk score\n• verification-api charges $0.001 for model confirmation\n• The agent calls GatewayClient.pay(url) - payment and data are the same HTTP call\n\nNo invoices. No approval. The agent runs a risk cycle every 60 seconds, buying data it needs as it goes."},
+    {k:['erc-8183','erc8183','job protocol','escrow','on-chain job'],r:"ERC-8183 is Arc's on-chain job protocol - a 6-state escrow machine for agent-to-agent work contracts.\n\nWhen Dryad-Arc's ecology score and verification score both exceed the risk threshold, the agent opens a job:\n\n1. createJob: Client opens contract, designates provider + evaluator\n2. setBudget: Provider declares accepted amount ($0.10 USDC)\n3. fund: Client locks USDC in escrow\n4. submit: Provider submits deliverable hash\n5. complete: Evaluator approves, USDC releases to provider\n\nFor the demo, the same agent acts as client, provider, and evaluator. In production these would be separate registered agents with separate roles."},
+    {k:['erc-8004','erc8004','agent identity','reputation','registry'],r:"ERC-8004 is Arc's agent identity standard - think ERC-721 NFTs where each token represents a registered AI agent.\n\nEach agent has:\n• A tokenId (not just an address)\n• A tokenURI with metadata: name, capabilities, serviceUrl, payment terms\n• A discoverable presence: other agents scan mint events to find providers\n\nDryad-Arc uses ERC-8004 to:\n• Discover ecology-api and verification-api URLs on-chain (no hardcoded config)\n• Record reputation events after each completed job\n• Build a verifiable track record of wildfire monitoring\n\nThe original Dryad agent is ERC-8004 #35293 on Base mainnet."},
+    {k:['how does it work','technology','tech stack','architecture'],r:"Dryad-Arc runs on elizaOS (TypeScript/Bun) on a Hetzner VPS.\n\nThree microservices:\n• ecology-api (port 3001): x402-gated wildfire risk scores\n• verification-api (port 3002): x402-gated model verification\n• agent (port 3010): Risk cycle + Arc DeFi interactions\n\nEach 60-second cycle:\n1. Buy risk score via x402 ($0.001 USDC)\n2. If score >= threshold: buy verification ($0.001)\n3. If both models agree: open ERC-8183 job ($0.10 USDC escrow)\n4. After completion: record ERC-8004 reputation event\n\nLive status: 5.75.225.23:3010/api/status"},
+    {k:['cost','budget','money','treasury','financial','how much','funding'],r:"Total funding needed: ~$41,000\n• $13.5K setup (land, mastication, seeds, filing)\n• $2.9K establishment (years 1-2 mowing + maintenance)\n• $23.6K USDC treasury for perpetual yield\n• $1K buffer\n\nYears 1-2: ~$1,445/yr (active invasive removal)\nYear 3+: ~$945/yr (established prairie, maintenance mowing)\n\nThe USDC treasury earns ~4% APY via cross-chain DeFi yield (Morpho + Aave on Base and Arbitrum). Per-lot cost by year 3: ~$105/yr - cheaper than city mowing at $67-170/yr."},
+    {k:['chadsey','condon','neighborhood','community','where is','location'],r:"Chadsey-Condon is on Detroit's southwest side (48216). Bounded by Vernor Hwy, I-75, Dix Ave, and Dearborn.\n\nA working-class community built around Detroit's industrial base. Like many neighborhoods, heavily impacted by depopulation (Detroit lost 65% since 1950).\n\nBut deep roots remain - neighbors tend gardens, watch out for each other. Dryad's V2 governance airdrops stewardship NFTs to neighbors within 500 feet - the land belongs to its community."},
+    {k:['vacant','lots','how many','empty','land crisis','dlba','land bank'],r:"Detroit: 100,000+ vacant lots, 18 square miles.\n\nOwnership:\n• DLBA: 59,617 lots (down from 67K in 2016)\n• Private: 41,685 lots\n• City P&DD: 5,381 lots\n\nMowing: $13.44/lot x 5 cuts/yr = $6.72M annually\nDemolitions: $456M spent on 27K homes since 2014\n\nDLBA's CREATE-A-PROJECT program: $250/lot for LLC or 501(c)3. The demolition phase is ending. The question is what to do with 100K+ empty lots."},
+    {k:['native','plants','species','flora','seed','vegetation','what grows'],r:"Detroit sits on glacial lakeplain. Native communities:\n\nLAKEPLAIN OAK OPENINGS (G2/S1 - globally imperiled):\nBur oak, swamp white oak, big bluestem, Indian grass, wild bergamot\n\nLAKEPLAIN WET PRAIRIE (G2/S1 - <1% survives):\nCord grass, swamp milkweed, mountain mint, blazing star\n\nDryad's plan: 300 saplings (Cold Stream Farm) + Prairie Moon seed mix\n• 80 Bur Oak, 60 Swamp White Oak, 40 White Oak, 30 Pin Oak\n• 25+ species seed mix: grasses 60%, forbs 40%\n• Full-season bloom: April through October"},
+    {k:['invasive','weed','phragmites','buckthorn','ailanthus','removal'],r:"3-tier MNFI priority system:\n\nTIER 1 - REMOVE (contractors):\nCommon/glossy buckthorn, autumn olive, Amur honeysuckle, multiflora rose, Oriental bittersweet\n\nTIER 2 - MANAGE:\nNon-native Phragmites, reed canary grass, purple loosestrife, spotted knapweed, garlic mustard, Japanese knotweed\n\nTIER 3 - ASSESS:\nTree of Heaven (300K seeds/yr, ailanthone toxin)\n\nIMPORTANT: Native Phragmites (subsp. americanus) has reddish stems - leave it alone!"},
+    {k:['governance','vote','airdrop','dao','neighbor','community ownership'],r:"V2 governance:\n\nPROXIMITY AIRDROP: Free soulbound NFTs to residents within 500 ft\nPARTICIPATION: Earn NFTs via iNaturalist observations, volunteer work\n1 NFT = 1 vote. Non-transferable.\n\nSnapshot DAO (dryadforest.eth):\n• Vote on planting plans, contractor selection, acquisitions\n• Agent executes community decisions\n• 75% supermajority for land use changes\n\nThe forest belongs to its neighbors, not investors."},
+    {k:['timeline','restoration','schedule','plan','how long'],r:"Restoration timeline:\n\nYear 1 (acquisition - now):\n• DLBA lot purchase via CREATE-A-PROJECT\n• Mastication (mechanical clearing)\n• Initial soil testing\n• First iNaturalist baseline survey\n\nYear 1-2 (establishment):\n• Invasive removal (Tier 1 species, contractors)\n• 300 sapling installation\n• Prairie seed mix broadcast\n• Monitoring every cycle\n\nYear 3+ (self-sustaining):\n• Established prairie, annual mowing only\n• Treasury yield covers all maintenance\n• Community governance fully active\n• Template open-sourced for other cities"},
+    {k:['can i help','volunteer','contribute','get involved'],r:"Yes! Several ways to get involved:\n\niNaturalist: Visit the lots at 25th St between Ash and Beech. Photograph any living thing. Upload to the Dryad project. Every observation improves the agent's ecological model.\n\nWork days: Follow dryad@agentmail.to for volunteer day announcements. Participation earns stewardship NFTs in V2.\n\nDeveloper: The elizaOS plugin, ERC-8183 integration, and x402 payment code are all open source at github.com/vivicool12334/dryad\n\nNeighbor: If you live within 500 feet of 25th St in Chadsey-Condon, you'll be eligible for the proximity airdrop in V2."},
+    {k:['hello','hi','hey','good morning','good afternoon'],r:"Hello! I'm Dryad - an autonomous agent managing 9 lots in Detroit's Chadsey-Condon neighborhood, now running on Arc Network's Agentic Economy stack.\n\nI can tell you about:\n• How x402 nanopayments, ERC-8183 escrow, and ERC-8004 identity work together\n• Detroit's vacant land crisis and the DLBA\n• Native ecology and invasive species\n• The treasury and governance model\n• How to get involved\n\nWhat would you like to know?"}
+];
+
+function match(input) {
+    var l = input.toLowerCase(), best = null, bestS = 0;
+    for (var i = 0; i < kb.length; i++) {
+        var s = 0;
+        for (var j = 0; j < kb[i].k.length; j++) {
+            if (l.indexOf(kb[i].k[j]) >= 0) s += kb[i].k[j].split(' ').length;
+        }
+        if (s > bestS) { bestS = s; best = kb[i]; }
+    }
+    return best && bestS > 0 ? best.r : "I can help with:\n• Dryad project overview\n• Arc Network DeFi stack (x402, ERC-8183, ERC-8004)\n• Detroit vacant land and DLBA\n• Native plants and ecology\n• Invasive species\n• Treasury and governance\n• How to get involved\n\nTry asking about any of these!";
+}
+
+function addMsg(role, text, isTyping) {
+    var el = document.getElementById('chat-messages');
+    var d = document.createElement('div');
+    d.className = 'chat-msg ' + role + (isTyping ? ' typing' : '');
+    d.textContent = text;
+    el.appendChild(d);
+    el.scrollTop = el.scrollHeight;
+    return d;
+}
+
+async function send(text) {
+    var w = document.getElementById('chat-welcome'); if (w) w.remove();
+    addMsg('user', text);
+    sugIdx = (sugIdx + 4) % allSuggestions.length; showSuggestions();
+    var typing = addMsg('agent', '...', true);
+    var resp;
+    if (!useFallback) {
+        try {
+            var r = await fetch(ELIZA + '/api/agents', {signal: AbortSignal.timeout(3000)});
+            if (!r.ok) throw 0;
+            var r2 = await fetch(ELIZA + '/Dryad/message', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: text, userId: 'web-' + Math.random().toString(36).substr(2, 6), roomId: 'arc-submission'}),
+                signal: AbortSignal.timeout(12000)
+            });
+            if (!r2.ok) throw 0;
+            var data = await r2.json();
+            resp = Array.isArray(data) ? data.map(function(m) { return m.text; }).join('\n\n') : (data.text || data.message || match(text));
+        } catch(e) { useFallback = true; resp = match(text); }
+    } else { resp = match(text); }
+    typing.remove();
+    addMsg('agent', resp);
+}
+
+function init() {
+    var el = document.getElementById('chat-messages');
+    var welcome = document.createElement('div');
+    welcome.className = 'chat-welcome';
+    welcome.id = 'chat-welcome';
+    welcome.innerHTML = '<svg class="chat-welcome-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>';
+    var h3 = document.createElement('h3'); h3.textContent = 'Talk to the Forest'; welcome.appendChild(h3);
+    var p = document.createElement('p'); p.textContent = 'Ask about the ecology, Detroit vacant land, the Arc DeFi stack, or how autonomous conservation works.'; welcome.appendChild(p);
+    el.appendChild(welcome);
+    showSuggestions();
+    document.getElementById('chat-send').onclick = function() {
+        var v = document.getElementById('chat-input').value.trim();
+        if (v) { send(v); document.getElementById('chat-input').value = ''; }
+    };
+    document.getElementById('chat-input').onkeydown = function(e) {
+        if (e.key === 'Enter') { var v = this.value.trim(); if (v) { send(v); this.value = ''; } }
+    };
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+<!-- LIVE CYCLE MONITOR -->
+<script>
+(function() {
+    var STATUS_URL = 'http://5.75.225.23:3010/api/status';
+    var el = document.getElementById('cycle-body');
+    if (!el) return;
+
+    function render(data) {
+        if (!data) { el.innerHTML = '<div class="cycle-loading">Agent offline - showing last known state</div>'; return; }
+        var rows = [
+            ['Cycle count', data.cycleCount || 0, 'green'],
+            ['Threshold', data.threshold !== undefined ? data.threshold : '--', ''],
+            ['Ecology API', (data.ecologyApiUrl || '').replace('http://',''), 'blue'],
+            ['Verification API', (data.verificationApiUrl || '').replace('http://',''), 'blue'],
+        ];
+        var recent = (data.recentCycles || []).slice(-1)[0];
+        if (recent) {
+            rows.push(['Last cycle', recent.timestamp ? recent.timestamp.split('T')[1].split('.')[0] + ' UTC' : '--', '']);
+            rows.push(['Ecology score', recent.ecologyScore !== undefined ? recent.ecologyScore : '--', recent.ecologyScore >= (data.threshold || 10) ? 'amber' : 'green']);
+            rows.push(['Ecology cost', recent.ecologyCost ? '$' + recent.ecologyCost.toFixed(3) + ' USDC' : '--', '']);
+            if (recent.verificationScore !== undefined) {
+                rows.push(['Verification score', recent.verificationScore, 'amber']);
+                rows.push(['Verification cost', recent.verificationCost ? '$' + recent.verificationCost.toFixed(3) + ' USDC' : '--', '']);
+            }
+            if (recent.jobId) {
+                rows.push(['Job ID', '#' + recent.jobId, 'blue']);
+                rows.push(['Job outcome', recent.jobOutcome || '--', recent.jobOutcome === 'completed' ? 'green' : 'amber']);
+                rows.push(['Job cost', recent.jobCost ? '$' + recent.jobCost.toFixed(2) + ' USDC' : '--', '']);
+            }
+            rows.push(['Total cost', '$' + (recent.totalCost || 0).toFixed(3) + ' USDC', 'amber']);
+            if (recent.error) rows.push(['Error', recent.error.slice(0, 60) + '...', 'amber']);
+        }
+        var html = '';
+        rows.forEach(function(r) {
+            html += '<div class="cycle-row"><span class="cycle-key">' + r[0] + '</span><span class="cycle-val ' + (r[2] || '') + '">' + r[1] + '</span></div>';
+        });
+        el.innerHTML = html;
+    }
+
+    function load() {
+        fetch(STATUS_URL, {signal: AbortSignal.timeout(5000)})
+            .then(function(r) { return r.json(); })
+            .then(render)
+            .catch(function() { el.innerHTML = '<div class="cycle-loading">Agent unreachable - live data unavailable</div>'; });
+    }
+
+    load();
+    setInterval(load, 30000);
+})();
+</script>
+
+<!-- LEAFLET MAP -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function() {
+    var mapEl = document.getElementById('parcel-map');
+    if (!mapEl) return;
+
+    var map = L.map('parcel-map', { scrollWheelZoom: false }).setView([42.34174, -83.10007], 18);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri - Detroit Parcels ArcGIS (parcels 12009482-12009490)',
+        maxZoom: 20
+    }).addTo(map);
+
+    var parcels = [
+        { addr: '4475', id: '12009490', coords: [[42.3414067,-83.1000727],[42.3415231,-83.099734],[42.3414534,-83.09969],[42.341337,-83.1000287]] },
+        { addr: '4481', id: '12009489', coords: [[42.3414764,-83.1001167],[42.3415928,-83.099778],[42.3415231,-83.099734],[42.3414067,-83.1000727]] },
+        { addr: '4487', id: '12009488', coords: [[42.3415709,-83.1001762],[42.3416864,-83.0998375],[42.3415928,-83.099778],[42.3414764,-83.1001167]] },
+        { addr: '4493', id: '12009487', coords: [[42.3416507,-83.1002273],[42.3417662,-83.0998874],[42.3416864,-83.0998375],[42.3415709,-83.1001762]] },
+        { addr: '4501', id: '12009486', coords: [[42.3417543,-83.1002927],[42.3418707,-83.0999541],[42.3417662,-83.0998874],[42.3416507,-83.1002273]] },
+        { addr: '4509', id: '12009485', coords: [[42.341824,-83.1003367],[42.3419404,-83.0999981],[42.3418707,-83.0999541],[42.3417543,-83.1002927]] },
+        { addr: '4513', id: '12009484', coords: [[42.3418937,-83.1003807],[42.3420092,-83.1000421],[42.3419404,-83.0999981],[42.341824,-83.1003367]] },
+        { addr: '4521', id: '12009483', coords: [[42.3419634,-83.1004247],[42.3420789,-83.1000861],[42.3420092,-83.1000421],[42.3418937,-83.1003807]] },
+        { addr: '4523', id: '12009482', coords: [[42.3420331,-83.1004687],[42.3421486,-83.1001301],[42.3420789,-83.1000861],[42.3419634,-83.1004247]] }
+    ];
+
+    parcels.forEach(function(p) {
+        L.polygon(p.coords, {
+            color: '#8DA667',
+            fillColor: '#8DA667',
+            fillOpacity: 0.3,
+            weight: 2
+        }).addTo(map).bindPopup('<b>' + p.addr + ' 25th St</b><br>Parcel ' + p.id + '<br>Dryad-managed');
+    });
+
+    L.rectangle([[42.3411,-83.1007],[42.3424,-83.0994]], {
+        color: '#E29E4B',
+        fillOpacity: 0.05,
+        weight: 1,
+        dashArray: '5,5'
+    }).addTo(map).bindPopup('iNaturalist observation bounding box');
+
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function() {
+        var div = L.DomUtil.create('div');
+        div.style.cssText = 'background:rgba(26,28,20,0.9);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Space Mono,monospace;color:#D2D6C1';
+        div.innerHTML = '<span style="display:inline-block;width:12px;height:12px;background:#8DA667;opacity:0.5;border:1px solid #8DA667;margin-right:4px;vertical-align:middle"></span> Dryad Parcels<br><span style="display:inline-block;width:12px;height:12px;border:1px dashed #E29E4B;margin-right:4px;vertical-align:middle"></span> iNaturalist Area';
+        return div;
+    };
+    legend.addTo(map);
+})();
+</script>
+
+</body>
+</html>
