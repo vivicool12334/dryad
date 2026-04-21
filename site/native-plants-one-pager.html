@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Native Plants and Invasive Removal - What It Actually Does</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap');
+
+  :root {
+    --green: #3a6b20;
+    --green-light: #5a9438;
+    --amber: #b5640a;
+    --bg: #f9f7f2;
+    --text: #1a1a14;
+    --muted: #555548;
+    --rule: #d0cbbf;
+    --callout-bg: #f0ede4;
+    --callout-border: #c8c0b0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 32px 40px;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  @media print {
+    body { padding: 0; background: white; max-width: 100%; }
+    .no-print { display: none; }
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 2px solid var(--green);
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .header-left h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--green);
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .header-left .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* TWO COLUMN LAYOUT */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 18px;
+  }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  /* SECTIONS */
+  section {
+    margin-bottom: 18px;
+  }
+  h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--green);
+    margin-bottom: 7px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 4px;
+    text-transform: none;
+  }
+  h3 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--amber);
+    margin-bottom: 5px;
+  }
+  p {
+    margin-bottom: 7px;
+    font-size: 12.5px;
+  }
+  ul {
+    padding-left: 14px;
+    margin-bottom: 7px;
+  }
+  li {
+    margin-bottom: 4px;
+    font-size: 12.5px;
+  }
+
+  /* CALLOUT BOXES */
+  .callout {
+    background: var(--callout-bg);
+    border-left: 3px solid var(--green);
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 10px;
+  }
+  .callout.amber {
+    border-left-color: var(--amber);
+  }
+  .callout strong {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+    color: var(--green);
+  }
+  .callout.amber strong {
+    color: var(--amber);
+  }
+
+  /* MYTH VS REALITY */
+  .myth-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .myth-row .myth {
+    background: #f5f0e8;
+    padding: 8px 10px;
+    border-right: 1px solid var(--rule);
+  }
+  .myth-row .reality {
+    background: #eef4e8;
+    padding: 8px 10px;
+  }
+  .myth-row .label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+  .myth-row .myth .label { color: #9a6020; }
+  .myth-row .reality .label { color: var(--green); }
+
+  /* STAT BOXES */
+  .stat-box {
+    background: var(--callout-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .footer a {
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  /* PRINT BUTTON */
+  .no-print {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .no-print:hover { background: var(--green-light); }
+
+  /* SEQUENCE */
+  .sequence {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 10px;
+    font-size: 11.5px;
+  }
+  .seq-item {
+    flex: 1;
+    background: var(--callout-bg);
+    padding: 7px 9px;
+    border: 1px solid var(--rule);
+    border-right: none;
+    line-height: 1.4;
+  }
+  .seq-item:first-child { border-radius: 4px 0 0 4px; }
+  .seq-item:last-child { border-right: 1px solid var(--rule); border-radius: 0 4px 4px 0; }
+  .seq-item .seq-num {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .seq-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    color: var(--muted);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 4px;
+  }
+  .tag.tier1 { background: #fce8e8; color: #8a2020; }
+  .tag.tier2 { background: #fdf3e0; color: #8a5a10; }
+  .tag.native { background: #e8f4e0; color: var(--green); }
+</style>
+</head>
+<body>
+
+<button class="no-print" onclick="window.print()">Print / Save PDF</button>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Native Plants &amp; Invasive Removal</h1>
+    <div class="subtitle">What it actually does - and why it matters on your street</div>
+  </div>
+  <div class="header-right">
+    Michigan-specific<br>
+    Sources: MNFI, MSU, Michigan DNR<br>
+    dryad.land
+  </div>
+</div>
+
+<!-- TOP STATS -->
+<div class="three-col">
+  <div class="stat-box">
+    <div class="stat-num">4.2M</div>
+    <div class="stat-label">wetland acres Michigan has lost since European settlement</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num">#2</div>
+    <div class="stat-label">Invasive species: second-largest threat to Michigan native diversity after habitat loss (MNFI)</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num">145</div>
+    <div class="stat-label">species on Michigan's endangered list - spanning insects, fish, birds, mammals, plants</div>
+  </div>
+</div>
+
+<!-- TWO COLUMN MAIN BODY -->
+<div class="two-col">
+
+  <!-- LEFT COLUMN -->
+  <div>
+    <section>
+      <h2>What native plants actually do</h2>
+      <p>Native species are not decorative. They are the infrastructure that makes the land work.</p>
+      <ul>
+        <li><strong>Pollination:</strong> Without native-supported pollinators, MSU says there would be little to no fruit, fewer vegetables, and many plant species would not survive.</li>
+        <li><strong>Stormwater:</strong> Native prairie absorbs 30% more rainfall than lawn, reducing flooding downstream.</li>
+        <li><strong>Carbon:</strong> Deep-rooted natives store more carbon than turfgrass or young invasive shrubs.</li>
+        <li><strong>Air quality:</strong> Native trees remove particulates linked to asthma and heart disease.</li>
+        <li><strong>Temperature:</strong> Canopy at 40% coverage drops measured street temperatures 7-9 degrees F.</li>
+        <li><strong>Food webs:</strong> Native plants support the insects that support the birds. Remove the base layer and the whole chain above it weakens.</li>
+      </ul>
+      <p class="callout" style="border-left: 3px solid var(--green); padding: 8px 12px; background: #eef4e8; border-radius: 0 4px 4px 0; font-size: 12px;">Michigan's own DNR Wildlife Action Plan already frames wildlife populations as in decline and uses uncommon species as indicators of land, water, and air health.</p>
+    </section>
+
+    <section>
+      <h2>Why invasive removal is not optional</h2>
+      <p>Michigan's invasive species problem compounds habitat loss that has already happened:</p>
+
+      <div class="sequence">
+        <div class="seq-item"><span class="seq-num">1</span>Habitat gets damaged or simplified</div>
+        <div class="seq-arrow">›</div>
+        <div class="seq-item"><span class="seq-num">2</span>Invasives fill the open niche fast</div>
+        <div class="seq-arrow">›</div>
+        <div class="seq-item"><span class="seq-num">3</span>Natives lose ground</div>
+        <div class="seq-arrow">›</div>
+        <div class="seq-item"><span class="seq-num">4</span>Ecosystem function weakens</div>
+        <div class="seq-arrow">›</div>
+        <div class="seq-item"><span class="seq-num">5</span>Restoration gets more expensive</div>
+      </div>
+
+      <p>Doing nothing is not a neutral choice. On disturbed land, leaving invasives in place means the disturbance keeps compounding. Ecological neglect accrues interest.</p>
+
+      <div class="callout amber">
+        <strong>The removal trap</strong>
+        Removal without replanting is incomplete. Bare disturbed soil after invasive treatment will get re-invaded unless native or otherwise desirable plants are established right away. (KISMA / Michigan Tech native landscaping guide)
+      </div>
+
+      <section>
+        <h2>What's on Detroit's vacant land right now</h2>
+        <p>Detroit has roughly 122,929 vacant lots - 19 square miles. Most of that land is already occupied by invasives:</p>
+        <ul>
+          <li><span class="tag tier1">Remove</span> Common and glossy buckthorn, autumn olive, Amur honeysuckle, multiflora rose, Oriental bittersweet</li>
+          <li><span class="tag tier1">Remove</span> Ailanthus (Tree of Heaven) - hosts spotted lanternfly, which is now in 6 Michigan counties</li>
+          <li><span class="tag tier2">Manage</span> Non-native Phragmites, reed canary grass, purple loosestrife</li>
+          <li><span class="tag native">Keep</span> Native Phragmites (reddish stems, subsp. americanus) - do not remove</li>
+        </ul>
+        <p style="font-size: 11.5px; color: var(--muted); margin-top: 6px;">Each vacant lot carries roughly 735,000 viable invasive seeds, each capable of spreading into surrounding properties, parks, and waterways.</p>
+      </section>
+    </section>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+    <section>
+      <h2>Common objections - and what to say back</h2>
+
+      <div class="myth-row">
+        <div class="myth"><div class="label">Myth</div>"Plants are plants. Green is green."</div>
+        <div class="reality"><div class="label">Reality</div>Michigan defines invasives as non-native species that cause harm by outcompeting natives and changing ecosystem balance. Fast growth is often proof of ecological imbalance, not ecological fit.</div>
+      </div>
+
+      <div class="myth-row">
+        <div class="myth"><div class="label">Myth</div>"Nature will sort it out."</div>
+        <div class="reality"><div class="label">Reality</div>In Michigan, habitat destruction is the biggest pressure and invasives are ranked #2. "Leave it alone" on damaged land usually just means letting the second-biggest threat intensify inside land already weakened by the first.</div>
+      </div>
+
+      <div class="myth-row">
+        <div class="myth"><div class="label">Myth</div>"Removal is just aesthetic."</div>
+        <div class="reality"><div class="label">Reality</div>Native species support pollination, food webs, water filtration, and flood control. This is ecosystem function, not landscaping preference.</div>
+      </div>
+
+      <div class="myth-row">
+        <div class="myth"><div class="label">Myth</div>"We can deal with it later."</div>
+        <div class="reality"><div class="label">Reality</div>Later means larger infestations, weaker native seed banks, more disturbed soil, higher treatment cost, and a longer restoration cycle. The emerald ash borer cost Michigan $38M+ after it established. Spotted lanternfly is on the same trajectory right now.</div>
+      </div>
+
+      <div class="myth-row">
+        <div class="myth"><div class="label">Myth</div>"This is too small to matter."</div>
+        <div class="reality"><div class="label">Reality</div>Small untreated patches are seed sources. Michigan lists hitchhiking, firewood transport, and road corridors as major spread pathways. Every unmanaged lot is a launch point for the next block.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>The evidence that rehabilitation works</h2>
+      <p>This is not theoretical for Detroit. A 2025 MSU study using acoustic monitoring at 110 sites across 11 Detroit neighborhoods found 54 bird species on vacant land. Four rehabilitated parks that received invasive removal and native planting showed measurable increases in bird and plant diversity after treatment.</p>
+      <p>The land does not get healthier by being left alone. Site conditions change when restoration changes them.</p>
+
+      <div class="callout">
+        <strong>The local argument in one sentence</strong>
+        In Detroit, the question is not whether biodiversity matters. The question is whether 19 square miles of vacant land will be managed as living infrastructure or left to degrade into repeated ecological and financial liability.
+      </div>
+
+      <h3 style="margin-top: 12px;">What you can do on your block</h3>
+      <ul>
+        <li>Remove buckthorn, autumn olive, and honeysuckle before they fruit (fall timing matters)</li>
+        <li>Replant immediately after removal - bare soil re-invades fast</li>
+        <li>Use MNFI's 3-tier priority list to decide what to tackle first</li>
+        <li>Add even one native prairie or edge plant per 100 sq ft - it compounds</li>
+        <li>Log species observations on iNaturalist - data helps track what's working</li>
+        <li>Detroit Land Bank sells adjacent side lots for $100 - it is acutally accessible</li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div>Sources: Michigan DNR Wildlife Action Plan &bull; MNFI Invasive Species Program &bull; MSU Pollinator Initiative &bull; MSU Native Plants &bull; KISMA (Michigan Tech) &bull; Michigan Public / DEQ Wetland Status Report &bull; MSU Bird Diversity Study (2025)</div>
+  <div><a href="https://dryad.land">dryad.land</a></div>
+</div>
+
+</body>
+</html>
