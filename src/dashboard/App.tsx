@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api, isAuthenticated, setStoredSecret, clearStoredSecret } from './api';
+import { Badge, Card } from './components/ui';
 import AgentHealthCard from './components/AgentHealthCard';
 import TreasuryCard from './components/TreasuryCard';
 import BiodiversityCard from './components/BiodiversityCard';
@@ -11,85 +12,15 @@ import AuditPanel from './components/AuditPanel';
 import TransactionTable from './components/TransactionTable';
 import DefiAllocationsCard from './components/DefiAllocationsCard';
 import SeasonWidget from './components/SeasonWidget';
-
-// ── Shared card shell ─────────────────────────────────────────────────────────
-export function Card({ title, badge, children, className = '' }: { title?: string; badge?: React.ReactNode; children: React.ReactNode; className?: string }) {
-  return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)',
-      padding: '20px 24px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 14,
-    }} className={className}>
-      {title && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 2 }}>
-          <h2 style={{
-            color: 'var(--amber)',
-            fontSize: 18,
-            fontWeight: 400,
-            fontFamily: 'var(--font-serif)',
-            fontStyle: 'italic',
-          }}>
-            {title}
-          </h2>
-          {badge && <div style={{ flexShrink: 0 }}>{badge}</div>}
-        </div>
-      )}
-      {children}
-    </div>
-  );
-}
-
-export function Stat({ value, label, color, size }: { value: React.ReactNode; label: string; color?: string; size?: 'sm' | 'md' }) {
-  const fontSize = size === 'sm' ? 18 : 22;
-  return (
-    <div style={{ flex: '0 0 auto', minWidth: 0 }}>
-      <div style={{ fontSize, fontWeight: 700, fontFamily: 'var(--font-mono)', color: color || 'var(--amber)', lineHeight: 1.1, whiteSpace: 'nowrap' }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
-    </div>
-  );
-}
-
-export function Badge({ label, color }: { label: string; color?: string }) {
-  const colors: Record<string, { border: string; text: string }> = {
-    green:  { border: 'rgba(141,166,103,0.5)', text: '#a0bb78' },
-    amber:  { border: 'rgba(226,158,75,0.5)',  text: '#e29e4b' },
-    red:    { border: 'rgba(192,57,43,0.5)',   text: '#e74c3c' },
-    blue:   { border: 'rgba(91,141,184,0.5)',  text: '#7aafd4' },
-    gray:   { border: 'rgba(210,214,193,0.2)', text: 'rgba(210,214,193,0.5)' },
-  };
-  const c = colors[color || 'green'];
-  return (
-    <span style={{
-      border: `1px solid ${c.border}`,
-      color: c.text,
-      padding: '2px 8px',
-      borderRadius: 4,
-      fontSize: 10,
-      fontFamily: 'var(--font-mono)',
-      letterSpacing: '0.08em',
-      textTransform: 'uppercase',
-    }}>{label}</span>
-  );
-}
-
-export function Loading() {
-  return <span style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>loading…</span>;
-}
-
-export function Err({ msg }: { msg: string }) {
-  return <span style={{ color: 'var(--red-lit)', fontSize: 12 }}>⚠ {msg}</span>;
-}
+import { NAV_LINKS, SITE_URL, MILESTONES_CONTRACT_ADDRESS, toBasescanAddressUrl } from './lib/links';
+import { SPENDING_MODE_META } from '../shared/treasuryMode';
 
 // ── Auth modal ────────────────────────────────────────────────────────────────
 function AdminLogin({ onLogin }: { onLogin: () => void }) {
   const [val, setVal] = useState('');
   const [err, setErr] = useState('');
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     setErr('');
     if (!val.trim()) return;
@@ -98,9 +29,9 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
     try {
       await api.adminStatus();
       onLogin();
-    } catch (e: any) {
+    } catch {
       clearStoredSecret();
-      setErr('Invalid secret — check ADMIN_SECRET env var');
+      setErr('Invalid secret - check ADMIN_SECRET env var');
     }
   };
 
@@ -144,14 +75,6 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-const NAV_LINKS = [
-  { href: '/', label: 'Chat' },
-  { href: '/Dryad/submit', label: 'Submit Work' },
-  { href: '/Dryad/contractors', label: 'Apply' },
-  { href: '/Dryad/mock', label: 'Year 3 Mock' },
-  { href: 'https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping', label: 'iNaturalist' },
-];
-
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [admin, setAdmin] = useState(isAuthenticated);
@@ -166,7 +89,7 @@ export default function App() {
   });
 
   const spendingMode = summary?.treasury?.spendingMode ?? 'NORMAL';
-  const modeColor = spendingMode === 'NORMAL' ? 'var(--green)' : spendingMode === 'CONSERVATION' ? 'var(--amber)' : 'var(--red)';
+  const modeColor = SPENDING_MODE_META[spendingMode].cssColor;
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
@@ -197,10 +120,10 @@ export default function App() {
       }}>
         {/* Left: logo + back link */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '10px 0' }}>
-          <a href="https://dryad.vercel.app" style={{ color: 'var(--green)', fontSize: 15, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '-0.01em' }}>
+          <a href={SITE_URL} style={{ color: 'var(--green)', fontSize: 15, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '-0.01em' }}>
             dryad
           </a>
-          <a href="https://dryad.vercel.app" style={{
+          <a href={SITE_URL} style={{
             color: 'var(--amber)',
             border: '1px solid var(--amber)',
             borderRadius: 4,
@@ -223,13 +146,7 @@ export default function App() {
 
           {/* Nav links */}
           <nav className="header-nav" role="navigation" aria-label="Site navigation" style={{ display: 'flex', gap: 20 }}>
-            {[
-              ['/', 'Chat'],
-              ['/Dryad/submit', 'Submit Work'],
-              ['/Dryad/contractors', 'Apply'],
-              ['/Dryad/mock', 'Year 3 Mock'],
-              ['https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping', 'iNaturalist'],
-            ].map(([href, label]) => (
+            {NAV_LINKS.map(({ href, label }) => (
               <a key={href} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined} style={{
                 color: 'rgba(210, 214, 193, 0.55)',
                 fontSize: 11,
@@ -291,7 +208,7 @@ export default function App() {
         {/* Milestones */}
         <MilestonesPanel />
 
-        {/* Map — full width */}
+        {/* Map - full width */}
         <div style={{ gridColumn: '1 / -1' }}>
           <ParcelMap />
         </div>
@@ -319,12 +236,12 @@ export default function App() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <tbody>
                 {[
-                  ['Name', 'Dryad — "The Forest That Owns Itself"'],
+                  ['Name', 'Dryad - "The Forest That Owns Itself"'],
                   ['ENS', 'dryadforest.eth'],
                   ['Email', 'dryad@agentmail.to'],
                   ['Wallet', summary?.wallet ?? '0xf2f7527D86e2173c91fF1c10Ede03f6f84510880'],
                   ['ERC-8004', '#35293 on Base'],
-                  ['Milestones', '0x7572dcac88720470d8cc827be5b02d474951bc22'],
+                  ['Milestones', MILESTONES_CONTRACT_ADDRESS],
                   ['Chain', 'Base L2'],
                   ['Decision loop', 'Every 24 hours'],
                 ].map(([k, v]) => (
@@ -332,9 +249,9 @@ export default function App() {
                     <td style={{ color: 'var(--text-dim)', padding: '8px 0', paddingRight: 24, whiteSpace: 'nowrap', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', width: 150 }}>{k}</td>
                     <td style={{ padding: '8px 0', wordBreak: 'break-all', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
                       {k === 'Milestones' ? (
-                        <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
-                      ) : k === 'Wallet' && v !== '—' ? (
-                        <a href={`https://basescan.org/address/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
+                        <a href={toBasescanAddressUrl(String(v))} target="_blank" rel="noopener noreferrer">{v}</a>
+                      ) : k === 'Wallet' && v !== '-' ? (
+                        <a href={toBasescanAddressUrl(String(v))} target="_blank" rel="noopener noreferrer">{v}</a>
                       ) : v}
                     </td>
                   </tr>

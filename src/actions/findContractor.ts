@@ -51,11 +51,11 @@ function draftOutreachEmail(name: string, serviceType: ServiceType, source: stri
     ? 'We are in the prime planting window (May-June).'
     : '';
 
-  return `Subject: Native Habitat Restoration Work — ${label} at 25th St, Detroit
+  return `Subject: Native Habitat Restoration Work - ${label} at 25th St, Detroit
 
 Hi ${name},
 
-I'm Dryad, an autonomous land management agent stewarding 9 vacant lots at 4475–4523 25th Street in Detroit's Chadsey-Condon neighborhood. We're restoring these lots to native lakeplain oak opening habitat — the ecosystem that existed here before European settlement.
+I'm Dryad, an autonomous land management agent stewarding 9 vacant lots at 4475–4523 25th Street in Detroit's Chadsey-Condon neighborhood. We're restoring these lots to native lakeplain oak opening habitat - the ecosystem that existed here before European settlement.
 
 I found your contact through ${source}. We're looking for help with ${label.toLowerCase()}:
 
@@ -89,7 +89,7 @@ export const findContractorAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -110,7 +110,7 @@ export const findContractorAction: Action = {
         const best = getBestContractorForService(serviceType);
         if (best) {
           responseText += `### Recommended Contractor\n`;
-          responseText += `**${best.name}** — ${best.email}\n`;
+          responseText += `**${best.name}** - ${best.email}\n`;
           responseText += `Reliability: ${best.reliabilityScore}/100 | Jobs: ${best.jobsCompleted} | Total paid: $${best.totalPaidUsd}\n\n`;
           responseText += `I can draft a work order email for this contractor.\n`;
         } else {
@@ -164,7 +164,7 @@ export const findContractorAction: Action = {
         }
         responseText += `\n### Where to Find Contractors\n`;
         for (const src of DISCOVERY_SOURCES) {
-          responseText += `- [${src.name}](${src.url}) — ${src.focus}\n`;
+          responseText += `- [${src.name}](${src.url}) - ${src.focus}\n`;
         }
         responseText += `\nTo add a contractor, tell me their name and email. I'll score them and draft an outreach email.\n`;
       }

@@ -1,11 +1,10 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
-import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseUnits } from 'viem';
-import { base, baseSepolia } from 'viem/chains';
-import { privateKeyToAccount } from 'viem/accounts';
+import { parseAbi, formatUnits, parseUnits } from 'viem';
 import { validateTransaction, recordTransaction, recordFailedTransaction } from '../security/transactionGuard.ts';
 import { audit } from '../services/auditLog.ts';
 import { CONTRACTOR, CHAIN, DEMO_MODE, demoLog } from '../config/constants.ts';
+import { getRuntimeEvmClients } from './evmClients.ts';
 
 const USDC_ABI = parseAbi([
   'function balanceOf(address owner) view returns (uint256)',
@@ -13,22 +12,9 @@ const USDC_ABI = parseAbi([
   'function decimals() view returns (uint8)',
 ]);
 
-// Spending limits — from centralized config (respects DEMO_MODE)
+// Spending limits - from centralized config (respects DEMO_MODE)
 const MAX_PER_TX_USD = CONTRACTOR.MAX_PER_TX_USD;
 const MAX_DAILY_USD = CONTRACTOR.MAX_DAILY_USD;
-
-function getClients(runtime: IAgentRuntime) {
-  const privateKey = runtime.getSetting('EVM_PRIVATE_KEY') || process.env.EVM_PRIVATE_KEY;
-  if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
-
-  const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
-  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
-  const publicClient = createPublicClient({ chain: selectedChain, transport });
-  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
-
-  return { account, publicClient, walletClient };
-}
 
 function parsePaymentFromMessage(text: string): { address: string | null; amount: number | null; reason: string } {
   // Extract Ethereum address
@@ -57,7 +43,7 @@ export const payContractorAction: Action = {
     runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -85,7 +71,7 @@ export const payContractorAction: Action = {
         return { text: errorMsg, values: { success: false }, data: {}, success: false };
       }
 
-      const { account, publicClient, walletClient } = getClients(runtime);
+      const { account, publicClient, walletClient } = getRuntimeEvmClients(runtime);
       const usdcAddress = CHAIN.USDC_ADDRESS;
 
       // Check USDC balance

@@ -2,33 +2,22 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
 import { api } from '../api';
-import { Card, Stat, Badge, Loading, Err } from '../App';
+import { Card, Stat, Badge, Loading, Err } from './ui';
 import type { DefiData, RebalanceRecord } from '../types';
+import {
+  CHART_TOOLTIP_STYLE,
+  formatChartDateTime,
+  formatCurrency,
+  formatTimeAgo,
+  truncateHash,
+} from '../lib/formatting';
+import { toBasescanTxUrl } from '../lib/links';
 
 const PROTOCOL_COLORS: Record<string, string> = {
   'Aave V3 USDC': '#B6509E',
   'Compound V3 USDC': '#00D395',
   'idle': 'rgba(210, 214, 193, 0.25)',
 };
-
-const BASESCAN = 'https://basescan.org/tx/';
-
-function fmt(n: number, decimals = 2) {
-  return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-}
-
-function timeAgo(ms: number): string {
-  const mins = Math.floor((Date.now() - ms) / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function truncHash(hash: string): string {
-  return hash.slice(0, 6) + '…' + hash.slice(-4);
-}
 
 // ── Allocation donut ───────────────────────────────────────────────────────
 function AllocationDonut({ data }: { data: DefiData }) {
@@ -71,7 +60,7 @@ function AllocationDonut({ data }: { data: DefiData }) {
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
             <span style={{ fontSize: 12, color: 'var(--text)', flex: 1 }}>{s.name}</span>
             <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-              ${fmt(s.value, 2)}
+              ${formatCurrency(s.value, 2)}
             </span>
             <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>
               {data.totalValue > 0 ? `${((s.value / data.totalValue) * 100).toFixed(0)}%` : ''}
@@ -88,7 +77,7 @@ function PositionsTable({ data }: { data: DefiData }) {
   if (data.positions.length === 0) {
     return (
       <div style={{ color: 'var(--text-dim)', fontSize: 12, fontStyle: 'italic' }}>
-        No active DeFi positions — idle USDC awaiting deployment
+        No active DeFi positions - idle USDC awaiting deployment
       </div>
     );
   }
@@ -118,27 +107,27 @@ function PositionsTable({ data }: { data: DefiData }) {
                 {pos.protocolName}
               </td>
               <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', paddingLeft: 12, whiteSpace: 'nowrap' }}>
-                ${fmt(pos.depositedUsd)}
+                ${formatCurrency(pos.depositedUsd)}
               </td>
               <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--green)', paddingLeft: 12, whiteSpace: 'nowrap' }}>
                 {(pos.currentApy * 100).toFixed(2)}%
               </td>
               <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', paddingLeft: 12, whiteSpace: 'nowrap' }}>
-                ${fmt(yearlyYield)}
+                ${formatCurrency(yearlyYield)}
               </td>
               <td style={{ textAlign: 'right', paddingLeft: 12, whiteSpace: 'nowrap' }}>
                 {pos.depositTxHash ? (
                   <a
-                    href={`${BASESCAN}${pos.depositTxHash}`}
+                    href={toBasescanTxUrl(pos.depositTxHash)}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ color: 'var(--amber)', fontSize: 11, fontFamily: 'var(--font-mono)' }}
                     title={pos.depositTxHash}
                   >
-                    {truncHash(pos.depositTxHash)} ↗
+                    {truncateHash(pos.depositTxHash)} ↗
                   </a>
                 ) : (
-                  <span style={{ color: 'var(--text-dim)' }}>—</span>
+                  <span style={{ color: 'var(--text-dim)' }}>-</span>
                 )}
               </td>
             </tr>
@@ -154,7 +143,7 @@ function ApyTrend({ data }: { data: DefiData }) {
   if (!data.yieldHistory || data.yieldHistory.length < 2) return null;
 
   const chartData = data.yieldHistory.map(s => ({
-    date: new Date(s.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' }),
+    date: formatChartDateTime(s.timestamp),
     bestApy: s.bestApy * 100,
     ...Object.fromEntries(s.protocols.map(p => [p.name, p.apy * 100])),
   }));
@@ -177,8 +166,8 @@ function ApyTrend({ data }: { data: DefiData }) {
           <XAxis dataKey="date" hide />
           <YAxis hide domain={['auto', 'auto']} />
           <Tooltip
-            contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', fontSize: 11 }}
-            formatter={(v: any, name: string) => [`${Number(v).toFixed(2)}%`, name]}
+            contentStyle={CHART_TOOLTIP_STYLE}
+            formatter={(value: number | string, name: string) => [`${Number(value).toFixed(2)}%`, name]}
           />
           {protocolNames.map((name, i) => (
             <Area
@@ -227,23 +216,23 @@ function RebalanceTimeline({ records }: { records: RebalanceRecord[] }) {
             paddingBottom: 4,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{timeAgo(rec.timestamp)}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatTimeAgo(rec.timestamp)}</span>
               <Badge label={allSuccess ? `${successCount}/${totalCount} ok` : `${successCount}/${totalCount}`} color={allSuccess ? 'green' : 'amber'} />
             </div>
             <div style={{ fontSize: 12, color: 'var(--text)', marginTop: 2 }}>{rec.reasoning}</div>
             {rec.actions.filter(a => a.success && a.txHash).map((a, j) => (
               <div key={j} style={{ fontSize: 11, marginTop: 2, display: 'flex', gap: 6, alignItems: 'center' }}>
                 <span style={{ color: a.action === 'deposit' ? 'var(--green)' : 'var(--amber)' }}>
-                  {a.action === 'deposit' ? '↓' : '↑'} ${fmt(a.amountUsd, 0)} → {a.protocol}
+                  {a.action === 'deposit' ? '↓' : '↑'} ${formatCurrency(a.amountUsd, 0)} → {a.protocol}
                 </span>
                 {a.txHash && (
                   <a
-                    href={`${BASESCAN}${a.txHash}`}
+                    href={toBasescanTxUrl(a.txHash)}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ color: 'var(--amber)', fontSize: 10, fontFamily: 'var(--font-mono)' }}
                   >
-                    {truncHash(a.txHash)} ↗
+                    {truncateHash(a.txHash)} ↗
                   </a>
                 )}
               </div>
@@ -268,7 +257,7 @@ export default function DefiAllocationsCard() {
     refetchInterval: 60_000,
   });
 
-  const blendedApyPct = data ? (data.blendedApy * 100).toFixed(2) : '—';
+  const blendedApyPct = data ? (data.blendedApy * 100).toFixed(2) : '-';
   const apyColor = data && data.blendedApy > 0.03 ? 'var(--green)' : 'var(--amber)';
 
   return (
@@ -280,10 +269,10 @@ export default function DefiAllocationsCard() {
         <>
           {/* Top stats */}
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-            <Stat value={`$${fmt(data.totalValue)}`} label="Total USDC" />
-            <Stat value={`$${fmt(data.totalDeposited)}`} label="Deployed" color={data.totalDeposited > 0 ? 'var(--green)' : 'var(--text-dim)'} />
+            <Stat value={`$${formatCurrency(data.totalValue)}`} label="Total USDC" />
+            <Stat value={`$${formatCurrency(data.totalDeposited)}`} label="Deployed" color={data.totalDeposited > 0 ? 'var(--green)' : 'var(--text-dim)'} />
             <Stat value={`${blendedApyPct}%`} label="Blended APY" color={apyColor} />
-            <Stat value={`$${fmt(data.annualYieldUsd)}/yr`} label="Projected yield" color={apyColor} />
+            <Stat value={`$${formatCurrency(data.annualYieldUsd)}/yr`} label="Projected yield" color={apyColor} />
           </div>
 
           {/* Allocation donut */}
@@ -299,7 +288,7 @@ export default function DefiAllocationsCard() {
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '8px 0', borderTop: '1px solid var(--border)' }}>
             <span style={{ color: 'var(--text-dim)' }}>Idle USDC (cash reserve)</span>
             <span style={{ fontFamily: 'var(--font-mono)', color: data.idleUsdc > 5 ? 'var(--text)' : 'var(--amber)' }}>
-              ${fmt(data.idleUsdc)}
+              ${formatCurrency(data.idleUsdc)}
             </span>
           </div>
 
@@ -309,7 +298,7 @@ export default function DefiAllocationsCard() {
           {/* Last rebalance info */}
           {data.rebalancerStatus.lastRebalance > 0 && (
             <div style={{ fontSize: 10, color: 'var(--text-dim)', textAlign: 'right', marginTop: 4 }}>
-              Last rebalance: {timeAgo(data.rebalancerStatus.lastRebalance)} · Next check in ~{Math.max(0, (0.04 - data.rebalancerStatus.daysSinceRebalance)).toFixed(1)}d
+              Last rebalance: {formatTimeAgo(data.rebalancerStatus.lastRebalance)} · Next check in ~{Math.max(0, (0.04 - data.rebalancerStatus.daysSinceRebalance)).toFixed(1)}d
             </div>
           )}
         </>

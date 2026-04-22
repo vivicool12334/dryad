@@ -7,6 +7,7 @@ import { getAllContractors } from '../providers/contractorReputation.ts';
 import { getCurrentSeason, getSeasonalBriefing } from '../utils/seasonalAwareness.ts';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isFileNotFoundError } from '../utils/fileErrors.ts';
 
 // ─── Metrics tracking ───
 const metrics = {
@@ -44,7 +45,10 @@ function countLearnedSpecies(): number {
   try {
     const content = fs.readFileSync(path.join(__dirname, '../knowledge/learned.md'), 'utf-8');
     return (content.match(/New species:/g) || []).length;
-  } catch { return 0; }
+  } catch (error) {
+    if (isFileNotFoundError(error)) return 0;
+    throw error;
+  }
 }
 
 export const selfAssessAction: Action = {
@@ -58,7 +62,7 @@ export const selfAssessAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -79,31 +83,31 @@ export const selfAssessAction: Action = {
         : 0;
 
       if (metrics.loopFailures > 0 && loopRate < 90) {
-        suggestions.push(`Decision loop success rate is ${loopRate}% — investigate failures`);
+        suggestions.push(`Decision loop success rate is ${loopRate}% - investigate failures`);
       }
 
       // API health
       if (metrics.apiCalls.iNaturalist.failures > metrics.apiCalls.iNaturalist.total * 0.1) {
-        suggestions.push('iNaturalist API failure rate >10% — consider increasing cache duration or adding retry logic');
+        suggestions.push('iNaturalist API failure rate >10% - consider increasing cache duration or adding retry logic');
       }
 
       // Submissions
       const verifiedSubs = submissions.filter(s => s.verified);
       const unprocessed = submissions.filter(s => !s.processed && s.verified);
       if (unprocessed.length > 5) {
-        suggestions.push(`${unprocessed.length} unprocessed photo submissions — decision loop may need attention`);
+        suggestions.push(`${unprocessed.length} unprocessed photo submissions - decision loop may need attention`);
       }
 
       // Contractors
       const activeContractors = contractors.filter(c => c.status === 'active');
       if (activeContractors.length === 0 && season.season !== 'DORMANT') {
-        suggestions.push('No active contractors registered — use FIND_CONTRACTOR to discover and onboard');
+        suggestions.push('No active contractors registered - use FIND_CONTRACTOR to discover and onboard');
       }
 
       // Security
       const injectionAttempts = secLog.filter(e => e.event === 'INJECTION_ATTEMPT');
       if (injectionAttempts.length > 0) {
-        suggestions.push(`${injectionAttempts.length} injection attempts detected — review security log`);
+        suggestions.push(`${injectionAttempts.length} injection attempts detected - review security log`);
       }
 
       // Seasonal suggestions
@@ -111,16 +115,16 @@ export const selfAssessAction: Action = {
         suggestions.push('EARLY_SPRING: Priority window for invasive removal before leaf-out. Schedule contractor work now.');
       }
       if (season.season === 'SPRING' && activeContractors.length === 0) {
-        suggestions.push('SPRING planting window open but no contractors available — critical gap');
+        suggestions.push('SPRING planting window open but no contractors available - critical gap');
       }
 
       // Milestones
       if (metrics.loopExecutions > 10 && txHistory.length === 0) {
-        suggestions.push('No payments recorded after 10+ decision cycles — are milestones being tracked?');
+        suggestions.push('No payments recorded after 10+ decision cycles - are milestones being tracked?');
       }
 
       // Format report
-      const report = `## Self-Assessment — ${new Date().toLocaleDateString('en-US', { timeZone: 'America/Detroit', month: 'long', day: 'numeric', year: 'numeric' })}
+      const report = `## Self-Assessment - ${new Date().toLocaleDateString('en-US', { timeZone: 'America/Detroit', month: 'long', day: 'numeric', year: 'numeric' })}
 
 **Uptime:** ${uptime} hours | **Season:** ${season.season}
 

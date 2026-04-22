@@ -6,6 +6,7 @@
 import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from '@elizaos/core';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getErrorMessage, isFileNotFoundError } from '../utils/fileErrors.ts';
 
 export type ServiceType = 'invasive_removal' | 'planting' | 'soil_prep' | 'mowing' | 'site_assessment' | 'tree_work';
 type ContractorStatus = 'prospect' | 'onboarding' | 'active' | 'inactive' | 'blocked';
@@ -40,8 +41,13 @@ function loadContractors(): void {
     fs.mkdirSync(dir, { recursive: true });
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
     contractors = JSON.parse(raw);
-  } catch {
-    contractors = [];
+  } catch (error) {
+    if (isFileNotFoundError(error)) {
+      contractors = [];
+      loaded = true;
+      return;
+    }
+    throw new Error(`Failed to load contractor reputation data from ${DATA_FILE}: ${getErrorMessage(error)}`);
   }
   loaded = true;
 }
@@ -51,14 +57,22 @@ function saveContractors(): void {
     const dir = path.dirname(DATA_FILE);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(contractors, null, 2));
-  } catch (e) {
-    console.error('Failed to save contractors:', e);
+  } catch (error) {
+    throw new Error(`Failed to save contractor reputation data to ${DATA_FILE}: ${getErrorMessage(error)}`);
   }
 }
 
-export function getContractor(email: string): ContractorRecord | undefined {
+function persistContractorRecords<T>(mutate: () => T): T {
   loadContractors();
-  return contractors.find(c => c.email.toLowerCase() === email.toLowerCase());
+  const previous = structuredClone(contractors);
+  try {
+    const result = mutate();
+    saveContractors();
+    return result;
+  } catch (error) {
+    contractors = previous;
+    throw error;
+  }
 }
 
 export function getAllContractors(): ContractorRecord[] {
@@ -67,57 +81,22 @@ export function getAllContractors(): ContractorRecord[] {
 }
 
 export function addContractor(record: Omit<ContractorRecord, 'reliabilityScore' | 'qualityScore' | 'jobsCompleted' | 'jobsAccepted' | 'avgResponseTimeHours' | 'photoVerificationPassRate' | 'costEfficiency' | 'totalPaidUsd' | 'addedDate'>): ContractorRecord {
-  loadContractors();
-  const full: ContractorRecord = {
-    ...record,
-    jobsCompleted: 0,
-    jobsAccepted: 0,
-    avgResponseTimeHours: 0,
-    photoVerificationPassRate: 0,
-    costEfficiency: 1.0,
-    reliabilityScore: 50, // Neutral start
-    qualityScore: 50,
-    totalPaidUsd: 0,
-    addedDate: new Date().toISOString().split('T')[0],
-  };
-  contractors.push(full);
-  saveContractors();
-  return full;
-}
-
-export function updateContractor(email: string, updates: Partial<ContractorRecord>): ContractorRecord | undefined {
-  loadContractors();
-  const idx = contractors.findIndex(c => c.email.toLowerCase() === email.toLowerCase());
-  if (idx === -1) return undefined;
-  contractors[idx] = { ...contractors[idx], ...updates };
-  // Recompute reliability
-  const c = contractors[idx];
-  if (c.jobsAccepted > 0) {
-    c.reliabilityScore = Math.round((c.jobsCompleted / c.jobsAccepted) * 100);
-  }
-  saveContractors();
-  return contractors[idx];
-}
-
-export function recordJobCompletion(email: string, paidUsd: number): void {
-  loadContractors();
-  const c = contractors.find(ct => ct.email.toLowerCase() === email.toLowerCase());
-  if (!c) return;
-  c.jobsCompleted++;
-  c.totalPaidUsd += paidUsd;
-  c.lastJobDate = new Date().toISOString().split('T')[0];
-  if (c.jobsAccepted > 0) c.reliabilityScore = Math.round((c.jobsCompleted / c.jobsAccepted) * 100);
-  saveContractors();
-}
-
-export function recordPhotoVerification(email: string, passed: boolean): void {
-  loadContractors();
-  const c = contractors.find(ct => ct.email.toLowerCase() === email.toLowerCase());
-  if (!c) return;
-  const total = c.jobsCompleted + 1;
-  const passCount = Math.round(c.photoVerificationPassRate * c.jobsCompleted) + (passed ? 1 : 0);
-  c.photoVerificationPassRate = passCount / total;
-  saveContractors();
+  return persistContractorRecords(() => {
+    const full: ContractorRecord = {
+      ...record,
+      jobsCompleted: 0,
+      jobsAccepted: 0,
+      avgResponseTimeHours: 0,
+      photoVerificationPassRate: 0,
+      costEfficiency: 1.0,
+      reliabilityScore: 50,
+      qualityScore: 50,
+      totalPaidUsd: 0,
+      addedDate: new Date().toISOString().split('T')[0],
+    };
+    contractors.push(full);
+    return full;
+  });
 }
 
 export function getBestContractorForService(serviceType: ServiceType): ContractorRecord | null {

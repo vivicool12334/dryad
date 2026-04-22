@@ -8,6 +8,7 @@ import { getTransactionHistory } from '../security/transactionGuard.ts';
 import { getAllSubmissions } from '../submissions.ts';
 import { getAllContractors } from '../providers/contractorReputation.ts';
 import { sendDryadEmail } from './agentMail.ts';
+import { getErrorMessage } from '../utils/fileErrors.ts';
 
 const STEWARD_EMAIL = process.env.CONTRACTOR_EMAIL || 'powahgen@gmail.com';
 
@@ -23,12 +24,15 @@ export async function generateWeeklyReport(): Promise<string> {
   const dateStr = now.toLocaleDateString('en-US', { timeZone: 'America/Detroit', month: 'long', day: 'numeric', year: 'numeric' });
   const season = getCurrentSeason();
 
-  // Gather data
-  let community;
-  try { community = await getCommunityMetrics(); } catch { community = null; }
+  const [communityResult, weatherResult] = await Promise.allSettled([
+    getCommunityMetrics(),
+    getWeatherAssessment(),
+  ]);
 
-  let weather;
-  try { weather = await getWeatherAssessment(); } catch { weather = null; }
+  const community = communityResult.status === 'fulfilled' ? communityResult.value : null;
+  const communityError = communityResult.status === 'rejected' ? getErrorMessage(communityResult.reason) : null;
+  const weather = weatherResult.status === 'fulfilled' ? weatherResult.value : null;
+  const weatherError = weatherResult.status === 'rejected' ? getErrorMessage(weatherResult.reason) : null;
 
   const txHistory = getTransactionHistory();
   const secLog = getSecurityLog();
@@ -42,10 +46,12 @@ export async function generateWeeklyReport(): Promise<string> {
   const blockedTx = secLog.filter(e => e.event === 'TRANSACTION_BLOCKED');
 
   let report = `# Dryad Weekly Report\n`;
-  report += `**${dateStr}** | **Season:** ${season.season} — ${season.description}\n\n`;
+  report += `**${dateStr}** | **Season:** ${season.season} - ${season.description}\n\n`;
 
   if (weather) {
     report += `**Weather:** ${weather.summary}\n\n`;
+  } else if (weatherError) {
+    report += `**Weather:** unavailable (${weatherError})\n\n`;
   }
 
   report += `## Ecological Status\n`;
@@ -55,6 +61,8 @@ export async function generateWeeklyReport(): Promise<string> {
     if (community.mostRecent) {
       report += `- Most recent: ${community.mostRecent.species} by ${community.mostRecent.observer} (${community.mostRecent.date})\n`;
     }
+  } else if (communityError) {
+    report += `- Community data unavailable: ${communityError}\n`;
   } else {
     report += `- Community data unavailable this cycle\n`;
   }
@@ -116,7 +124,7 @@ export const generateReportAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -133,7 +141,7 @@ export const generateReportAction: Action = {
           const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           await sendDryadEmail(
             STEWARD_EMAIL,
-            `[Dryad] ${reportType === 'monthly' ? 'Monthly' : 'Weekly'} Report — ${dateStr}`,
+            `[Dryad] ${reportType === 'monthly' ? 'Monthly' : 'Weekly'} Report - ${dateStr}`,
             report
           );
           await callback({

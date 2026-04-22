@@ -170,11 +170,11 @@ export function extractGpsFromExif(buffer: Buffer): GPSData | null {
       const count = readUInt32(buffer, entryOffset + 4, littleEndian);
       const valueOffset = readUInt32(buffer, entryOffset + 8, littleEndian);
 
-      // GPSLatitudeRef (0x0001) — N/S
+      // GPSLatitudeRef (0x0001) - N/S
       if (tag === 0x0001 && type === 2) { // ASCII
         gpsLatRef = readString(buffer, tiffStart + valueOffset, count);
       }
-      // GPSLatitude (0x0002) — [degrees, minutes, seconds]
+      // GPSLatitude (0x0002) - [degrees, minutes, seconds]
       else if (tag === 0x0002 && type === 5 && count === 3) { // RATIONAL
         gpsLatRationals = [];
         const dataOffset = tiffStart + valueOffset;
@@ -182,11 +182,11 @@ export function extractGpsFromExif(buffer: Buffer): GPSData | null {
           gpsLatRationals.push(readRational(buffer, dataOffset + j * 8, littleEndian));
         }
       }
-      // GPSLongitudeRef (0x0003) — E/W
+      // GPSLongitudeRef (0x0003) - E/W
       else if (tag === 0x0003 && type === 2) { // ASCII
         gpsLngRef = readString(buffer, tiffStart + valueOffset, count);
       }
-      // GPSLongitude (0x0004) — [degrees, minutes, seconds]
+      // GPSLongitude (0x0004) - [degrees, minutes, seconds]
       else if (tag === 0x0004 && type === 5 && count === 3) { // RATIONAL
         gpsLngRationals = [];
         const dataOffset = tiffStart + valueOffset;

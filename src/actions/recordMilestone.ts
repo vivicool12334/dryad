@@ -1,24 +1,10 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
-import { createPublicClient, createWalletClient, http, parseAbi, encodeAbiParameters, keccak256, toHex } from 'viem';
-import { base, baseSepolia } from 'viem/chains';
-import { privateKeyToAccount } from 'viem/accounts';
+import { parseAbi, encodeAbiParameters, keccak256, toHex } from 'viem';
 import { CHAIN } from '../config/constants.ts';
-
-const MILESTONE_TYPES = ['SiteAssessment', 'InvasiveRemoval', 'SoilPrep', 'NativePlanting', 'Monitoring'] as const;
-type MilestoneType = (typeof MILESTONE_TYPES)[number];
-
-const PARCELS = [
-  '4475 25th St',
-  '4481 25th St',
-  '4487 25th St',
-  '4493 25th St',
-  '4501 25th St',
-  '4509 25th St',
-  '4513 25th St',
-  '4521 25th St',
-  '4523 25th St',
-];
+import { getRuntimeEvmClients } from './evmClients.ts';
+import { MILESTONE_TYPES, getMilestoneTypeIndex, type MilestoneType } from '../shared/milestones.ts';
+import { PARCEL_ADDRESSES } from '../shared/parcels.ts';
 
 // DryadMilestones.sol ABI
 const MILESTONES_ABI = parseAbi([
@@ -27,19 +13,6 @@ const MILESTONES_ABI = parseAbi([
   'function milestoneCount() view returns (uint256)',
   'event MilestoneRecorded(uint256 indexed id, uint8 milestoneType, string parcel, uint256 timestamp)',
 ]);
-
-function getClients(runtime: IAgentRuntime) {
-  const privateKey = runtime.getSetting('EVM_PRIVATE_KEY') || process.env.EVM_PRIVATE_KEY;
-  if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
-
-  const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
-  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
-  const publicClient = createPublicClient({ chain: selectedChain, transport });
-  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
-
-  return { account, publicClient, walletClient };
-}
 
 function parseMilestoneFromMessage(text: string): { type: MilestoneType | null; parcel: string | null; description: string } {
   const lowerText = text.toLowerCase();
@@ -58,10 +31,10 @@ function parseMilestoneFromMessage(text: string): { type: MilestoneType | null; 
   }
 
   let parcel: string | null = null;
-  for (const p of PARCELS) {
-    const addr = p.split(' ')[0]; // e.g., "4475"
+  for (const parcelAddress of PARCEL_ADDRESSES) {
+    const addr = parcelAddress.split(' ')[0]; // e.g., "4475"
     if (text.includes(addr)) {
-      parcel = p;
+      parcel = parcelAddress;
       break;
     }
   }
@@ -85,7 +58,7 @@ export const recordMilestoneAction: Action = {
     runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -108,13 +81,13 @@ export const recordMilestoneAction: Action = {
       }
 
       if (!parcel) {
-        const errorMsg = `Could not determine parcel. Please include an address number: ${PARCELS.map((p) => p.split(' ')[0]).join(', ')}`;
+        const errorMsg = `Could not determine parcel. Please include an address number: ${PARCEL_ADDRESSES.map((parcelAddress) => parcelAddress.split(' ')[0]).join(', ')}`;
         await callback({ text: errorMsg, actions: ['RECORD_MILESTONE'], source: message.content.source });
         return { text: errorMsg, values: { success: false }, data: {}, success: false };
       }
 
-      const { account, publicClient, walletClient } = getClients(runtime);
-      const typeIndex = MILESTONE_TYPES.indexOf(type);
+      const { publicClient, walletClient } = getRuntimeEvmClients(runtime);
+      const typeIndex = getMilestoneTypeIndex(type);
       const dataHash = keccak256(toHex(description));
 
       const hash = await walletClient.writeContract({

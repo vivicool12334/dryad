@@ -1,9 +1,8 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
-import { createPublicClient, createWalletClient, http, parseAbi, formatEther, formatUnits } from 'viem';
-import { base, baseSepolia } from 'viem/chains';
-import { privateKeyToAccount } from 'viem/accounts';
+import { parseAbi, formatEther, formatUnits } from 'viem';
 import { CHAIN, FINANCIAL } from '../config/constants.ts';
+import { getRuntimeEvmClients } from './evmClients.ts';
 
 // Lido wstETH on Base (or testnet override)
 const WSTETH_BASE = CHAIN.WSTETH_ADDRESS;
@@ -14,21 +13,14 @@ const ERC20_ABI = parseAbi([
   'function symbol() view returns (string)',
 ]);
 
-function getClients(runtime: IAgentRuntime) {
-  const privateKey = runtime.getSetting('EVM_PRIVATE_KEY') || process.env.EVM_PRIVATE_KEY;
-  if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
-
-  const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
-  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
-  const publicClient = createPublicClient({ chain: selectedChain, transport });
-  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
-
-  return { account, publicClient, walletClient };
-}
-
-// Approximate annual stETH yield rate — from centralized config
+// Approximate annual stETH yield rate - from centralized config
 const ANNUAL_YIELD_RATE = FINANCIAL.STETH_APR;
+
+interface CoinGeckoPriceResponse {
+  ethereum?: {
+    usd?: number;
+  };
+}
 
 export const manageStETHAction: Action = {
   name: 'MANAGE_STETH',
@@ -45,14 +37,14 @@ export const manageStETHAction: Action = {
     runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
     try {
       logger.info('Checking stETH treasury status');
 
-      const { account, publicClient } = getClients(runtime);
+      const { account, publicClient } = getRuntimeEvmClients(runtime);
       const stethAddress = (process.env.STETH_BASE_ADDRESS || WSTETH_BASE) as `0x${string}`;
 
       // Get wstETH balance
@@ -80,14 +72,14 @@ export const manageStETHAction: Action = {
       try {
         const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', { signal: AbortSignal.timeout(5000) });
         if (priceRes.ok) {
-          const priceData = await priceRes.json() as any;
+          const priceData = await priceRes.json() as CoinGeckoPriceResponse;
           estimatedEthPrice = priceData?.ethereum?.usd || 2500;
         }
       } catch { /* use fallback */ }
       const dailyYieldUSD = dailyYield * estimatedEthPrice;
       const monthlyYieldUSD = monthlyYield * estimatedEthPrice;
 
-      const responseText = `## Treasury Status — Dryad
+      const responseText = `## Treasury Status - Dryad
 
 **Wallet:** \`${account.address}\`
 
@@ -101,7 +93,7 @@ export const manageStETHAction: Action = {
 - **Annual yield:** ~${annualYield.toFixed(6)} ETH
 
 ### Spending Policy
-✅ **Yield-only spending** — Principal is never touched.
+✅ **Yield-only spending** - Principal is never touched.
 Available to spend from yield: ~$${monthlyYieldUSD.toFixed(2)}/month
 
 ${

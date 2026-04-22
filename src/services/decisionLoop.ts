@@ -35,15 +35,42 @@ import { loadPositions } from './yieldMonitor.ts';
 import { getPendingApplications, approveContractor, type Contractor } from '../contractors.ts';
 import { attestWorkSubmission, getOrRegisterSchema, getAttestationUrl, attestObservation, getOrRegisterObservationSchema } from './easAttestation.ts';
 import { updateSubmissionAttestation } from '../submissions.ts';
+import { getErrorMessage, isFileNotFoundError } from '../utils/fileErrors.ts';
 
 const CYCLE_INTERVAL_MS = TIMING.CYCLE_INTERVAL_MS;
 const CONTRACTOR_EMAIL = process.env.CONTRACTOR_EMAIL || 'powahgen@gmail.com';
+
+interface InaturalistObservation {
+  id: number;
+  location?: string;
+  quality_grade?: string;
+  species_guess?: string;
+  observed_on?: string;
+  created_at?: string;
+  taxon?: {
+    name?: string;
+    preferred_common_name?: string;
+  };
+  user?: {
+    login?: string;
+  };
+}
+
+interface InaturalistObservationsResponse {
+  results?: InaturalistObservation[];
+}
+
+interface CoinGeckoPriceResponse {
+  ethereum?: {
+    usd?: number;
+  };
+}
 
 // Weekly report tracking
 let weeklyReportSentDate = '';
 let demoCycleCount = 0;
 
-// Financial model constants — pulled from centralized config
+// Financial model constants - pulled from centralized config
 const ANNUAL_OPERATING_COST = FINANCIAL.ANNUAL_OPERATING_COST;
 const ANNUAL_COST_ESTABLISHMENT = FINANCIAL.ANNUAL_COST_ESTABLISHMENT;
 const ANNUAL_COST_WITH_LVT = FINANCIAL.ANNUAL_COST_WITH_LVT;
@@ -66,14 +93,21 @@ const NATIVE_INDICATORS = [
 // Track already-attested iNaturalist observation IDs (persists to disk)
 const ATTESTED_OBS_FILE = path.join(process.cwd(), 'data', 'attestedObservationIds.json');
 const attestedObservationIds = new Set<number>((() => {
-  try { return JSON.parse(fs.readFileSync(ATTESTED_OBS_FILE, 'utf-8')); } catch { return []; }
+  try {
+    const storedIds = JSON.parse(fs.readFileSync(ATTESTED_OBS_FILE, 'utf-8'));
+    if (!Array.isArray(storedIds)) {
+      throw new Error('attested observation store must be an array');
+    }
+    return storedIds;
+  } catch (error) {
+    if (isFileNotFoundError(error)) return [];
+    throw new Error(`Failed to load attested observation IDs from ${ATTESTED_OBS_FILE}: ${getErrorMessage(error)}`);
+  }
 })());
 function persistAttestedIds() {
-  try {
-    const dir = path.dirname(ATTESTED_OBS_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(ATTESTED_OBS_FILE, JSON.stringify([...attestedObservationIds]));
-  } catch (err: any) { logger.warn(`[EAS] Failed to persist attested IDs: ${err?.message}`); }
+  const dir = path.dirname(ATTESTED_OBS_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(ATTESTED_OBS_FILE, JSON.stringify([...attestedObservationIds]));
 }
 
 // Singleton reference for admin trigger endpoint
@@ -83,8 +117,8 @@ let activeInstance: DecisionLoopService | null = null;
 export async function triggerManualCycle(): Promise<{ triggered: boolean; message: string }> {
   if (!activeInstance) return { triggered: false, message: 'Decision loop service not running' };
   // Don't allow concurrent cycles
-  if ((activeInstance as any)._running) return { triggered: false, message: 'Cycle already in progress' };
-  activeInstance.runCycle();  // fire and forget — it's async
+  if (activeInstance.isRunning()) return { triggered: false, message: 'Cycle already in progress' };
+  activeInstance.runCycle();  // fire and forget - it's async
   return { triggered: true, message: 'Decision loop cycle triggered' };
 }
 
@@ -121,6 +155,10 @@ export class DecisionLoopService extends Service {
   async stop() {
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     logger.info('[Dryad] Decision loop stopped');
+  }
+
+  isRunning(): boolean {
+    return this._running;
   }
 
   async runCycle() {
@@ -241,7 +279,7 @@ export class DecisionLoopService extends Service {
         steps,
       });
 
-      // Post from tweet queue — every cycle in demo, Mon/Thu in production
+      // Post from tweet queue - every cycle in demo, Mon/Thu in production
       demoCycleCount++;
       const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon, 4=Thu
       const shouldTweet = TIMING.TWEET_EVERY_CYCLE || dayOfWeek === 1 || dayOfWeek === 4;
@@ -323,11 +361,11 @@ export class DecisionLoopService extends Service {
               `Use this code at https://dashboard.dryad.land/Dryad/submit to submit proof-of-work photos after completing jobs on the 25th Street parcels.\n\n` +
               `Important:\n` +
               `- Take photos using the in-app camera (minimum 2 per submission)\n` +
-              `- GPS is captured automatically — make sure location services are enabled\n` +
+              `- GPS is captured automatically - make sure location services are enabled\n` +
               `- Photos must be taken on-site at the 25th Street parcels\n` +
               `- Payment is up to $50/job in USDC on Base to your wallet: ${app.walletAddress}\n\n` +
               `Questions? Reply to this email or chat with Dryad at https://dashboard.dryad.land/\n\n` +
-              `— Dryad 🌿`
+              `- Dryad 🌿`
             );
             logger.info(`[Dryad] Sent access code email to ${app.email}`);
           } catch (err) {
@@ -335,13 +373,13 @@ export class DecisionLoopService extends Service {
           }
         }
       } else {
-        // Log why it wasn't auto-approved — don't reject, leave as pending for manual review
+        // Log why it wasn't auto-approved - don't reject, leave as pending for manual review
         const reasons = [];
         if (!hasValidEmail) reasons.push('invalid email');
         if (!hasWallet) reasons.push('invalid wallet address');
         if (!hasExperience) reasons.push('experience too short');
         if (!hasWorkTypes) reasons.push('no work types selected');
-        logger.info(`[Dryad] Contractor application needs manual review: ${app.name} (${app.email}) — ${reasons.join(', ')}`);
+        logger.info(`[Dryad] Contractor application needs manual review: ${app.name} (${app.email}) - ${reasons.join(', ')}`);
         audit('CONTRACTOR_NEEDS_REVIEW', `${app.name} (${app.email}): ${reasons.join(', ')}`, 'contractor_review', 'info');
       }
     }
@@ -379,13 +417,13 @@ export class DecisionLoopService extends Service {
 
     if (invasiveReports.length > 0) {
       if (!contractorWorkSafe) {
-        logger.info('[Dryad] Invasives detected but weather unsafe for contractor work — deferring email to next cycle');
+        logger.info('[Dryad] Invasives detected but weather unsafe for contractor work - deferring email to next cycle');
       } else {
         const parcelsAffected = [...new Set(invasiveReports.map((s) => s.nearestParcel))];
         const speciesList = [...new Set(invasiveReports.map((s) => s.species || 'Unknown species'))];
         const seasonNote = season ? `\nSeason: ${season.season}. ${season.description}.` : '';
 
-        const emailBody = `INVASIVE SPECIES ALERT — Action Required${seasonNote}
+        const emailBody = `INVASIVE SPECIES ALERT - Action Required${seasonNote}
 
 ${invasiveReports.length} invasive species observation(s) confirmed on the following parcels:
 
@@ -406,7 +444,7 @@ Budget: Up to $50 per parcel per visit.`;
         try {
           await sendDryadEmail(
             CONTRACTOR_EMAIL,
-            `[Dryad] Invasive Species Alert — ${parcelsAffected.join(', ')}`,
+            `[Dryad] Invasive Species Alert - ${parcelsAffected.join(', ')}`,
             emailBody
           );
           emailsSent++;
@@ -431,7 +469,7 @@ Budget: Up to $50 per parcel per visit.`;
 
         // Only verify if we have a photo on disk
         if (!sub.photoPath) {
-          logger.warn(`[Dryad] Proof-of-work ${sub.id} has no photo path — skipping vision check`);
+          logger.warn(`[Dryad] Proof-of-work ${sub.id} has no photo path - skipping vision check`);
           continue;
         }
 
@@ -472,8 +510,8 @@ Budget: Up to $50 per parcel per visit.`;
             visionFlagged++;
             logger.warn(`[Dryad] ⚠️ ${sub.id} vision-flagged (score: ${result.score.toFixed(2)}): ${result.reasoning}`);
           }
-        } catch (err: any) {
-          logger.error(`[Dryad] Vision verification error for ${sub.id}: ${err?.message}`);
+        } catch (error) {
+          logger.error(`[Dryad] Vision verification error for ${sub.id}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 
@@ -485,7 +523,7 @@ Budget: Up to $50 per parcel per visit.`;
         if (!sub.visionApproved || sub.easAttestationUid) continue;
 
         try {
-          // Resolve contractor wallet address — skip attestation if wallet can't be resolved
+          // Resolve contractor wallet address - skip attestation if wallet can't be resolved
           let contractorWallet: `0x${string}` | null = null;
           if (sub.contractorName) {
             try {
@@ -522,8 +560,8 @@ Budget: Up to $50 per parcel per visit.`;
           updateSubmissionAttestation(sub.id, { uid: result.uid, txHash: result.txHash });
           attestationsCreated++;
           logger.info(`[EAS] ✅ Attested ${sub.id}: ${getAttestationUrl(result.uid)}`);
-        } catch (err: any) {
-          logger.error(`[EAS] Failed to attest ${sub.id}: ${err?.message}`);
+        } catch (error) {
+          logger.error(`[EAS] Failed to attest ${sub.id}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
       if (attestationsCreated > 0) {
@@ -537,7 +575,7 @@ Budget: Up to $50 per parcel per visit.`;
       if (s.type !== 'proof_of_work') return true; // non-work submissions are always processable
       if (!s.visionApproved) return true; // flagged submissions are still "processed" (need manual review)
       if (s.easAttestationUid) return true; // attestation succeeded
-      return false; // vision-approved but attestation didn't happen — retry next cycle
+      return false; // vision-approved but attestation didn't happen - retry next cycle
     }).map((s) => s.id);
     if (successfulIds.length > 0) markProcessed(successfulIds);
     return { processed: unprocessed.length, invasiveAlerts: invasiveReports.length, emailsSent };
@@ -561,11 +599,11 @@ Budget: Up to $50 per parcel per visit.`;
       const response = await fetch(url);
       if (!response.ok) return empty;
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as InaturalistObservationsResponse;
       const observations = data.results || [];
 
       // Filter to on-parcel observations
-      const onParcelObs = observations.filter((obs: any) => {
+      const onParcelObs = observations.filter((obs): obs is InaturalistObservation & { location: string } => {
         if (!obs.location) return false;
         const [lat, lng] = obs.location.split(',').map(parseFloat);
         return isWithinParcels(lat, lng);
@@ -623,8 +661,11 @@ Budget: Up to $50 per parcel per visit.`;
       // Only attest research-grade observations (community-verified species ID)
       // Track attested observation IDs in memory to avoid duplicates across cycles
       let obsAttested = 0;
-      const researchGrade = onParcelObs.filter((obs: any) => obs.quality_grade === 'research' && obs.id);
-      const newObservations = researchGrade.filter((obs: any) => !attestedObservationIds.has(obs.id));
+      const researchGrade = onParcelObs.filter(
+        (obs): obs is InaturalistObservation & { location: string; quality_grade: string } =>
+          obs.quality_grade === 'research',
+      );
+      const newObservations = researchGrade.filter((obs) => !attestedObservationIds.has(obs.id));
 
       if (newObservations.length > 0) {
         // Cap at 5 per cycle to manage gas costs
@@ -639,6 +680,7 @@ Budget: Up to $50 per parcel per visit.`;
             const observerName = (obs.user?.login || 'anonymous').slice(0, 100);
             const [lat, lng] = (obs.location || '0,0').split(',').map(parseFloat);
             const nearestParcel = findNearestParcel(lat, lng);
+            const observedAtSource = obs.observed_on || obs.created_at;
             const isInvasive = invasiveCommonNames.length > 0 && (
               Object.keys(INVASIVE_PRIORITY_1).some(g => speciesName.toLowerCase().includes(g.toLowerCase())) ||
               Object.keys(INVASIVE_PRIORITY_2).some(g => speciesName.toLowerCase().includes(g.toLowerCase())) ||
@@ -653,16 +695,16 @@ Budget: Up to $50 per parcel per visit.`;
               observationId: obs.id,
               parcelAddress: nearestParcel?.parcel.address || 'Unknown',
               location: obs.location || '0,0',
-              observedAt: Math.floor(new Date(obs.observed_on || obs.created_at).getTime() / 1000),
+              observedAt: Math.floor(new Date(observedAtSource || Date.now()).getTime() / 1000),
               isInvasive,
             });
 
             attestedObservationIds.add(obs.id);
             persistAttestedIds();
             obsAttested++;
-            logger.info(`[EAS] 🌿 Observation attested: ${commonName} by ${observerName} — ${getAttestationUrl(result.uid)}`);
-          } catch (err: any) {
-            logger.error(`[EAS] Failed to attest observation ${obs.id}: ${err?.message}`);
+            logger.info(`[EAS] 🌿 Observation attested: ${commonName} by ${observerName} - ${getAttestationUrl(result.uid)}`);
+          } catch (error) {
+            logger.error(`[EAS] Failed to attest observation ${obs.id}: ${error instanceof Error ? error.message : String(error)}`);
           }
         }
         if (obsAttested > 0) {
@@ -751,7 +793,10 @@ Budget: Up to $50 per parcel per visit.`;
       let ethPrice = 2600;
       try {
         const pr = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', { signal: AbortSignal.timeout(5000) });
-        if (pr.ok) { const d = await pr.json() as any; ethPrice = d?.ethereum?.usd || 2600; }
+        if (pr.ok) {
+          const data = await pr.json() as CoinGeckoPriceResponse;
+          ethPrice = data?.ethereum?.usd || 2600;
+        }
       } catch { /* use fallback */ }
 
       const estimatedUsd = (ethNum + wstethNum) * ethPrice;
@@ -816,9 +861,9 @@ ${mode === 'NORMAL' ? 'All operations active.' : mode === 'CONSERVATION' ? 'Disc
       lastYieldUSD = annualYield;
 
       if (mode === 'CONSERVATION') {
-        logger.warn('[Dryad] CONSERVATION MODE — pausing discretionary contractor jobs');
+        logger.warn('[Dryad] CONSERVATION MODE - pausing discretionary contractor jobs');
       } else if (mode === 'CRITICAL') {
-        logger.error('[Dryad] CRITICAL — yield insufficient for non-negotiable costs. Steward intervention needed.');
+        logger.error('[Dryad] CRITICAL - yield insufficient for non-negotiable costs. Steward intervention needed.');
       }
 
       return { mode, wstethNum, annualYield, modeChanged, snapshot, deployedUsdc, idleUsdc, blendedApy, usdcAnnualYield };
@@ -851,7 +896,7 @@ ${mode === 'NORMAL' ? 'All operations active.' : mode === 'CONSERVATION' ? 'Disc
 
       logger.info(`[Dryad] DIEM: ${balNum.toFixed(4)} | Credits: ~$${dailyCredits.toFixed(2)}/day`);
       if (dailyCredits < FINANCIAL.DIEM_LOW_CREDIT_THRESHOLD) {
-        logger.warn('[Dryad] DIEM stake is low — inference credits may run out.');
+        logger.warn('[Dryad] DIEM stake is low - inference credits may run out.');
       }
       return { balance: balNum, dailyCredits };
     } catch (error) {
@@ -874,11 +919,11 @@ ${mode === 'NORMAL' ? 'All operations active.' : mode === 'CONSERVATION' ? 'Disc
         && demoCycleCount % TIMING.WEEKLY_REPORT_EVERY_N_CYCLES === 0;
 
       if ((demoReportDue || (isMonday && hour >= 8 && hour < 12)) && weeklyReportSentDate !== today) {
-        logger.info('[Dryad] Monday morning — generating weekly report');
+        logger.info('[Dryad] Monday morning - generating weekly report');
         const report = await generateWeeklyReport();
         await sendDryadEmail(
           CONTRACTOR_EMAIL,
-          `[Dryad] Weekly Report — ${detroit.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+          `[Dryad] Weekly Report - ${detroit.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
           report
         );
         weeklyReportSentDate = today;

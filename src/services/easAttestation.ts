@@ -149,7 +149,7 @@ function computeSchemaUid(schema: string, resolver: `0x${string}`, revocable: bo
 
 /**
  * Get or register Dryad's attestation schema on Base.
- * Returns the schema UID. Idempotent — won't re-register if it already exists.
+ * Returns the schema UID. Idempotent - won't re-register if it already exists.
  */
 export async function getOrRegisterSchema(): Promise<Hex> {
   // Check env override first (if schema was already registered)
@@ -181,7 +181,7 @@ export async function getOrRegisterSchema(): Promise<Hex> {
       return expectedUid;
     }
   } catch {
-    // Schema doesn't exist yet — that's fine, we'll register it
+    // Schema doesn't exist yet - that's fine, we'll register it
   }
 
   // Register the schema
@@ -282,18 +282,6 @@ export function getAttestationUrl(uid: Hex): string {
     ? 'https://base-sepolia.easscan.org'
     : 'https://base.easscan.org';
   return `${base}/attestation/view/${uid}`;
-}
-
-/**
- * Get the EAS scan URL for our schema.
- */
-export function getSchemaUrl(): string {
-  const schemaUid = cachedSchemaUid || process.env.EAS_SCHEMA_UID;
-  if (!schemaUid) return '';
-  const base = CHAIN.USE_TESTNET
-    ? 'https://base-sepolia.easscan.org'
-    : 'https://base.easscan.org';
-  return `${base}/schema/view/${schemaUid}`;
 }
 
 // ═══════════════════════════════════════════════════════════

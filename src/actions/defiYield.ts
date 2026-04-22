@@ -1,5 +1,5 @@
 /**
- * DeFi Yield Actions — Deposit/Withdraw from yield protocols on Base.
+ * DeFi Yield Actions - Deposit/Withdraw from yield protocols on Base.
  *
  * Supports:
  *   - Aave V3 USDC (supply/withdraw)
@@ -103,7 +103,7 @@ async function getViemClients(protocolName?: string) {
 async function ensureApproval(
   spender: `0x${string}`,
   amountRaw: bigint,
-  clients?: { publicClient: any; walletClient: any; account: any; parseAbi: any },
+  clients?: Awaited<ReturnType<typeof getViemClients>>,
 ): Promise<void> {
   const { publicClient, walletClient, account, parseAbi } = clients || await getViemClients();
   const abi = parseAbi(ERC20_ABI);
@@ -187,9 +187,10 @@ async function depositAave(amountUsd: number): Promise<DefiTxResult> {
     audit('DEFI_DEPOSIT', `Aave V3: $${amountUsd} USDC`, 'defiYield', 'info');
 
     return { success: true, txHash: hash, protocol, action: 'deposit', amountUsd };
-  } catch (err: any) {
-    logger.error(`[DeFiYield] Aave deposit failed: ${err?.message}`);
-    return { success: false, protocol, action: 'deposit', amountUsd, error: err?.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[DeFiYield] Aave deposit failed: ${errorMessage}`);
+    return { success: false, protocol, action: 'deposit', amountUsd, error: errorMessage };
   }
 }
 
@@ -212,9 +213,10 @@ async function withdrawAave(amountUsd: number): Promise<DefiTxResult> {
     audit('DEFI_WITHDRAW', `Aave V3: $${amountUsd} USDC`, 'defiYield', 'info');
 
     return { success: true, txHash: hash, protocol, action: 'withdraw', amountUsd };
-  } catch (err: any) {
-    logger.error(`[DeFiYield] Aave withdraw failed: ${err?.message}`);
-    return { success: false, protocol, action: 'withdraw', amountUsd, error: err?.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[DeFiYield] Aave withdraw failed: ${errorMessage}`);
+    return { success: false, protocol, action: 'withdraw', amountUsd, error: errorMessage };
   }
 }
 
@@ -243,9 +245,10 @@ async function depositCompound(amountUsd: number): Promise<DefiTxResult> {
     audit('DEFI_DEPOSIT', `Compound V3: $${amountUsd} USDC`, 'defiYield', 'info');
 
     return { success: true, txHash: hash, protocol, action: 'deposit', amountUsd };
-  } catch (err: any) {
-    logger.error(`[DeFiYield] Compound deposit failed: ${err?.message}`);
-    return { success: false, protocol, action: 'deposit', amountUsd, error: err?.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[DeFiYield] Compound deposit failed: ${errorMessage}`);
+    return { success: false, protocol, action: 'deposit', amountUsd, error: errorMessage };
   }
 }
 
@@ -268,9 +271,10 @@ async function withdrawCompound(amountUsd: number): Promise<DefiTxResult> {
     audit('DEFI_WITHDRAW', `Compound V3: $${amountUsd} USDC`, 'defiYield', 'info');
 
     return { success: true, txHash: hash, protocol, action: 'withdraw', amountUsd };
-  } catch (err: any) {
-    logger.error(`[DeFiYield] Compound withdraw failed: ${err?.message}`);
-    return { success: false, protocol, action: 'withdraw', amountUsd, error: err?.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[DeFiYield] Compound withdraw failed: ${errorMessage}`);
+    return { success: false, protocol, action: 'withdraw', amountUsd, error: errorMessage };
   }
 }
 
@@ -299,9 +303,10 @@ async function depositMorpho(amountUsd: number): Promise<DefiTxResult> {
     audit('DEFI_DEPOSIT', `Morpho: $${amountUsd} USDC`, 'defiYield', 'info');
 
     return { success: true, txHash: hash, protocol, action: 'deposit', amountUsd };
-  } catch (err: any) {
-    logger.error(`[DeFiYield] Morpho deposit failed: ${err?.message}`);
-    return { success: false, protocol, action: 'deposit', amountUsd, error: err?.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[DeFiYield] Morpho deposit failed: ${errorMessage}`);
+    return { success: false, protocol, action: 'deposit', amountUsd, error: errorMessage };
   }
 }
 
@@ -324,9 +329,10 @@ async function withdrawMorpho(amountUsd: number): Promise<DefiTxResult> {
     audit('DEFI_WITHDRAW', `Morpho: $${amountUsd} USDC`, 'defiYield', 'info');
 
     return { success: true, txHash: hash, protocol, action: 'withdraw', amountUsd };
-  } catch (err: any) {
-    logger.error(`[DeFiYield] Morpho withdraw failed: ${err?.message}`);
-    return { success: false, protocol, action: 'withdraw', amountUsd, error: err?.message };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[DeFiYield] Morpho withdraw failed: ${errorMessage}`);
+    return { success: false, protocol, action: 'withdraw', amountUsd, error: errorMessage };
   }
 }
 
@@ -368,7 +374,7 @@ export async function depositToProtocol(
   if (!preflight.approved) {
     const reason = `MEV guard blocked: ${preflight.simulation.reason || 'unsafe transaction'}`;
     logger.warn(`[DeFiYield] ${reason}`);
-    audit('DEFI_DEPOSIT', `BLOCKED by MEV guard: ${protocolName} $${amountUsd} — ${reason}`, 'defiYield', 'warn');
+    audit('DEFI_DEPOSIT', `BLOCKED by MEV guard: ${protocolName} $${amountUsd} - ${reason}`, 'defiYield', 'warn');
     return { success: false, protocol: protocolName, action: 'deposit', amountUsd, error: reason };
   }
 
@@ -437,7 +443,7 @@ export async function withdrawFromProtocol(
   if (!preflight.approved) {
     const reason = `MEV guard blocked: ${preflight.simulation.reason || 'unsafe transaction'}`;
     logger.warn(`[DeFiYield] ${reason}`);
-    audit('DEFI_WITHDRAW', `BLOCKED by MEV guard: ${protocolName} $${amountUsd} — ${reason}`, 'defiYield', 'warn');
+    audit('DEFI_WITHDRAW', `BLOCKED by MEV guard: ${protocolName} $${amountUsd} - ${reason}`, 'defiYield', 'warn');
     return { success: false, protocol: protocolName, action: 'withdraw', amountUsd, error: reason };
   }
 
@@ -474,13 +480,4 @@ export async function withdrawFromProtocol(
   }
 
   return lastResult || { success: false, protocol: protocolName, action: 'withdraw', amountUsd, error: 'No chunks executed' };
-}
-
-/**
- * Get on-chain USDC balance for a protocol position (useful for checking actual vs tracked).
- * Currently returns the tracked position; on-chain verification can be added per-protocol.
- */
-export function getTrackedPosition(protocolName: string): number {
-  const positions = loadPositions();
-  return positions.find(p => p.protocolName === protocolName)?.depositedUsd || 0;
 }

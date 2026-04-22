@@ -37,7 +37,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@tanstack/react-query', 'recharts', 'leaflet', 'react-leaflet'],
+    include: ['react', 'react-dom', '@tanstack/react-query', 'recharts'],
   },
   server: {
     port: 5173,

@@ -2,7 +2,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '../api';
-import { Card, Stat, Badge, Loading, Err } from '../App';
+import { Card, Stat, Badge, Loading, Err } from './ui';
+import { CHART_TOOLTIP_STYLE, formatShortDate } from '../lib/formatting';
 
 function HealthRing({ score }: { score: number }) {
   const r = 28;
@@ -45,7 +46,7 @@ export default function BiodiversityCard() {
   const history = trend?.history ?? [];
 
   const chartData = [...history].reverse().map(s => ({
-    date: new Date(s.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    date: formatShortDate(s.timestamp),
     score: s.healthScore,
     p1: s.invasivesP1,
   }));
@@ -75,7 +76,7 @@ export default function BiodiversityCard() {
           {/* Invasives breakdown */}
           <div>
             <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Invasive species — {total} detected
+              Invasive species - {total} detected
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <div style={{
@@ -140,8 +141,8 @@ export default function BiodiversityCard() {
               <XAxis dataKey="date" hide />
               <YAxis hide domain={[0, 100]} />
               <Tooltip
-                contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', fontSize: 11 }}
-                formatter={(v: any, name: string) => [name === 'score' ? `${v}/100` : v, name === 'score' ? 'Health' : 'P1 invasives']}
+                contentStyle={CHART_TOOLTIP_STYLE}
+                formatter={(value: number | string, name: string) => [name === 'score' ? `${value}/100` : value, name === 'score' ? 'Health' : 'P1 invasives']}
               />
               <Line type="monotone" dataKey="score" stroke="#4caf50" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="p1" stroke="#ef5350" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />

@@ -1,4 +1,4 @@
-# Green Space Benefits — Research & Data
+# Green Space Benefits - Research & Data
 
 ## Health & Mental Health
 - 63% reduction in poor mental health near greened vacant lots (Philadelphia study, cited in DFC "Saving for the Future")
@@ -10,7 +10,7 @@
 ## Crime & Safety
 - 40% reduction in violent crime near greened vacant lots (University of Michigan study, Flint, MI)
 - Community-led greening outperforms municipal-only approaches by 2× in crime reduction
-- Areas receiving no care saw a slight increase in violent crime — the counterfactual matters
+- Areas receiving no care saw a slight increase in violent crime - the counterfactual matters
 - Greened lots signal community care and active stewardship, changing social dynamics
 - Reductions documented in felony assaults, aggravated assaults, and homicides
 
@@ -28,7 +28,7 @@
 - Street trees in Grand Rapids, Michigan saved $722,000/year in energy costs
 - Detroit: 86% of neighborhoods run 8°F+ hotter than rural areas
 - Approximately 3,160 Detroit residents live in intra-urban heat islands 10°F+ hotter than nearby areas
-- Suburban neighbors have 30% more tree canopy — a legacy of white flight
+- Suburban neighbors have 30% more tree canopy - a legacy of white flight
 
 ## Stormwater & Water Quality
 - Urban trees across 242 U.S. counties avoid ~110 billion gallons of stormwater runoff annually
@@ -52,7 +52,7 @@
 - Green corridors facilitate gene dispersal, migration, and expanded habitat range
 - Each lot is a node in the corridor: more native plants → more pollinators → better pollination → more native reproduction → expanding habitat
 
-## Green Space Equity — Detroit Context
+## Green Space Equity - Detroit Context
 - Only 6% of Detroit's land is dedicated to parks/recreation vs. 15% national median
 - 87% of Detroit buildings are more than a quarter-mile walk from a park
 - Higher social vulnerability scores correlate directly with lower green space availability
@@ -60,9 +60,9 @@
 - Tree canopy declined 23% since 1950; 286 of 875 block groups below 75 on Tree Equity Score
 
 ## Why Dryad's Approach Works
-- Most urban greening programs fail when funding cycles end — lots revert within 2–3 years
+- Most urban greening programs fail when funding cycles end - lots revert within 2–3 years
 - Dryad's autonomous agent ensures permanent stewardship, not one-time greening
 - On-chain treasury (cross-chain USDC DeFi yield) funds perpetual maintenance without annual budget dependence
-- iNaturalist integration provides continuous ecological monitoring — not just claiming impact, but measuring it
+- iNaturalist integration provides continuous ecological monitoring - not just claiming impact, but measuring it
 - Community science volunteers serve as the sensor network; AI coordinates the response
 - Each of Dryad's 9 contiguous lots on 25th Street forms a connected green corridor, not isolated patches

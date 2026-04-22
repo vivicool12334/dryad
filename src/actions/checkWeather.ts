@@ -23,6 +23,23 @@ export interface WeatherAssessment {
   summary: string;
 }
 
+interface OpenMeteoDailyResponse {
+  time?: string[];
+  temperature_2m_max?: number[];
+  temperature_2m_min?: number[];
+  precipitation_sum?: number[];
+  wind_speed_10m_max?: number[];
+}
+
+interface OpenMeteoHourlyResponse {
+  soil_temperature_6cm?: number[];
+}
+
+interface OpenMeteoResponse {
+  daily?: OpenMeteoDailyResponse;
+  hourly?: OpenMeteoHourlyResponse;
+}
+
 import { TIMING } from '../config/constants.ts';
 
 // Cache
@@ -41,7 +58,7 @@ export async function getWeatherAssessment(): Promise<WeatherAssessment> {
     const res = await fetch(API_URL, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) throw new Error(`Open-Meteo ${res.status}`);
 
-    const data = await res.json() as any;
+    const data = await res.json() as OpenMeteoResponse;
     const daily = data.daily || {};
     const hourly = data.hourly || {};
 
@@ -97,10 +114,10 @@ export async function getWeatherAssessment(): Promise<WeatherAssessment> {
     if (!contractorWorkSafe) summary += ' Conditions unsafe for contractor work.';
     else summary += ' Good conditions for site work.';
 
-    if (flags.includes('PLANTING_WINDOW')) summary += ` Soil temp ${celsiusToF(avgSoilTemp)}°F — planting window ${season.plantingAppropriate ? 'OPEN' : 'open but season not right'}.`;
+    if (flags.includes('PLANTING_WINDOW')) summary += ` Soil temp ${celsiusToF(avgSoilTemp)}°F - planting window ${season.plantingAppropriate ? 'OPEN' : 'open but season not right'}.`;
     if (flags.includes('FROST_RISK')) summary += ' Frost risk in forecast.';
-    if (flags.includes('DROUGHT_RISK')) summary += ' Dry stretch — monitor new plantings.';
-    if (flags.includes('HEAT_STRESS')) summary += ' Extreme heat ahead — saplings may need emergency watering.';
+    if (flags.includes('DROUGHT_RISK')) summary += ' Dry stretch - monitor new plantings.';
+    if (flags.includes('HEAT_STRESS')) summary += ' Extreme heat ahead - saplings may need emergency watering.';
 
     // Look ahead for rain
     const rainDays = forecasts.filter(f => f.precipitation > 1);
@@ -120,7 +137,7 @@ export async function getWeatherAssessment(): Promise<WeatherAssessment> {
       flags: [],
       contractorWorkSafe: true,
       plantingWindowOpen: false,
-      summary: 'Weather data unavailable — assuming conditions are safe.',
+      summary: 'Weather data unavailable - assuming conditions are safe.',
     };
   }
 }
@@ -136,7 +153,7 @@ export const checkWeatherAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -144,9 +161,9 @@ export const checkWeatherAction: Action = {
       const assessment = await getWeatherAssessment();
       const season = getCurrentSeason();
 
-      let text = `## Weather — 25th Street Parcels\n\n`;
+      let text = `## Weather - 25th Street Parcels\n\n`;
       text += `**${assessment.summary}**\n\n`;
-      text += `**Season:** ${season.season} — ${season.description}\n\n`;
+      text += `**Season:** ${season.season} - ${season.description}\n\n`;
 
       if (assessment.flags.length > 0) {
         text += `**Active Flags:** ${assessment.flags.join(', ')}\n\n`;
@@ -155,12 +172,12 @@ export const checkWeatherAction: Action = {
       text += `### 7-Day Forecast\n`;
       for (const f of assessment.forecasts) {
         const icon = f.precipitation > 1 ? '🌧' : f.tempMax > 30 ? '☀️' : '⛅';
-        text += `${icon} **${f.date}** — ${celsiusToF(f.tempMax)}°F / ${celsiusToF(f.tempMin)}°F`;
+        text += `${icon} **${f.date}** - ${celsiusToF(f.tempMax)}°F / ${celsiusToF(f.tempMin)}°F`;
         if (f.precipitation > 0) text += ` | ${f.precipitation.toFixed(1)}mm rain`;
         text += `\n`;
       }
 
-      text += `\n**Contractor work:** ${assessment.contractorWorkSafe ? '✅ Safe' : '⚠️ Unsafe — defer'}\n`;
+      text += `\n**Contractor work:** ${assessment.contractorWorkSafe ? '✅ Safe' : '⚠️ Unsafe - defer'}\n`;
       text += `**Planting:** ${assessment.plantingWindowOpen ? '✅ Window open' : '❌ Not recommended'}\n`;
 
       await callback({ text, actions: ['CHECK_WEATHER'], source: message.content.source });
@@ -168,7 +185,7 @@ export const checkWeatherAction: Action = {
       return {
         text: assessment.summary,
         values: { success: true, contractorWorkSafe: assessment.contractorWorkSafe, flags: assessment.flags },
-        data: assessment as unknown as Record<string, unknown>,
+        data: { ...assessment },
         success: true,
       };
     } catch (error) {
@@ -185,7 +202,7 @@ export const checkWeatherAction: Action = {
     ],
     [
       { name: '{{name1}}', content: { text: 'Is it safe to schedule contractor work this week?' } },
-      { name: 'Dryad', content: { text: "I'll check conditions — rain and muddy soil can damage the site during removal work.", actions: ['CHECK_WEATHER'] } },
+      { name: 'Dryad', content: { text: "I'll check conditions - rain and muddy soil can damage the site during removal work.", actions: ['CHECK_WEATHER'] } },
     ],
   ],
 };

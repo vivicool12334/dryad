@@ -14,7 +14,7 @@ export default function SeasonWidget() {
   const { data: season } = useQuery({
     queryKey: ['season'],
     queryFn: api.season,
-    refetchInterval: 60 * 60 * 1000, // once an hour — season changes slowly
+    refetchInterval: 60 * 60 * 1000, // once an hour - season changes slowly
     staleTime: 60 * 60 * 1000,
   });
 

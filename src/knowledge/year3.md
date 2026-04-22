@@ -1,4 +1,4 @@
-# Year 3 Vision — Dryad 2029 Mockup
+# Year 3 Vision - Dryad 2029 Mockup
 
 A mockup dashboard at dryad.vercel.app/mock.html shows what Dryad looks like in full operation by March 2029.
 
@@ -34,6 +34,6 @@ A mockup dashboard at dryad.vercel.app/mock.html shows what Dryad looks like in 
 
 The mockup proves the model works: an autonomous agent can manage land at lower cost than traditional approaches ($105/lot/yr vs. $67-170 for city mowing), while building genuine ecological value that compounds over time. By Year 3, the prairie is self-sustaining and the treasury covers all costs from yield.
 
-This is what "autonomous sustainability" looks like — the AI bootstraps the ecosystem, then the land takes over.
+This is what "autonomous sustainability" looks like - the AI bootstraps the ecosystem, then the land takes over.
 
 View the full mockup: dryad.vercel.app/mock.html

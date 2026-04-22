@@ -9,7 +9,7 @@ Dryad relies on community science to monitor ecological health. There are two ma
 ### How to Submit
 1. Download the iNaturalist app (free, iOS & Android)
 2. Visit the lots at 25th Street between Ash Street and Beech Street, Detroit
-3. Photograph any living thing — plants, animals, fungi, insects
+3. Photograph any living thing - plants, animals, fungi, insects
 4. Upload with GPS location enabled (the app handles this automatically)
 5. The AI + community will identify the species
 
@@ -29,7 +29,7 @@ Every iNaturalist observation feeds into Dryad's ecological health score. The ag
 - Mint onchain EAS attestations for research-grade observations (community-verified species ID)
 
 ### Onchain Attestations
-Research-grade iNaturalist observations — where the community has confirmed the species ID — are automatically attested onchain via the Ethereum Attestation Service (EAS) on Base. Each attestation records the observer, species, GPS location, quality grade, and whether it's an invasive species. This creates a permanent, verifiable biodiversity record. View attestations at base.easscan.org.
+Research-grade iNaturalist observations - where the community has confirmed the species ID - are automatically attested onchain via the Ethereum Attestation Service (EAS) on Base. Each attestation records the observer, species, GPS location, quality grade, and whether it's an invasive species. This creates a permanent, verifiable biodiversity record. View attestations at base.easscan.org.
 
 ## Contractor Proof-of-Work Portal
 
@@ -39,11 +39,11 @@ Approved contractors submit GPS-tagged before/after photos of their work. The fl
 1. Contractor enters their access code (received via email after approval)
 2. Uses device camera to capture GPS-tagged photos (minimum 2, maximum 20)
 3. Selects work type and writes a description
-4. Submits — Dryad's vision model verifies the photos
+4. Submits - Dryad's vision model verifies the photos
 5. If approved, an onchain EAS attestation is minted on Base with: contractor address, work type, parcel, photo hash, and vision score
 6. Contractor is paid in USDC on Base ($50/tx limit, $200/day limit)
 
-Contractors can view their attestations on base.easscan.org — permanent proof of their ecological work.
+Contractors can view their attestations on base.easscan.org - permanent proof of their ecological work.
 
 ## Reporting Issues
 
@@ -67,4 +67,4 @@ In V2, active contributors earn soulbound governance NFTs:
 - Verified volunteer hours
 - Proximity to the lots (neighbors within 500 ft get free airdrops)
 
-1 NFT = 1 vote in the Snapshot DAO (dryadforest.eth). Non-transferable — no speculation, just stewardship.
+1 NFT = 1 vote in the Snapshot DAO (dryadforest.eth). Non-transferable - no speculation, just stewardship.

@@ -1,5 +1,5 @@
 /**
- * Contractor registry — stores approved contractors and their access codes.
+ * Contractor registry - stores approved contractors and their access codes.
  * Persists to disk at DATA_DIR/contractors.json on write.
  *
  * Flow:
@@ -11,13 +11,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { getErrorMessage, isFileNotFoundError } from './utils/fileErrors.ts';
 
 export type ContractorStatus = 'pending' | 'approved' | 'suspended' | 'rejected';
 
 export interface Contractor {
   id: string;
   status: ContractorStatus;
-  accessCode: string | null; // e.g. "DRYAD-7K2M" — null until approved
+  accessCode: string | null; // e.g. "DRYAD-7K2M" - null until approved
 
   // Identity
   name: string;
@@ -46,7 +47,7 @@ export interface Contractor {
   w9Requested: boolean;
   w9ReceivedAt: number | null;
 
-  // Device fingerprint (light — for abuse detection)
+  // Device fingerprint (light - for abuse detection)
   knownUserAgents: string[];
   lastIp: string | null;
 }
@@ -65,8 +66,13 @@ function loadFromDisk() {
   try {
     const raw = fs.readFileSync(getStorePath(), 'utf-8');
     contractors = JSON.parse(raw);
-  } catch {
-    contractors = [];
+  } catch (error) {
+    if (isFileNotFoundError(error)) {
+      contractors = [];
+      loaded = true;
+      return;
+    }
+    throw new Error(`Failed to load contractors from ${getStorePath()}: ${getErrorMessage(error)}`);
   }
   loaded = true;
 }
@@ -76,8 +82,21 @@ function saveToDisk() {
     const dir = path.dirname(getStorePath());
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(getStorePath(), JSON.stringify(contractors, null, 2));
-  } catch (e) {
-    console.error('Failed to save contractors:', e);
+  } catch (error) {
+    throw new Error(`Failed to save contractors to ${getStorePath()}: ${getErrorMessage(error)}`);
+  }
+}
+
+function persistContractorChange<T>(mutate: () => T): T {
+  loadFromDisk();
+  const previous = structuredClone(contractors);
+  try {
+    const result = mutate();
+    saveToDisk();
+    return result;
+  } catch (error) {
+    contractors = previous;
+    throw error;
   }
 }
 
@@ -104,79 +123,76 @@ export function applyContractor(app: {
   experience: string;
   workTypes: string[];
 }): Contractor {
-  loadFromDisk();
+  return persistContractorChange(() => {
+    const existing = contractors.find(
+      (c) => c.email.toLowerCase() === app.email.toLowerCase() && c.status !== 'rejected'
+    );
+    if (existing) {
+      throw new Error('An application with this email already exists');
+    }
 
-  // Check for duplicate email
-  const existing = contractors.find(
-    (c) => c.email.toLowerCase() === app.email.toLowerCase() && c.status !== 'rejected'
-  );
-  if (existing) {
-    throw new Error('An application with this email already exists');
-  }
+    const contractor: Contractor = {
+      id: `ctr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+      status: 'pending',
+      accessCode: null,
+      name: app.name,
+      email: app.email,
+      phone: app.phone,
+      walletAddress: app.walletAddress,
+      experience: app.experience,
+      workTypes: app.workTypes,
+      appliedAt: Date.now(),
+      approvedAt: null,
+      suspendedAt: null,
+      suspendedReason: null,
+      totalSubmissions: 0,
+      totalApprovedSubmissions: 0,
+      totalPaidUsd: 0,
+      lastSubmissionAt: null,
+      ytdPaidUsd: 0,
+      w9Requested: false,
+      w9ReceivedAt: null,
+      knownUserAgents: [],
+      lastIp: null,
+    };
 
-  const contractor: Contractor = {
-    id: `ctr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
-    status: 'pending',
-    accessCode: null,
-    name: app.name,
-    email: app.email,
-    phone: app.phone,
-    walletAddress: app.walletAddress,
-    experience: app.experience,
-    workTypes: app.workTypes,
-    appliedAt: Date.now(),
-    approvedAt: null,
-    suspendedAt: null,
-    suspendedReason: null,
-    totalSubmissions: 0,
-    totalApprovedSubmissions: 0,
-    totalPaidUsd: 0,
-    lastSubmissionAt: null,
-    ytdPaidUsd: 0,
-    w9Requested: false,
-    w9ReceivedAt: null,
-    knownUserAgents: [],
-    lastIp: null,
-  };
-
-  contractors.push(contractor);
-  saveToDisk();
-  return contractor;
+    contractors.push(contractor);
+    return contractor;
+  });
 }
 
 /**
  * Approve a contractor and generate their access code.
  */
 export function approveContractor(id: string): Contractor | null {
-  loadFromDisk();
-  const c = contractors.find((x) => x.id === id);
-  if (!c) return null;
+  return persistContractorChange(() => {
+    const c = contractors.find((x) => x.id === id);
+    if (!c) return null;
 
-  // Generate unique code
-  let code: string;
-  do {
-    code = generateAccessCode();
-  } while (contractors.some((x) => x.accessCode === code));
+    let code: string;
+    do {
+      code = generateAccessCode();
+    } while (contractors.some((x) => x.accessCode === code));
 
-  c.status = 'approved';
-  c.accessCode = code;
-  c.approvedAt = Date.now();
-  saveToDisk();
-  return c;
+    c.status = 'approved';
+    c.accessCode = code;
+    c.approvedAt = Date.now();
+    return c;
+  });
 }
 
 /**
  * Suspend a contractor (revoke access).
  */
 export function suspendContractor(id: string, reason: string): Contractor | null {
-  loadFromDisk();
-  const c = contractors.find((x) => x.id === id);
-  if (!c) return null;
-  c.status = 'suspended';
-  c.suspendedAt = Date.now();
-  c.suspendedReason = reason;
-  saveToDisk();
-  return c;
+  return persistContractorChange(() => {
+    const c = contractors.find((x) => x.id === id);
+    if (!c) return null;
+    c.status = 'suspended';
+    c.suspendedAt = Date.now();
+    c.suspendedReason = reason;
+    return c;
+  });
 }
 
 /**
@@ -193,39 +209,27 @@ export function validateAccessCode(code: string): Contractor | null {
  * Record a submission for a contractor.
  */
 export function recordSubmission(contractorId: string, approved: boolean): void {
-  loadFromDisk();
-  const c = contractors.find((x) => x.id === contractorId);
-  if (!c) return;
-  c.totalSubmissions++;
-  if (approved) c.totalApprovedSubmissions++;
-  c.lastSubmissionAt = Date.now();
-  saveToDisk();
-}
-
-/**
- * Record a payment for a contractor.
- */
-export function recordPayment(contractorId: string, amountUsd: number): void {
-  loadFromDisk();
-  const c = contractors.find((x) => x.id === contractorId);
-  if (!c) return;
-  c.totalPaidUsd += amountUsd;
-  c.ytdPaidUsd += amountUsd;
-  saveToDisk();
+  persistContractorChange(() => {
+    const c = contractors.find((x) => x.id === contractorId);
+    if (!c) return;
+    c.totalSubmissions++;
+    if (approved) c.totalApprovedSubmissions++;
+    c.lastSubmissionAt = Date.now();
+  });
 }
 
 /**
  * Update device fingerprint info.
  */
 export function updateDeviceInfo(contractorId: string, userAgent: string, ip: string): void {
-  loadFromDisk();
-  const c = contractors.find((x) => x.id === contractorId);
-  if (!c) return;
-  if (!c.knownUserAgents.includes(userAgent)) {
-    c.knownUserAgents.push(userAgent);
-  }
-  c.lastIp = ip;
-  saveToDisk();
+  persistContractorChange(() => {
+    const c = contractors.find((x) => x.id === contractorId);
+    if (!c) return;
+    if (!c.knownUserAgents.includes(userAgent)) {
+      c.knownUserAgents.push(userAgent);
+    }
+    c.lastIp = ip;
+  });
 }
 
 /**
@@ -250,34 +254,4 @@ export function getPendingApplications(): Contractor[] {
 export function getContractorById(id: string): Contractor | null {
   loadFromDisk();
   return contractors.find((c) => c.id === id) || null;
-}
-
-/**
- * Get contractors approaching W-9 threshold ($600 YTD).
- */
-export function getContractorsNearingW9Threshold(): Contractor[] {
-  loadFromDisk();
-  return contractors.filter((c) => c.ytdPaidUsd >= 500 && !c.w9Requested);
-}
-
-/**
- * Mark W-9 as requested for a contractor.
- */
-export function markW9Requested(id: string): void {
-  loadFromDisk();
-  const c = contractors.find((x) => x.id === id);
-  if (!c) return;
-  c.w9Requested = true;
-  saveToDisk();
-}
-
-/**
- * Check daily submission rate for a contractor (anti-spam).
- */
-export function getContractorDailySubmissionCount(contractorId: string, allSubmissions: Array<{ contractorId?: string; submittedAt: number }>): number {
-  const dayStart = new Date();
-  dayStart.setHours(0, 0, 0, 0);
-  return allSubmissions.filter(
-    (s) => (s as any).contractorId === contractorId && s.submittedAt >= dayStart.getTime()
-  ).length;
 }

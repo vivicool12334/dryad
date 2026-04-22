@@ -1,30 +1,38 @@
-// Shared API response types for the Dryad monitoring dashboard.
-// These mirror the JSON shapes returned by the /Dryad/api/* endpoints.
+import type {
+  AuditEntry as RuntimeAuditEntry,
+  AuditSummary,
+} from "../services/auditLog.ts";
+import type { HealthSnapshot as RuntimeHealthSnapshot } from "../services/healthSnapshots.ts";
+import type {
+  LoopHistoryEntry,
+  LoopStats,
+  LoopStep as RuntimeLoopStep,
+} from "../services/loopHistory.ts";
+import type {
+  RebalanceRecord as RuntimeRebalanceRecord,
+  RebalancerStatus,
+} from "../services/rebalancer.ts";
+import type { TreasurySnapshot as RuntimeTreasurySnapshot } from "../services/treasurySnapshots.ts";
+import type {
+  DeFiProtocol,
+  ProtocolPosition,
+  YieldSnapshot,
+} from "../services/yieldMonitor.ts";
+import type { TransactionRecord } from "../security/transactionGuard.ts";
+import type { PhotoSubmission } from "../submissions.ts";
+import type { Season, SeasonalContext } from "../utils/seasonalAwareness.ts";
 
-export interface LoopStep {
-  name: string;
-  result: string;
-  durationMs: number;
-  status: 'ok' | 'error' | 'skipped';
-}
+type NullableValue<T> = Exclude<T, undefined> | null;
 
-export interface LoopEntry {
-  timestamp: number;
-  status: 'success' | 'failure';
-  durationMs: number;
-  season: string;
-  actionsTriggered: string[];
-  errorsEncountered: string[];
-  steps: LoopStep[];
-}
-
-export interface LoopStats {
-  totalRuns: number;
-  successRuns: number;
-  failureRuns: number;
-  avgDurationMs: number;
-  lastRunAt: number | null;
-}
+export type LoopStep = RuntimeLoopStep;
+export type LoopEntry = LoopHistoryEntry;
+export type TreasurySnapshot = RuntimeTreasurySnapshot;
+export type HealthSnapshot = RuntimeHealthSnapshot;
+export type AuditEntry = RuntimeAuditEntry;
+export type Transaction = TransactionRecord;
+export type RebalanceRecord = RuntimeRebalanceRecord;
+export type YieldSnapshotEntry = YieldSnapshot;
+export type SeasonContext = SeasonalContext & { briefing: string };
 
 export interface LoopLatest {
   latest: LoopEntry | null;
@@ -32,86 +40,69 @@ export interface LoopLatest {
   nextRunAt: number | null;
 }
 
-export interface TreasurySnapshot {
-  timestamp: number;
-  wstEthBalance: string;
+export interface TreasuryCurrentData {
+  wallet: string;
   ethBalance: string;
-  ethPriceUsd: number;
-  estimatedUsd: number;
-  annualYieldUsd: number;
-  dailyYieldUsd: number;
-  spendingMode: 'NORMAL' | 'CONSERVATION' | 'CRITICAL';
-  dailySpendUsd: number;
-  diemBalance: string;
-  usdcTotal?: number;
-  usdcDeployed?: number;
-  usdcIdle?: number;
-  blendedApy?: number;
-  usdcAnnualYield?: number;
+  wstethBalance: string;
+  dailyYieldUSD: string;
+  monthlyYieldUSD: string;
+  usdcIdle: number;
+  usdcDeployed: number;
+  usdcTotal: number;
+  blendedApy: number;
+  usdcAnnualYield: number;
+  usdcDailyYield: number;
 }
 
-export interface HealthSnapshot {
-  timestamp: number;
+export interface TreasuryCurrentError {
+  error: string;
+}
+
+export type TreasuryCurrentResponse =
+  | TreasuryCurrentData
+  | TreasuryCurrentError;
+
+export interface HealthTrendData {
+  latest: HealthSnapshot | null;
+  history: HealthSnapshot[];
+}
+
+export interface HealthScoreData {
   healthScore: number;
-  invasivesP1: number;
-  invasivesP2: number;
-  invasivesP3: number;
-  observationsTotal: number;
+  onParcelObservations: number;
   nativeSpeciesCount: number;
-  nativeIndicatorCount: number;
-  season: string;
-  seasonalMultiplier: number;
-  invasiveSpecies: string[];
-}
-
-export interface SeasonContext {
-  season: string;
-  description: string;
-  priorities: string[];
-  contractorWorkTypes: string[];
-  healthScoreThresholdMultiplier: number;
-  plantingAppropriate: boolean;
-  mowingAppropriate: boolean;
-  briefing: string;
-}
-
-export interface AuditEntry {
-  timestamp: string;
-  type: string;
-  details: string;
-  source: string;
-  severity: 'info' | 'warn' | 'critical';
-  metadata?: Record<string, unknown>;
-}
-
-export interface Transaction {
-  timestamp: number;
-  amount: number;
-  recipient: string;
-  txHash?: string;
+  invasiveCount: number;
 }
 
 export interface Submission {
-  id: string;
-  type: 'plant_id' | 'proof_of_work';
-  lat?: number;
-  lng?: number;
-  nearestParcel: string;
-  distanceMeters?: number;
-  timestamp: number;
-  submittedAt: number;
-  species?: string;
-  workType?: string;
-  description: string;
-  photoFilename: string;
-  contractorName?: string;
-  verified: boolean;
-  verificationErrors?: string[];
-  processed: boolean;
-  easAttestationUid?: string;
-  easTxHash?: string;
-  easAttestedAt?: number;
-  easUrl?: string | null;
+  id: PhotoSubmission["id"];
+  type: PhotoSubmission["type"];
+  nearestParcel: PhotoSubmission["nearestParcel"];
+  timestamp: PhotoSubmission["timestamp"];
+  submittedAt: PhotoSubmission["submittedAt"];
+  species: NullableValue<PhotoSubmission["species"]>;
+  workType: NullableValue<PhotoSubmission["workType"]>;
+  description: PhotoSubmission["description"];
+  photoFilename: PhotoSubmission["photoFilename"];
+  contractorName: NullableValue<PhotoSubmission["contractorName"]>;
+  verified: PhotoSubmission["verified"];
+  processed: PhotoSubmission["processed"];
+  visionScore: NullableValue<PhotoSubmission["visionScore"]>;
+  visionApproved: NullableValue<PhotoSubmission["visionApproved"]>;
+  visionVerifiedAt: NullableValue<PhotoSubmission["visionVerifiedAt"]>;
+  hasBeforePhoto: boolean;
+  pending: boolean;
+  easUrl: string | null;
+}
+
+export interface ParcelGeoJsonFeature {
+  properties?: Record<string, string | number | null | undefined>;
+  geometry?: unknown;
+}
+
+export interface ParcelGeoJson {
+  type: "FeatureCollection";
+  features: ParcelGeoJsonFeature[];
 }
 
 export interface Milestone {
@@ -124,48 +115,23 @@ export interface Milestone {
   recorder: string;
 }
 
-// ── DeFi / Treasury allocation types ────────────────────────────────────────
+export interface MilestonesData {
+  milestones: Milestone[];
+}
 
-export interface DefiPosition {
-  protocolName: string;
-  depositedUsd: number;
-  depositTxHash?: string;
-  depositedAt: number;
+export interface DefiPosition extends Pick<
+  ProtocolPosition,
+  "protocolName" | "depositedUsd" | "depositTxHash" | "depositedAt"
+> {
   currentApy: number;
   contractAddress: string | null;
 }
 
-export interface DefiProtocolInfo {
-  name: string;
-  currentApy: number;
-  address: string;
-  minDeposit: number;
-  riskScore: number;
-}
-
-export interface RebalanceAction {
-  protocol: string;
-  action: 'deposit' | 'withdraw';
-  amountUsd: number;
-  txHash?: string;
-  success: boolean;
-}
-
-export interface RebalanceRecord {
-  timestamp: number;
-  actions: RebalanceAction[];
-  reasoning: string;
-  beforeAllocation: Record<string, number>;
-  afterAllocation: Record<string, number>;
-  estimatedApyBefore: number;
-  estimatedApyAfter: number;
-}
-
-export interface YieldSnapshotEntry {
-  timestamp: number;
-  protocols: Array<{ name: string; apy: number; riskAdjustedScore: number }>;
-  bestProtocol: string;
-  bestApy: number;
+export interface DefiProtocolInfo extends Pick<
+  DeFiProtocol,
+  "name" | "currentApy" | "minDeposit" | "riskScore"
+> {
+  address: DeFiProtocol["poolAddress"];
 }
 
 export interface DefiData {
@@ -177,46 +143,91 @@ export interface DefiData {
   blendedApy: number;
   annualYieldUsd: number;
   dailyYieldUsd: number;
-  rebalancerStatus: {
-    lastRebalance: number;
-    daysSinceRebalance: number;
-    currentApy: number;
-    totalDeposited: number;
-    positionCount: number;
-  };
+  rebalancerStatus: RebalancerStatus;
   rebalanceHistory: RebalanceRecord[];
   yieldHistory: YieldSnapshotEntry[];
 }
 
 export interface SummaryData {
-  health: {
-    score: number;
-    invasivesP1: number;
-    invasivesP2: number;
-    invasivesP3: number;
-    observationsTotal: number;
-    nativeSpeciesCount: number;
-    season: string;
-    invasiveSpecies: string[];
-  } | null;
-  treasury: {
-    estimatedUsd: number;
-    wstEthBalance: string;
-    annualYieldUsd: number;
-    dailyYieldUsd: number;
-    spendingMode: 'NORMAL' | 'CONSERVATION' | 'CRITICAL';
-    usdcTotal?: number;
-    usdcDeployed?: number;
-    blendedApy?: number;
-    usdcAnnualYield?: number;
-  } | null;
+  health:
+    | (Pick<
+        HealthSnapshot,
+        | "invasivesP1"
+        | "invasivesP2"
+        | "invasivesP3"
+        | "observationsTotal"
+        | "nativeSpeciesCount"
+        | "season"
+        | "invasiveSpecies"
+      > & {
+        score: HealthSnapshot["healthScore"];
+      })
+    | null;
+  treasury:
+    | (Pick<
+        TreasurySnapshot,
+        | "estimatedUsd"
+        | "wstEthBalance"
+        | "annualYieldUsd"
+        | "dailyYieldUsd"
+        | "spendingMode"
+      > & {
+        usdcTotal: number;
+        usdcDeployed: number;
+        blendedApy: number;
+        usdcAnnualYield: number;
+      })
+    | null;
   loop: {
-    lastRunAt: number | null;
-    lastRunStatus: string | null;
+    lastRunAt: LoopEntry["timestamp"] | null;
+    lastRunStatus: LoopEntry["status"] | null;
     nextRunAt: number | null;
     stats30d: LoopStats;
   };
-  season: { name: string; description: string };
+  season: { name: Season; description: SeasonalContext["description"] };
+  demoMode: {
+    active: boolean;
+    cycleIntervalSec: number;
+    maxPerTxUsd: number;
+    maxDailyUsd: number;
+    sustainabilityTarget: number;
+    chain: string;
+  } | null;
   auditSummary: { totalEvents24h: number; criticalEvents24h: number };
   wallet: string | null;
+}
+
+export interface AdminAuditData {
+  entries: AuditEntry[];
+  summary: AuditSummary;
+  digest: string | null;
+}
+
+export interface AdminTransactionsData {
+  history: Transaction[];
+  paymentsPaused: boolean;
+  dailySpendUsd: number;
+  dailyLimitUsd: number;
+  perTxLimitUsd: number;
+}
+
+export interface AdminStatusData {
+  treasury: TreasurySnapshot | null;
+  loop: {
+    latest: LoopEntry | null;
+    stats: LoopStats;
+  };
+  transactions: {
+    history: Transaction[];
+    paymentsPaused: boolean;
+    dailySpend: number;
+  };
+  audit: {
+    summary: AuditSummary;
+    recent: AuditEntry[];
+  };
+  submissions: {
+    total: number;
+    unprocessed: number;
+  };
 }

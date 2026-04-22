@@ -1,4 +1,4 @@
-# Civic Identity & Community Ownership — Research & Data
+# Civic Identity & Community Ownership - Research & Data
 
 *Compiled April 2026. Investor-grade citations. Detroit-weighted.*
 
@@ -14,11 +14,11 @@
 - **Vacant lot greening:** $1 invested → **$26 in net safety/health benefits** (up to $333 in full social value)
 - **Gun violence:** 4.5% reduction in firearm assaults sustained for 45.8 months post-intervention
 - **Abandoned buildings:** 13.12% reduction in gun assaults from full remediation
-- Less than 5% of remediated lots became developed — no gentrification displacement
+- Less than 5% of remediated lots became developed - no gentrification displacement
 - Source: Branas et al., 2018 PNAS; Branas et al., 2021 JAMA Internal Medicine; Penn IUR
 
 ### Social Infrastructure (Eric Klinenberg)
-- Vacant properties undermine "social infrastructure" — the physical places that enable informal social control
+- Vacant properties undermine "social infrastructure" - the physical places that enable informal social control
 - When neighborhoods are visibly abandoned, residents lose collective efficacy and withdraw from public space
 - Restoration signals the area is cared for and worth investing in
 - Source: Klinenberg, *Palaces for the People* (2018)
@@ -43,13 +43,13 @@
 
 ### The Evidence
 - Routine use of local green spaces **increases social cohesion** by facilitating fleeting and meaningful encounters
-- Frequency of social interaction in public space is the **strongest predictor of social cohesion** — stronger than any single amenity
+- Frequency of social interaction in public space is the **strongest predictor of social cohesion** - stronger than any single amenity
 - Trust and mutual respect develop through regular, unstructured interaction
 - Source: Wan et al., 2021 (systematic review); Sampson & Raudenbush, 1999
 
 ### Green Space Satisfaction → Neighborhood Satisfaction
 - Strong link between satisfaction with local parks and overall neighborhood satisfaction
-- Depressed neighborhoods benefit most from green space access — up to **11x less green space in majority-BIPOC wards**
+- Depressed neighborhoods benefit most from green space access - up to **11x less green space in majority-BIPOC wards**
 - Source: UK Design Council report, 2023
 
 ## Civic Identity & Stewardship
@@ -69,8 +69,8 @@
 ## Detroit's Community Land History
 
 ### Historical Roots
-- **1893:** Mayor Hazen Pingree's potato patch program — offered unemployed workers land + seeds during recession. Foundation of urban gardening culture.
-- **1970s:** Mayor Coleman Young's Farm-A-Lot program — 7,000-10,000 participants using vacant lots for food production
+- **1893:** Mayor Hazen Pingree's potato patch program - offered unemployed workers land + seeds during recession. Foundation of urban gardening culture.
+- **1970s:** Mayor Coleman Young's Farm-A-Lot program - 7,000-10,000 participants using vacant lots for food production
 - **1990s-present:** James & Grace Lee Boggs Center, Detroit Collaborative Design Center, grassroots organizations revived urban agriculture post-industrial decline
 
 ### Current Scale
@@ -81,7 +81,7 @@
 - Source: Planet Detroit (2023); Detroit Black Community Food Security Network
 
 ### Community-Driven Governance
-- **Detroit Resilience Fund** uses participatory grantmaking model — first of its kind in Detroit — funding grassroots orgs led by BIPOC with least access to power
+- **Detroit Resilience Fund** uses participatory grantmaking model - first of its kind in Detroit - funding grassroots orgs led by BIPOC with least access to power
 - **Keep Growing Detroit / Growing Together:** Programs combine food access + youth employment + neighborhood beautification + community decision-making
 - Malik Yakini (DBCFSN): "Our purpose is to get Black people working on their own behalf"
 

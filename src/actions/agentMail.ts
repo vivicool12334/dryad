@@ -6,13 +6,29 @@ const INBOX_ID = 'dryad@agentmail.to';
 
 const EMAIL_FOOTER = `\n\n---\nThis message was sent by Dryad, an autonomous AI agent managing native habitat restoration on vacant lots in Detroit as part of "The Forest That Owns Itself" project. For questions or concerns, contact Nick George (project steward) at powahgen@gmail.com.`;
 
+interface AgentMailSendResponse {
+  message_id?: string;
+}
+
+interface AgentMailMessage {
+  from?: string;
+  subject?: string;
+  timestamp?: number | string;
+  preview?: string;
+  text?: string;
+}
+
+interface AgentMailInboxResponse {
+  messages?: AgentMailMessage[];
+}
+
 function getApiKey(): string {
   const key = process.env.AGENTMAIL_API_KEY;
   if (!key) throw new Error('AGENTMAIL_API_KEY not configured');
   return key;
 }
 
-async function agentMailFetch(path: string, options: RequestInit = {}): Promise<any> {
+async function agentMailFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${AGENTMAIL_BASE}${path}`, {
     ...options,
     headers: {
@@ -27,12 +43,12 @@ async function agentMailFetch(path: string, options: RequestInit = {}): Promise<
     throw new Error(`AgentMail API ${res.status}: ${body}`);
   }
 
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 /** Send an email programmatically (used by decision loop). */
-export async function sendDryadEmail(to: string, subject: string, body: string): Promise<any> {
-  return agentMailFetch(`/inboxes/${encodeURIComponent(INBOX_ID)}/messages/send`, {
+export async function sendDryadEmail(to: string, subject: string, body: string): Promise<AgentMailSendResponse> {
+  return agentMailFetch<AgentMailSendResponse>(`/inboxes/${encodeURIComponent(INBOX_ID)}/messages/send`, {
     method: 'POST',
     body: JSON.stringify({ to: [to], subject, text: body + EMAIL_FOOTER }),
   });
@@ -64,7 +80,7 @@ export const sendEmailAction: Action = {
     runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
@@ -84,7 +100,7 @@ export const sendEmailAction: Action = {
       // Generate email body using the agent's context
       const emailBody = body.replace(/(?:send|email|mail)\s+(?:to\s+)?[\w.+-]+@[\w.-]+\.\w+/i, '').trim();
 
-      const result = await agentMailFetch(`/inboxes/${encodeURIComponent(INBOX_ID)}/messages/send`, {
+      const result = await agentMailFetch<AgentMailSendResponse>(`/inboxes/${encodeURIComponent(INBOX_ID)}/messages/send`, {
         method: 'POST',
         body: JSON.stringify({
           to: [to],
@@ -111,7 +127,7 @@ Message ID: ${result.message_id || 'sent'}`;
       return {
         text: `Email sent to ${to}`,
         values: { success: true, to, subject: emailSubject },
-        data: result,
+        data: { ...result },
         success: true,
       };
     } catch (error) {
@@ -153,14 +169,14 @@ export const checkEmailAction: Action = {
     runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
     try {
       logger.info('Checking email inbox');
 
-      const result = await agentMailFetch(
+      const result = await agentMailFetch<AgentMailInboxResponse>(
         `/inboxes/${encodeURIComponent(INBOX_ID)}/messages?limit=10`
       );
 
@@ -169,10 +185,10 @@ export const checkEmailAction: Action = {
       let responseText: string;
 
       if (messages.length === 0) {
-        responseText = `## Inbox — dryad@agentmail.to\n\nNo messages found.`;
+        responseText = `## Inbox - dryad@agentmail.to\n\nNo messages found.`;
       } else {
         const messageList = messages
-          .map((msg: any, i: number) => {
+          .map((msg, i: number) => {
             const from = msg.from || 'Unknown';
             const subject = msg.subject || '(no subject)';
             const date = msg.timestamp ? new Date(msg.timestamp).toLocaleString() : 'Unknown';
@@ -181,7 +197,7 @@ export const checkEmailAction: Action = {
           })
           .join('\n\n');
 
-        responseText = `## Inbox — dryad@agentmail.to\n\n**${messages.length} message(s)**\n\n${messageList}`;
+        responseText = `## Inbox - dryad@agentmail.to\n\n**${messages.length} message(s)**\n\n${messageList}`;
       }
 
       await callback({

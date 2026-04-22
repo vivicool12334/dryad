@@ -37,7 +37,34 @@ function parseIntParam(value: unknown, defaultVal: number, min: number, max: num
   return isNaN(n) ? defaultVal : Math.min(Math.max(n, min), max);
 }
 
-// Allowed CORS origins — production domains, Vercel frontend, and local dev
+// Express augments RouteRequest at runtime with ip / connection.remoteAddress.
+// This typed accessor avoids scattering `(req as any)` throughout handlers.
+type ExpressAugmented = RouteRequest & {
+  ip?: string;
+  connection?: { remoteAddress?: string };
+  params?: Record<string, string>;
+  query?: Record<string, unknown>;
+};
+
+function getClientIp(req: RouteRequest): string {
+  const r = req as ExpressAugmented;
+  return r.ip ?? r.connection?.remoteAddress ?? 'unknown';
+}
+
+function getQueryParam(req: RouteRequest, key: string): unknown {
+  const r = req as ExpressAugmented;
+  return r.query?.[key];
+}
+
+// Parse a request body that may arrive as either a JSON string or an already-parsed object.
+// Returns a loosely-typed record so individual fields can be coerced by callers.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseBody(req: RouteRequest): Record<string, any> {
+  if (typeof req.body === 'string') return JSON.parse(req.body) as Record<string, any>;
+  return (req.body as Record<string, any>) ?? {};
+}
+
+// Allowed CORS origins - production domains, Vercel frontend, and local dev
 const ALLOWED_ORIGINS = [
   'https://www.dryad.land',
   'https://dryad.land',
@@ -78,27 +105,31 @@ function securityHeaders(res: RouteResponse): void {
   ].join('; '));
 }
 
+function redirectTo(res: RouteResponse, location: string): void {
+  res.status?.(302);
+  res.setHeader?.('Location', location);
+  res.setHeader?.('Cache-Control', 'no-store');
+  res.setHeader?.('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><p>Redirecting to <a href="${location}" style="color:#4caf50">${location}</a>...</p></body></html>`);
+}
+
 // Auth helper: checks Authorization: Bearer <secret> (constant-time to prevent timing attacks)
 function isAdmin(req: RouteRequest): boolean {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) return false;
   const bearer = (req.headers?.['authorization'] as string | undefined)?.replace('Bearer ', '').trim() ?? '';
   if (bearer.length === 0) return false;
-  try {
-    if (bearer.length !== secret.length) return false;
-    const a = Buffer.from(bearer);
-    const b = Buffer.from(secret);
-    return timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
+  if (bearer.length !== secret.length) return false;
+  const a = Buffer.from(bearer);
+  const b = Buffer.from(secret);
+  return timingSafeEqual(a, b);
 }
 
 // Parcel GeoJSON cache from Detroit ArcGIS
 let parcelGeoJsonCache: any = null;
 let parcelGeoJsonFetchedAt = 0;
 async function fetchParcelGeoJson() {
-  const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — parcels don't change
+  const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours - parcels don't change
   if (parcelGeoJsonCache && Date.now() - parcelGeoJsonFetchedAt < CACHE_TTL) {
     return parcelGeoJsonCache;
   }
@@ -112,7 +143,7 @@ async function fetchParcelGeoJson() {
   return geojson;
 }
 
-// iNaturalist + biodiversity cache (5-min TTL — expensive API call)
+// iNaturalist + biodiversity cache (5-min TTL - expensive API call)
 let inatCache: any = null;
 let inatFetchedAt = 0;
 const INAT_CACHE_TTL = 5 * 60 * 1000;
@@ -120,7 +151,7 @@ const INAT_CACHE_TTL = 5 * 60 * 1000;
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 // Ensure uploads dir exists
-try { fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch {}
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // Rate limiting handled by src/security/rateLimiter.ts
 
@@ -137,7 +168,7 @@ function applyPageHTML(): string {
   return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dryad — Contractor Application</title>
+<title>Dryad - Contractor Application</title>
 <link rel="canonical" href="https://dryad.land/Dryad/contractors">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -265,7 +296,7 @@ function submitPageHTML(): string {
   return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dryad — Submit Proof of Work</title>
+<title>Dryad - Submit Proof of Work</title>
 <link rel="canonical" href="https://dryad.land/Dryad/submit">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -371,7 +402,7 @@ a{color:#81c784}
 
   <div style="background:#1a2e1a;border:1px solid #2e5a2e;border-radius:8px;padding:14px;margin:12px 0;font-size:13px">
     <strong style="color:#81c784">Your work gets a permanent digital receipt</strong>
-    <p style="margin:6px 0 0;color:#b8b8b8;line-height:1.5">When Dryad verifies your photos, a tamper-proof record is created on the blockchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a>. Think of it as a permanent receipt proving your ecological work — it can never be altered or deleted. <a href="https://base.easscan.org" target="_blank" style="color:#81c784">View attestations →</a></p>
+    <p style="margin:6px 0 0;color:#b8b8b8;line-height:1.5">When Dryad verifies your photos, a tamper-proof record is created on the blockchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a>. Think of it as a permanent receipt proving your ecological work - it can never be altered or deleted. <a href="https://base.easscan.org" target="_blank" style="color:#81c784">View attestations →</a></p>
   </div>
 
   <button type="submit" id="submitBtn">Submit Proof of Work</button>
@@ -382,8 +413,8 @@ a{color:#81c784}
 
 <div class="card-community">
   <h2>Visiting the forest? Help us catalog species!</h2>
-  <p style="margin-bottom:16px">Download the <strong>iNaturalist</strong> app (free) and photograph any plants you find on our lots at 25th Street between Ash and Beech. Your observations automatically feed into Dryad's ecosystem monitoring — no account with us needed.</p>
-  <p style="margin-bottom:16px;font-size:13px;color:#b8b8b8">Research-grade observations (where the community confirms the species ID) are attested onchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a> — creating a permanent record of biodiversity data on Base. Your citizen science contributes to verifiable ecological impact.</p>
+  <p style="margin-bottom:16px">Download the <strong>iNaturalist</strong> app (free) and photograph any plants you find on our lots at 25th Street between Ash and Beech. Your observations automatically feed into Dryad's ecosystem monitoring - no account with us needed.</p>
+  <p style="margin-bottom:16px;font-size:13px;color:#b8b8b8">Research-grade observations (where the community confirms the species ID) are attested onchain via the <a href="https://attest.org" target="_blank" style="color:#81c784">Ethereum Attestation Service</a> - creating a permanent record of biodiversity data on Base. Your citizen science contributes to verifiable ecological impact.</p>
 
   <div class="qr-section">
     <div class="qr-placeholder">
@@ -514,7 +545,7 @@ function capturePhoto() {
       });
       updatePhotoDisplay();
     }, (err) => {
-      // Still capture the photo even if GPS fails — mark as no-GPS
+      // Still capture the photo even if GPS fails - mark as no-GPS
       capturedPhotos.push({
         blob: blob,
         gpsLat: null,
@@ -654,295 +685,6 @@ document.getElementById('submitForm').addEventListener('submit', async (e) => {
 </body></html>`;
 }
 
-// ─── /dashboard page ───
-function dashboardHTML(): string {
-  return `<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dryad — Dashboard</title>
-<link rel="canonical" href="https://dryad.land/Dryad/dashboard">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-.skip-link{position:absolute;top:-40px;left:0;background:#4caf50;color:#fff;padding:8px 16px;z-index:100;font-weight:600;border-radius:0 0 8px 0}
-.skip-link:focus{top:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#0a1a0a;color:#e0e0e0;min-height:100vh;min-height:100dvh}
-.header{background:#1a2e1a;border-bottom:1px solid #2e7d32;padding:16px 24px;display:flex;align-items:center;gap:16px}
-.header h1{color:#4caf50;font-size:24px}
-.header nav a{color:#81c784;text-decoration:none;margin-left:16px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:24px;max-width:1200px;margin:0 auto}
-.card{background:#1a2e1a;border:1px solid #2e7d32;border-radius:12px;padding:20px}
-.card h2{color:#4caf50;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2e7d32;padding-bottom:8px}
-.card.full{grid-column:1/-1}
-.stat{font-size:32px;font-weight:700;color:#66bb6a}
-.stat-label{font-size:13px;color:#81c784;margin-top:4px}
-.stat-row{display:flex;gap:24px;margin-bottom:16px}
-.stat-item{flex:1}
-#map{width:100%;height:350px;border-radius:8px;background:#0d1f0d}
-.milestone{padding:8px 0;border-bottom:1px solid #1b3a1b;font-size:14px}
-.milestone:last-child{border:none}
-.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;margin-right:4px}
-.tag-assessment{background:#1565c0;color:#fff}
-.tag-removal{background:#c62828;color:#fff}
-.tag-soil{background:#6d4c41;color:#fff}
-.tag-planting{background:#2e7d32;color:#fff}
-.tag-monitoring{background:#f9a825;color:#000}
-.sub-item{padding:8px 0;border-bottom:1px solid #1b3a1b;font-size:14px}
-.sub-verified{color:#4caf50}.sub-failed{color:#ef5350}
-table{width:100%;border-collapse:collapse}
-td,th{padding:8px;text-align:left;border-bottom:1px solid #1b3a1b;font-size:14px}
-th{color:#81c784}
-.loading{color:#81c784;font-style:italic}
-.skeleton{background:linear-gradient(90deg,#1a2e1a 25%,#243d24 50%,#1a2e1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:20px;margin-bottom:8px}
-.skeleton.lg{height:40px;width:60%}
-.skeleton.md{height:16px;width:80%}
-.skeleton.sm{height:14px;width:50%}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-code{word-break:break-all}
-.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-@media (max-width: 768px) {
-  .grid{grid-template-columns:1fr;padding:16px}
-  .header{flex-wrap:wrap;padding:12px 16px}
-  .header h1{font-size:20px;width:100%}
-  .header nav{width:100%;display:flex;gap:12px;margin-top:8px}
-  .header nav a{font-size:14px;padding:6px 0}
-  .stat{font-size:24px}
-  .stat-row{flex-direction:column;gap:12px}
-  #map{height:220px}
-  td,th{font-size:12px;padding:6px 4px}
-  .card{padding:16px}
-}
-</style>
-</head><body>
-<a href="#map" class="skip-link">Skip to map</a>
-<div class="header">
-  <h1>🌿 Dryad Dashboard</h1>
-  <nav role="navigation" aria-label="Site navigation"><a href="https://www.inaturalist.org/pages/seek_app" target="_blank" style="background:#2e7d32;color:#fff;padding:6px 12px;border-radius:6px;font-weight:600">🌿 Identify Flora</a><a href="/">Chat</a><a href="/Dryad/submit">Submit Work</a><a href="/Dryad/dashboard">Dashboard</a></nav>
-</div>
-
-<div class="grid">
-  <!-- Map -->
-  <div class="card full">
-    <h2>25th Street Parcels — Detroit, MI</h2>
-    <div id="map"></div>
-  </div>
-
-  <!-- Health Score -->
-  <div class="card">
-    <h2>Ecosystem Health</h2>
-    <div id="healthScore" class="loading"><div class="skeleton lg"></div><div class="skeleton sm"></div><div class="skeleton sm"></div></div>
-  </div>
-
-  <!-- Treasury -->
-  <div class="card">
-    <h2>Treasury</h2>
-    <div id="treasury" class="loading"><div class="skeleton lg"></div><div class="skeleton lg"></div><div class="skeleton md"></div></div>
-  </div>
-
-  <!-- Annual Cost Breakdown -->
-  <div class="card">
-    <h2>Annual Operating Costs</h2>
-    <div class="table-wrap"><table>
-      <tr><th>Item</th><th style="text-align:right">Cost</th></tr>
-      <tr><td>Property taxes (9 × $30/lot)</td><td style="text-align:right">$270</td></tr>
-      <tr><td>DIEM for inference (0.17 staked)</td><td style="text-align:right">$62</td></tr>
-      <tr><td>Contractor payments (~4 jobs)</td><td style="text-align:right">$200</td></tr>
-      <tr><td>Hetzner VPS (CX22)</td><td style="text-align:right">$58</td></tr>
-      <tr><td>LLC maintenance</td><td style="text-align:right">$50</td></tr>
-      <tr><td>Gas fees on Base</td><td style="text-align:right">$5</td></tr>
-      <tr style="font-weight:700;border-top:2px solid #2e7d32"><td>Total (Yr 3+)</td><td style="text-align:right">$945/yr</td></tr>
-      <tr style="color:#f9a825"><td>If Land Value Tax passes</td><td style="text-align:right">$978/yr</td></tr>
-    </table></div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">Detroit accepts crypto for taxes via PayPal at checkout.</p>
-  </div>
-
-  <!-- Stress Test -->
-  <div class="card">
-    <h2>Treasury Stress Test</h2>
-    <div id="stressTest" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div><div class="skeleton md"></div></div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">USDC deployed cross-chain into DeFi yield protocols (Aave V3, Compound V3, Morpho) on Base and Arbitrum.</p>
-  </div>
-
-  <!-- Milestones -->
-  <div class="card">
-    <h2>Onchain Milestones</h2>
-    <div id="milestones" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div></div>
-  </div>
-
-  <!-- Spending Mode -->
-  <div class="card">
-    <h2>Adaptive Spending Mode</h2>
-    <div id="spendingMode" class="loading"><div class="skeleton lg"></div><div class="skeleton sm"></div></div>
-  </div>
-
-  <!-- iNaturalist Observations -->
-  <div class="card full">
-    <h2>iNaturalist Observations on Parcels</h2>
-    <div id="inatObs" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div><div class="skeleton sm"></div></div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px"><a href="${INAT_OBS_URL}" target="_blank">View all observations</a> | <a href="/Dryad/submit">Help catalog species with iNaturalist</a> | <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(INAT_OBS_URL)}" alt="QR" width="40" height="40" style="vertical-align:middle;margin-left:8px;border-radius:4px"></p>
-  </div>
-
-  <!-- Recent Contractor Submissions -->
-  <div class="card full">
-    <h2>Contractor Proof-of-Work Submissions</h2>
-    <div id="submissions" class="loading"><div class="skeleton md"></div><div class="skeleton md"></div><div class="skeleton sm"></div></div>
-  </div>
-
-  <!-- Agent Info -->
-  <div class="card full">
-    <h2>Agent Identity</h2>
-    <div class="table-wrap"><table>
-      <tr><th>Name</th><td>Dryad — "The Forest That Owns Itself"</td></tr>
-      <tr><th>ENS</th><td><strong>dryadforest.eth</strong></td></tr>
-      <tr><th>Email</th><td>dryad@agentmail.to</td></tr>
-      <tr><th>Wallet</th><td><code id="walletAddr">Loading...</code></td></tr>
-      <tr><th>ERC-8004 Agent ID</th><td>#${process.env.ERC8004_AGENT_ID || '35293'} on Base</td></tr>
-      <tr><th>Milestones Contract</th><td><a href="https://basescan.org/address/${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}" style="color:#81c784"><code>${process.env.MILESTONES_CONTRACT_ADDRESS || '0x7572dcac88720470d8cc827be5b02d474951bc22'}</code></a></td></tr>
-      <tr><th>Registry</th><td><code>0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</code></td></tr>
-      <tr><th>Steward</th><td>Nick George (<a href="https://x.com/0xnock" target="_blank" style="color:#81c784">@0xnock</a>)</td></tr>
-      <tr><th>Decision Loop</th><td>Every 24 hours</td></tr>
-    </table></div>
-  </div>
-</div>
-
-<script>
-// Load Mapbox GL
-const mapScript = document.createElement('script');
-mapScript.src = 'https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.min.js';
-const mapCSS = document.createElement('link');
-mapCSS.rel = 'stylesheet';
-mapCSS.href = 'https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.css';
-document.head.appendChild(mapCSS);
-mapScript.onload = () => {
-  mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'; // Public demo token
-  const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: [${PARCEL_BOUNDS.center.lng}, ${PARCEL_BOUNDS.center.lat}],
-    zoom: 18,
-  });
-
-  const parcels = ${JSON.stringify(PARCELS.map((p) => ({ address: p.address, lat: p.lat, lng: p.lng })))};
-  parcels.forEach(p => {
-    new mapboxgl.Marker({ color: '#4caf50' })
-      .setLngLat([p.lng, p.lat])
-      .setPopup(new mapboxgl.Popup().setHTML('<strong>' + p.address + '</strong><br>30×110 ft'))
-      .addTo(map);
-  });
-};
-document.head.appendChild(mapScript);
-
-// Load treasury data + stress test + spending mode
-fetch('/Dryad/api/treasury').then(r=>r.json()).then(data => {
-  const usdcTotal = parseFloat(data.usdcTotal || '0');
-  const usdcDeployed = parseFloat(data.usdcDeployed || '0');
-  const usdcIdle = parseFloat(data.usdcIdle || '0');
-  const blendedApy = parseFloat(data.blendedApy || '0');
-  const annualYield = parseFloat(data.usdcAnnualYield || '0').toFixed(2);
-  const dailyYield = parseFloat(data.usdcDailyYield || '0').toFixed(4);
-  const ethBal = parseFloat(data.ethBalance || '0');
-
-  document.getElementById('treasury').innerHTML = \`
-    <div class="stat-row">
-      <div class="stat-item"><div class="stat">$\${usdcTotal.toFixed(2)}</div><div class="stat-label">Total USDC</div></div>
-      <div class="stat-item"><div class="stat">$\${usdcDeployed.toFixed(2)}</div><div class="stat-label">Earning yield</div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-item"><div class="stat">\${(blendedApy * 100).toFixed(1)}%</div><div class="stat-label">Blended APY</div></div>
-      <div class="stat-item"><div class="stat">$\${dailyYield}</div><div class="stat-label">Daily Yield</div></div>
-    </div>
-    <p style="font-size:12px;color:#81c784">Annual yield: ~$\${annualYield} | Idle reserve: $\${usdcIdle.toFixed(2)} | Gas: \${ethBal.toFixed(6)} ETH</p>
-    <p style="font-size:12px;color:#81c784">Wallet: <code>\${data.wallet || '—'}</code></p>
-  \`;
-  document.getElementById('walletAddr').textContent = data.wallet || '—';
-
-  // Stress test — USDC yield is stable (no ETH price risk), so show APY scenarios
-  const yieldCurrent = usdcDeployed * blendedApy;
-  const yieldLowApy = usdcDeployed * blendedApy * 0.5; // APY drops 50%
-  const yieldMinApy = usdcDeployed * 0.01; // worst case 1% APY
-  document.getElementById('stressTest').innerHTML = \`
-    <table>
-      <tr><th>Scenario</th><th style="text-align:right">Annual Yield</th><th style="text-align:right">vs $945 cost</th></tr>
-      <tr><td>Current APY</td><td style="text-align:right">$\${yieldCurrent.toFixed(0)}</td><td style="text-align:right;color:\${yieldCurrent>=945?'#4caf50':'#ef5350'}">\${yieldCurrent>=945?'✅ Covered':'⚠️ Shortfall $'+(945-yieldCurrent).toFixed(0)}</td></tr>
-      <tr><td>APY halved</td><td style="text-align:right">$\${yieldLowApy.toFixed(0)}</td><td style="text-align:right;color:\${yieldLowApy>=945?'#4caf50':'#ef5350'}">\${yieldLowApy>=945?'✅':'⚠️ -$'+(945-yieldLowApy).toFixed(0)}</td></tr>
-      <tr><td>1% floor</td><td style="text-align:right">$\${yieldMinApy.toFixed(0)}</td><td style="text-align:right;color:\${yieldMinApy>=945?'#4caf50':'#ef5350'}">\${yieldMinApy>=945?'✅':'⚠️ -$'+(945-yieldMinApy).toFixed(0)}</td></tr>
-    </table>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">Need ~$\${(945/blendedApy || 27000).toFixed(0)} USDC at current APY for full self-sustainability.</p>
-  \`;
-
-  // Spending mode
-  const isSustainable = parseFloat(annualYield) >= 645;
-  const coversCore = parseFloat(annualYield) >= 383; // taxes + VPS + gas + LLC
-  const mode = isSustainable ? 'NORMAL' : coversCore ? 'CONSERVATION' : 'CRITICAL';
-  const modeColors = { NORMAL: '#4caf50', CONSERVATION: '#f9a825', CRITICAL: '#ef5350' };
-  const modeDesc = {
-    NORMAL: 'All operations active. Yield covers full annual costs.',
-    CONSERVATION: 'Discretionary contractor jobs paused. Monitoring + taxes + VPS continue.',
-    CRITICAL: 'Yield insufficient for core costs. Steward intervention needed.',
-  };
-  document.getElementById('spendingMode').innerHTML = \`
-    <div class="stat" style="color:\${modeColors[mode]}">\${mode}</div>
-    <div class="stat-label">\${modeDesc[mode]}</div>
-    <p style="font-size:12px;color:#81c784;margin-top:8px">Non-negotiable: $383/yr (taxes $270 + VPS $58 + gas $5 + LLC $50)</p>
-  \`;
-}).catch(()=>{ document.getElementById('treasury').textContent = 'Failed to load'; });
-
-// Load health score
-fetch('/Dryad/api/health-score').then(r=>r.json()).then(data => {
-  document.getElementById('healthScore').innerHTML = \`
-    <div class="stat">\${data.healthScore}/100</div>
-    <div class="stat-label">On-parcel observations: \${data.onParcelObservations}</div>
-    <div class="stat-label">Native species: \${data.nativeSpeciesCount}</div>
-    <div class="stat-label">Invasives detected: \${data.invasiveCount}</div>
-  \`;
-}).catch(()=>{ document.getElementById('healthScore').textContent = 'Failed to load'; });
-
-// Load milestones
-fetch('/Dryad/api/milestones').then(r=>r.json()).then(data => {
-  const types = ['SiteAssessment','InvasiveRemoval','SoilPrep','NativePlanting','Monitoring'];
-  const tags = ['assessment','removal','soil','planting','monitoring'];
-  if (!data.milestones || data.milestones.length === 0) {
-    document.getElementById('milestones').innerHTML = '<p>No milestones recorded yet.</p>';
-    return;
-  }
-  document.getElementById('milestones').innerHTML = data.milestones.map(m =>
-    '<div class="milestone"><span class="tag tag-' + tags[m.milestoneType] + '">' + types[m.milestoneType] + '</span> ' + esc(m.parcel) + ' — ' + new Date(m.timestamp * 1000).toLocaleDateString() + '</div>'
-  ).join('');
-}).catch(()=>{ document.getElementById('milestones').textContent = 'Failed to load'; });
-
-// Load iNaturalist observations
-fetch('${INAT_API_URL}&per_page=10&order_by=observed_on&taxon_name=Plantae').then(r=>r.json()).then(data => {
-  const obs = data.results || [];
-  if (!obs.length) { document.getElementById('inatObs').innerHTML = '<p>No observations on parcels yet. <a href="${INAT_OBS_URL}">Be the first to contribute!</a></p>'; return; }
-  document.getElementById('inatObs').innerHTML = '<table><tr><th>Species</th><th>Observer</th><th>Date</th><th>Grade</th></tr>' + obs.map(o => {
-    const name = esc(o.taxon?.preferred_common_name || o.taxon?.name || o.species_guess || 'Unknown');
-    const sci = esc(o.taxon?.name || '');
-    const observer = esc(o.user?.login || '?');
-    const date = o.observed_on || '?';
-    const grade = o.quality_grade === 'research' ? '<span style="color:#4caf50">Research</span>' : o.quality_grade || '?';
-    const isInvasive = ['Ailanthus','Lonicera','Lythrum','Phragmites','Alliaria','Reynoutria','Rhamnus'].some(g => sci.toLowerCase().includes(g.toLowerCase()));
-    return '<tr' + (isInvasive ? ' style="color:#ef5350;font-weight:600"' : '') + '><td>' + name + (isInvasive ? ' ⚠️' : '') + '<br><span style="font-size:11px;color:#b0b0b0">' + sci + '</span></td><td>' + observer + '</td><td>' + date + '</td><td>' + grade + '</td></tr>';
-  }).join('') + '</table>';
-}).catch(()=>{ document.getElementById('inatObs').textContent = 'Failed to load'; });
-
-// SECURITY: HTML escape to prevent XSS from user-supplied data
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-// Load submissions
-fetch('/Dryad/api/submissions').then(r=>r.json()).then(data => {
-  if (!data.length) { document.getElementById('submissions').innerHTML = '<p>No submissions yet. <a href="/Dryad/submit">Submit a photo</a></p>'; return; }
-  document.getElementById('submissions').innerHTML = data.slice(0,10).map(s =>
-    '<div class="sub-item">' +
-    '<span class="' + (s.verified ? 'sub-verified' : 'sub-failed') + '">' + (s.verified ? '✅' : '❌') + '</span> ' +
-    '<strong>' + esc(s.workType || s.type) + '</strong> at ' + esc(s.nearestParcel) +
-    (s.contractorName ? ' — ' + esc(s.contractorName) : '') +
-    ' <span style="color:#b0b0b0;font-size:12px">' + new Date(s.submittedAt).toLocaleString() + '</span>' +
-    '</div>'
-  ).join('');
-}).catch(()=>{ document.getElementById('submissions').textContent = 'Failed to load'; });
-</script>
-</body></html>`;
-}
-
 export const dryadRoutes = [
   {
     name: 'apply-page',
@@ -950,8 +692,7 @@ export const dryadRoutes = [
     type: 'GET' as const,
     handler: async (_req: RouteRequest, res: RouteResponse) => {
       securityHeaders(res);
-      res.setHeader?.('Content-Type', 'text/html');
-      res.send(applyPageHTML());
+      redirectTo(res, '/Dryad/contractors');
     },
   },
   {
@@ -977,14 +718,12 @@ export const dryadRoutes = [
     },
   },
   {
-    name: 'dashboard-page-html',
+    name: 'dashboard-html-redirect',
     path: '/dashboard-html',
     type: 'GET' as const,
     handler: async (_req: RouteRequest, res: RouteResponse) => {
-      // Legacy HTML dashboard — kept for fallback
       securityHeaders(res);
-      res.setHeader?.('Content-Type', 'text/html');
-      res.send(dashboardHTML());
+      redirectTo(res, '/Dryad/dashboard');
     },
   },
   {
@@ -993,7 +732,7 @@ export const dryadRoutes = [
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
       // SECURITY: Rate limiting
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'submit');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many submissions. Try again later.' } as unknown);
@@ -1002,7 +741,7 @@ export const dryadRoutes = [
 
       const contentType = (req.headers?.['content-type'] || '') as string;
 
-      // Handle multipart/form-data with file upload (supports both old single-photo and new batch multi-photo)
+      // Handle multipart/form-data uploads.
       if (contentType.includes('multipart/form-data')) {
         try {
           const parsed: {
@@ -1156,7 +895,7 @@ export const dryadRoutes = [
             if (contractor) {
               recordSubmission(contractor.id, false); // Mark as unreviewed initially
               const userAgent = (req.headers?.['user-agent'] || '') as string;
-              const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+              const ip = getClientIp(req);
               updateDeviceInfo(contractor.id, userAgent, ip);
             }
 
@@ -1196,7 +935,7 @@ export const dryadRoutes = [
         return;
       }
 
-      // JSON submissions require admin auth (no public JSON submissions — use multipart with access code)
+      // JSON submissions require admin auth (no public JSON submissions - use multipart with access code)
       if (!isAdmin(req)) {
         res.status(403).json({ error: 'JSON submissions require admin authorization. Use the submit portal with an access code.' } as unknown);
         return;
@@ -1209,7 +948,7 @@ export const dryadRoutes = [
       }
 
       try {
-        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+        const body = parseBody(req);
 
         // SECURITY: Input sanitization
         const sanitize = (s: string, maxLen: number) => String(s || '').replace(/<[^>]*>/g, '').slice(0, maxLen);
@@ -1264,7 +1003,7 @@ export const dryadRoutes = [
     path: '/api/submissions',
     type: 'GET' as const,
     handler: async (_req: RouteRequest, res: RouteResponse) => {
-      // SECURITY: Return only safe public fields — no coordinates, file paths, internal metadata, or PII
+      // SECURITY: Return only safe public fields - no coordinates, file paths, internal metadata, or PII
       const subs = getAllSubmissions().map((sub) => ({
         id: sub.id,
         type: sub.type,
@@ -1297,6 +1036,9 @@ export const dryadRoutes = [
         const { sw, ne } = PARCEL_BOUNDS;
         const url = `https://api.inaturalist.org/v1/observations?nelat=${ne.lat}&nelng=${ne.lng}&swlat=${sw.lat}&swlng=${sw.lng}&per_page=200&taxon_name=Plantae&order_by=observed_on`;
         const resp = await fetch(url);
+        if (!resp.ok) {
+          throw new Error(`iNaturalist returned ${resp.status}`);
+        }
         const data = (await resp.json()) as any;
         const observations = data.results || [];
 
@@ -1318,8 +1060,8 @@ export const dryadRoutes = [
         const healthScore = Math.round(diversityScore + invasiveScore);
 
         res.json({ healthScore, onParcelObservations: observations.length, nativeSpeciesCount: nativeSpecies.size, invasiveCount });
-      } catch {
-        res.json({ healthScore: 0, onParcelObservations: 0, nativeSpeciesCount: 0, invasiveCount: 0 });
+      } catch (error) {
+        res.status(502).json({ error: error instanceof Error ? error.message : 'Failed to fetch health score' });
       }
     },
   },
@@ -1352,8 +1094,17 @@ export const dryadRoutes = [
 
         const ethNum = parseFloat(formatEther(ethBal));
         const wstethNum = parseFloat(formatEther(wstethBal));
-        let ethPrice = 2500;
-        try { const pr = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',{signal:AbortSignal.timeout(3000)}); if(pr.ok){const d=await pr.json() as any;ethPrice=d?.ethereum?.usd||2500;} } catch{}
+        const priceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', {
+          signal: AbortSignal.timeout(3000),
+        });
+        if (!priceResponse.ok) {
+          throw new Error(`CoinGecko returned ${priceResponse.status}`);
+        }
+        const priceData = await priceResponse.json() as { ethereum?: { usd?: number } };
+        const ethPrice = priceData.ethereum?.usd;
+        if (typeof ethPrice !== 'number') {
+          throw new Error('CoinGecko returned an invalid ETH price');
+        }
         const dailyYield = (wstethNum * 0.035) / 365 * ethPrice;
 
         // Get USDC DeFi data
@@ -1363,22 +1114,17 @@ export const dryadRoutes = [
         let usdcAnnualYield = 0;
         let usdcDailyYield = 0;
 
-        try {
-          usdcIdle = await getUsdcBalance();
-          const positions = loadPositions();
-          usdcDeployed = positions.reduce((s, p) => s + p.depositedUsd, 0);
-          // Calculate weighted blended APY
-          if (usdcDeployed > 0) {
-            for (const pos of positions) {
-              const proto = PROTOCOLS.find(p => p.name === pos.protocolName);
-              if (proto) blendedApy += (pos.depositedUsd / usdcDeployed) * proto.currentApy;
-            }
+        usdcIdle = await getUsdcBalance();
+        const positions = loadPositions();
+        usdcDeployed = positions.reduce((s, p) => s + p.depositedUsd, 0);
+        if (usdcDeployed > 0) {
+          for (const pos of positions) {
+            const proto = PROTOCOLS.find(p => p.name === pos.protocolName);
+            if (proto) blendedApy += (pos.depositedUsd / usdcDeployed) * proto.currentApy;
           }
-          usdcAnnualYield = usdcDeployed * blendedApy;
-          usdcDailyYield = usdcAnnualYield / 365;
-        } catch (err) {
-          // Non-critical — continue with zero USDC data
         }
+        usdcAnnualYield = usdcDeployed * blendedApy;
+        usdcDailyYield = usdcAnnualYield / 365;
 
         const usdcTotal = usdcIdle + usdcDeployed;
 
@@ -1395,8 +1141,8 @@ export const dryadRoutes = [
           usdcAnnualYield,
           usdcDailyYield,
         });
-      } catch {
-        res.status(500).json({ error: 'Failed to fetch treasury data' });
+      } catch (error) {
+        res.status(502).json({ error: error instanceof Error ? error.message : 'Failed to fetch treasury data' });
       }
     },
   },
@@ -1436,8 +1182,8 @@ export const dryadRoutes = [
         }
 
         res.json({ milestones });
-      } catch {
-        res.json({ milestones: [] });
+      } catch (error) {
+        res.status(502).json({ error: error instanceof Error ? error.message : 'Failed to fetch milestones' });
       }
     },
   },
@@ -1477,7 +1223,7 @@ export const dryadRoutes = [
       corsHeaders(req, res);
 
       // Rate limiting
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'message');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many messages. Try again later.' } as unknown);
@@ -1492,7 +1238,7 @@ export const dryadRoutes = [
       }
 
       try {
-        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+        const body = parseBody(req);
         const text = String(body.text || '').slice(0, 500).trim();
 
         if (!text) {
@@ -1513,7 +1259,7 @@ export const dryadRoutes = [
 
 CHAT BEHAVIOR:
 - Keep responses concise: 2-4 sentences for simple questions, longer for complex ones.
-- When you provide a URL, write the FULL url (e.g. https://buildingdetroit.org) — do NOT use markdown link syntax since it won't render.
+- When you provide a URL, write the FULL url (e.g. https://buildingdetroit.org) - do NOT use markdown link syntax since it won't render.
 - NEVER invent URLs, addresses, contract hashes, or facts. Only use information from this system prompt. If you don't know, say so.
 - NEVER output non-English characters. Respond only in English.
 
@@ -1527,7 +1273,7 @@ KEY URLS (use these exactly when relevant):
 
         // Build conversation history from client
         const rawHistory = Array.isArray(body.history) ? body.history : [];
-        // SECURITY: sanitize history — only allow role/content, cap length, check for injection
+        // SECURITY: sanitize history - only allow role/content, cap length, check for injection
         const history: Array<{role: string; content: string}> = [];
         for (const msg of rawHistory.slice(-20)) {
           if (!msg || typeof msg !== 'object') continue;
@@ -1591,7 +1337,7 @@ KEY URLS (use these exactly when relevant):
         }
 
         // Strip non-Latin characters (GLM model sometimes leaks Chinese)
-        responseText = responseText.replace(/[^\x00-\x7F\u00C0-\u024F\u2000-\u206F\u2190-\u21FF\u2500-\u257F°±×÷—–''""…•→←↑↓★☆·]+/g, '').replace(/\s{2,}/g, ' ').trim();
+        responseText = responseText.replace(/[^\x00-\x7F\u00C0-\u024F\u2000-\u206F\u2190-\u21FF\u2500-\u257F°±×÷-–''""…•→←↑↓★☆·]+/g, '').replace(/\s{2,}/g, ' ').trim();
 
         audit('LOOP_EXECUTION', `Chat: ${text.slice(0, 50)} | IP: ${ip}`, 'chat_api', 'info');
         res.json({ text: responseText } as unknown);
@@ -1603,8 +1349,6 @@ KEY URLS (use these exactly when relevant):
   },
 
   // ─── Dashboard SPA ───────────────────────────────────────────────────────────
-  // The existing /dashboard route serves legacy HTML; this supersedes it.
-  // After running `bun run build:dashboard`, serve the single-file React build.
   {
     name: 'dashboard-spa',
     path: '/dashboard',
@@ -1626,21 +1370,18 @@ KEY URLS (use these exactly when relevant):
         res.setHeader?.('Content-Type', 'text/html');
         res.send(html);
       } catch {
-        // Fallback: redirect to the legacy HTML dashboard while build hasn't run yet
         res.setHeader?.('Content-Type', 'text/html');
-        res.send('<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><h2>Dashboard building...</h2><p>Run <code>bun run build:dashboard</code> to build the React dashboard, then restart the agent.</p><p><a href="/Dryad/dashboard-legacy" style="color:#4caf50">View legacy dashboard</a></p></body></html>');
+        res.send('<html><body style="background:#0a1a0a;color:#81c784;font-family:monospace;padding:40px"><h2>Dashboard unavailable</h2><p>Run <code>bun run build:dashboard</code> to build the React dashboard, then restart the agent.</p></body></html>');
       }
     },
   },
   {
-    name: 'dashboard-legacy',
+    name: 'dashboard-legacy-redirect',
     path: '/dashboard-legacy',
     type: 'GET' as const,
     handler: async (_req: RouteRequest, res: RouteResponse) => {
-      // Legacy HTML dashboard — kept for fallback
       securityHeaders(res);
-      res.setHeader?.('Content-Type', 'text/html');
-      res.send(dashboardHTML());
+      redirectTo(res, '/Dryad/dashboard');
     },
   },
 
@@ -1650,7 +1391,7 @@ KEY URLS (use these exactly when relevant):
     path: '/api/loop/history',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const limit = parseIntParam((req.query as any)?.limit, 30, 1, 100);
+      const limit = parseIntParam(getQueryParam(req, 'limit'), 30, 1, 100);
       res.json(getLoopHistory(limit) as unknown);
     },
   },
@@ -1672,7 +1413,7 @@ KEY URLS (use these exactly when relevant):
     path: '/api/treasury/history',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const days = parseIntParam((req.query as any)?.days, 30, 1, 365);
+      const days = parseIntParam(getQueryParam(req, 'days'), 30, 1, 365);
       res.json(getTreasuryHistory(days) as unknown);
     },
   },
@@ -1688,7 +1429,7 @@ KEY URLS (use these exactly when relevant):
         const positions = loadPositions();
         const status = getRebalancerStatus();
         const history = getRebalanceHistory();
-        const yieldDays = parseIntParam((req.query as any)?.yieldDays, 7, 1, 90);
+        const yieldDays = parseIntParam(getQueryParam(req, 'yieldDays'), 7, 1, 90);
         const yieldHistory = getYieldHistory(yieldDays);
 
         // Current protocol info with APYs
@@ -1701,8 +1442,7 @@ KEY URLS (use these exactly when relevant):
         }));
 
         // Get live USDC balance
-        let idleUsdc = 0;
-        try { idleUsdc = await getUsdcBalance(); } catch {}
+        const idleUsdc = await getUsdcBalance();
 
         const totalDeposited = positions.reduce((s, p) => s + p.depositedUsd, 0);
         const totalValue = idleUsdc + totalDeposited;
@@ -1743,7 +1483,7 @@ KEY URLS (use these exactly when relevant):
           yieldHistory: yieldHistory.slice(-100), // Last 100 yield snapshots
         } as unknown);
       } catch (err: any) {
-        res.status(500).json({ error: 'Failed to fetch DeFi data' } as unknown);
+        res.status(502).json({ error: err instanceof Error ? err.message : 'Failed to fetch DeFi data' } as unknown);
       }
     },
   },
@@ -1754,13 +1494,13 @@ KEY URLS (use these exactly when relevant):
     path: '/api/health/trend',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'api');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Rate limit exceeded. Try again later.' } as unknown);
         return;
       }
-      const days = parseIntParam((req.query as any)?.days, 30, 1, 365);
+      const days = parseIntParam(getQueryParam(req, 'days'), 30, 1, 365);
       const latest = getLatestHealthSnapshot();
       const history = getHealthHistory(days);
       res.json({ latest, history } as unknown);
@@ -1859,7 +1599,7 @@ KEY URLS (use these exactly when relevant):
           usdcDeployed: parseFloat(usdcDeployed.toFixed(2)),
           blendedApy: parseFloat(blendedApy.toFixed(4)),
           usdcAnnualYield: parseFloat(usdcAnnualYield.toFixed(2)),
-          // Never expose wallet balances without auth — just mode and yield
+          // Never expose wallet balances without auth - just mode and yield
         } : null,
         loop: {
           lastRunAt: latestLoop?.timestamp ?? null,
@@ -1895,10 +1635,10 @@ KEY URLS (use these exactly when relevant):
         res.status(401).json({ error: 'Unauthorized' } as unknown);
         return;
       }
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'security');
       if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
-      const count = parseIntParam((req.query as any)?.count, 100, 1, 500);
+      const count = parseIntParam(getQueryParam(req, 'count'), 100, 1, 500);
       res.json({
         entries: getRecentAuditEntries(count),
         summary: getAuditSummary(24),
@@ -1917,7 +1657,7 @@ KEY URLS (use these exactly when relevant):
         res.status(401).json({ error: 'Unauthorized' } as unknown);
         return;
       }
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'security');
       if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
       const history = getTransactionHistory();
@@ -1965,7 +1705,7 @@ KEY URLS (use these exactly when relevant):
         res.status(401).json({ error: 'Unauthorized' } as unknown);
         return;
       }
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'security');
       if (!rl.allowed) { res.status(429).json({ error: 'Too many requests' } as unknown); return; }
       const latestTreasury = getLatestTreasurySnapshot();
@@ -1995,7 +1735,7 @@ KEY URLS (use these exactly when relevant):
     path: '/api/submissions/:id/vision',
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
-      const id = (req as any).params?.id;
+      const id = req.params?.id;
       if (!id) {
         res.status(400).json({ error: 'Missing submission ID' } as unknown);
         return;
@@ -2042,7 +1782,7 @@ KEY URLS (use these exactly when relevant):
         }
         authedContractorName = contractor.name;
       }
-      const id = (req as any).params?.id;
+      const id = req.params?.id;
       if (!id) {
         res.status(400).json({ error: 'Missing submission ID' } as unknown);
         return;
@@ -2125,7 +1865,7 @@ KEY URLS (use these exactly when relevant):
       }
     },
   },
-  // Demo proof report — generate and serve on demand
+  // Demo proof report - generate and serve on demand
   {
     name: 'demo-proof-report',
     path: '/api/demo-report',
@@ -2155,7 +1895,7 @@ KEY URLS (use these exactly when relevant):
     type: 'POST' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
       // SECURITY: Rate limiting
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'contractor_apply');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many applications. Try again later.' } as unknown);
@@ -2163,7 +1903,7 @@ KEY URLS (use these exactly when relevant):
       }
 
       try {
-        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+        const body = parseBody(req);
 
         // SECURITY: Sanitize input
         const sanitize = (s: string, maxLen: number) => String(s || '').replace(/<[^>]*>/g, '').slice(0, maxLen);
@@ -2219,14 +1959,14 @@ KEY URLS (use these exactly when relevant):
     type: 'GET' as const,
     handler: async (req: RouteRequest, res: RouteResponse) => {
       // SECURITY: Strict rate limit to prevent brute-force of 4-char access codes
-      const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+      const ip = getClientIp(req);
       const rl = checkRateLimit(ip, 'validate_code');
       if (!rl.allowed) {
         res.status(429).json({ error: 'Too many attempts. Try again later.' } as unknown);
         return;
       }
 
-      const code = ((req as any).query?.code || '') as string;
+      const code = (String(req.query?.code || ''));
 
       if (!code) {
         res.status(400).json({ error: 'Missing access code' } as unknown);
@@ -2292,7 +2032,7 @@ KEY URLS (use these exactly when relevant):
         return;
       }
 
-      const id = (req as any).params?.id;
+      const id = req.params?.id;
       if (!id) {
         res.status(400).json({ error: 'Missing contractor ID' } as unknown);
         return;
@@ -2300,7 +2040,7 @@ KEY URLS (use these exactly when relevant):
 
       const contractor = approveContractor(id);
       if (contractor) {
-        // SECURITY: Strip access code from response — it's sent via email only
+        // SECURITY: Strip access code from response - it's sent via email only
         const { accessCode: _code, ...safeContractor } = contractor;
         res.json({ ...safeContractor, accessCodeSent: true });
       } else {
@@ -2319,13 +2059,13 @@ KEY URLS (use these exactly when relevant):
         return;
       }
 
-      const id = (req as any).params?.id;
+      const id = req.params?.id;
       if (!id) {
         res.status(400).json({ error: 'Missing contractor ID' } as unknown);
         return;
       }
 
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as any) || {};
+      const body = parseBody(req);
       const reason = String(body.reason || 'No reason provided');
 
       const contractor = suspendContractor(id, reason);

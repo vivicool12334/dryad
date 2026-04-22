@@ -31,13 +31,62 @@ export type EventType =
   | 'config_summary'
   | 'demo_end';
 
-export interface DemoEvent {
-  type: EventType;
+type DemoJsonPrimitive = string | number | boolean | null;
+interface DemoJsonObject {
+  [key: string]: DemoJsonValue;
+}
+type DemoJsonValue = DemoJsonPrimitive | DemoJsonObject | DemoJsonValue[];
+
+export interface SecurityTestResult {
+  name: string;
+  amount: number;
+  target: string;
+  result: string;
+  blocked: boolean;
+}
+
+export interface DemoConfigSummary {
+  cycleIntervalSec: number;
+  maxPerTxUsd: number;
+  maxDailyUsd: number;
+  sustainabilityTarget: number;
+  annualOperatingCost: number;
+  stethApr: number;
+  chain: string;
+  coolingOffMin: number;
+}
+
+interface EventPayloadByType {
+  demo_start: Record<string, never>;
+  scenario_start: { number: number; title: string };
+  scenario_end: { number: number; passed: boolean; summary: string };
+  loop_cycle_start: DemoJsonObject;
+  loop_cycle_end: DemoJsonObject;
+  loop_step: DemoJsonObject;
+  invasive_detected: DemoJsonObject;
+  contractor_email_sent: DemoJsonObject;
+  vision_verify: DemoJsonObject;
+  payment_sent: DemoJsonObject;
+  payment_blocked: DemoJsonObject;
+  security_test: { tests: SecurityTestResult[] };
+  treasury_check: DemoJsonObject;
+  treasury_mode_change: DemoJsonObject;
+  diem_check: DemoJsonObject;
+  biodiversity_check: DemoJsonObject;
+  milestone_recorded: DemoJsonObject;
+  self_assessment: DemoJsonObject;
+  weekly_report: DemoJsonObject;
+  config_summary: DemoConfigSummary;
+  demo_end: { totalEvents: number };
+}
+
+export type DemoEvent<T extends EventType = EventType> = T extends EventType ? {
+  type: T;
   timestamp: number;
   scenario?: number;       // 1-8
   scenarioTitle?: string;
-  data: Record<string, any>;
-}
+  data: EventPayloadByType[T];
+} : never;
 
 // ---------------------------------------------------------------------------
 // Singleton collector
@@ -57,22 +106,19 @@ export function endScenario(num: number, passed: boolean, summary: string): void
   record('scenario_end', { number: num, passed, summary });
 }
 
-export function record(type: EventType, data: Record<string, any> = {}): void {
-  events.push({
+export function record<T extends EventType>(type: T, data: EventPayloadByType[T]): void {
+  const event = {
     type,
     timestamp: Date.now(),
     scenario: currentScenario,
     scenarioTitle: currentScenarioTitle,
     data,
-  });
+  } as DemoEvent<T>;
+  events.push(event);
 }
 
 export function getAllEvents(): DemoEvent[] {
   return [...events];
-}
-
-export function getEventsByScenario(scenario: number): DemoEvent[] {
-  return events.filter(e => e.scenario === scenario);
 }
 
 export function getScenarioResults(): Array<{
@@ -86,13 +132,15 @@ export function getScenarioResults(): Array<{
 
   for (const e of events) {
     if (e.type === 'scenario_start') {
-      scenarios.set(e.data.number, { title: e.data.title, passed: false, summary: '' });
+      const data = e.data as EventPayloadByType['scenario_start'];
+      scenarios.set(data.number, { title: data.title, passed: false, summary: '' });
     }
     if (e.type === 'scenario_end') {
-      const s = scenarios.get(e.data.number);
+      const data = e.data as EventPayloadByType['scenario_end'];
+      const s = scenarios.get(data.number);
       if (s) {
-        s.passed = e.data.passed;
-        s.summary = e.data.summary;
+        s.passed = data.passed;
+        s.summary = data.summary;
       }
     }
   }
@@ -102,10 +150,4 @@ export function getScenarioResults(): Array<{
     ...info,
     events: events.filter(e => e.scenario === num),
   }));
-}
-
-export function clearEvents(): void {
-  events.length = 0;
-  currentScenario = 0;
-  currentScenarioTitle = '';
 }

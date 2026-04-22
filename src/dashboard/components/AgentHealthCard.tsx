@@ -2,20 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { api } from '../api';
-import { Card, Stat, Badge, Loading, Err } from '../App';
+import { Card, Stat, Badge, Loading, Err } from './ui';
+import { CHART_TOOLTIP_STYLE, formatShortDate, formatTimeAgo } from '../lib/formatting';
 
 function formatDuration(ms: number) {
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
-}
-
-function timeAgo(ts: number) {
-  const diff = Date.now() - ts;
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  if (h >= 24) return `${Math.floor(h / 24)}d ago`;
-  if (h > 0) return `${h}h ${m}m ago`;
-  return `${m}m ago`;
 }
 
 function timeUntil(ts: number) {
@@ -63,7 +55,7 @@ export default function AgentHealthCard() {
   // Build sparkline data from history (oldest first)
   const sparkData = history
     ? [...history].reverse().map(e => ({
-        t: new Date(e.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        t: formatShortDate(e.timestamp),
         success: e.status === 'success' ? 1 : 0,
         duration: Math.round(e.durationMs / 1000),
       }))
@@ -86,10 +78,10 @@ export default function AgentHealthCard() {
         </div>
       )}
 
-      {/* Run history sparkline — only show with enough data points */}
+      {/* Run history sparkline - only show with enough data points */}
       {sparkData.length >= 3 && (
         <div>
-          <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>Loop duration — 30 days</div>
+          <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>Loop duration - 30 days</div>
           <ResponsiveContainer width="100%" height={60}>
             <AreaChart data={sparkData}>
               <defs>
@@ -100,8 +92,8 @@ export default function AgentHealthCard() {
               </defs>
               <XAxis dataKey="t" hide />
               <Tooltip
-                contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', fontSize: 11 }}
-                formatter={(v: any) => [`${v}s`, 'duration']}
+                contentStyle={CHART_TOOLTIP_STYLE}
+                formatter={(value: number | string) => [`${value}s`, 'duration']}
               />
               <Area type="monotone" dataKey="duration" stroke="#4caf50" fill="url(#dg)" strokeWidth={1.5} dot={false} />
             </AreaChart>
@@ -118,7 +110,7 @@ export default function AgentHealthCard() {
               <span style={{ color: latest.status === 'success' ? 'var(--green)' : 'var(--red)' }}>
                 {latest.status === 'success' ? '✓' : '✗'}
               </span>
-              {' '}{timeAgo(latest.timestamp)}
+              {' '}{formatTimeAgo(latest.timestamp)}
               {' '}<span style={{ color: 'var(--text-dim)', fontSize: 11 }}>({formatDuration(latest.durationMs)})</span>
             </>
           ) : <span style={{ color: 'var(--text-dim)' }}>No runs yet</span>}

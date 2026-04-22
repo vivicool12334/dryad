@@ -11,7 +11,7 @@ import * as path from 'path';
 import { logger } from '@elizaos/core';
 
 // ---------------------------------------------------------------------------
-// Protocol registry — every protocol Dryad can deposit into
+// Protocol registry - every protocol Dryad can deposit into
 // ---------------------------------------------------------------------------
 
 export interface DeFiProtocol {
@@ -76,7 +76,7 @@ export const PROTOCOLS: DeFiProtocol[] = [
     apyVolatility: 0.012,
     lastUpdated: 0,
   },
-  // Morpho and Aerodrome removed for POC phase — unverified contract addresses.
+  // Morpho and Aerodrome removed for POC phase - unverified contract addresses.
   // Re-add once addresses are confirmed on Base mainnet.
 ];
 
@@ -98,6 +98,17 @@ export interface YieldSnapshot {
 const SNAPSHOT_PATH = path.join(process.cwd(), 'data', 'yield-snapshots.jsonl');
 const MAX_SNAPSHOTS = 365;
 
+interface DeFiLlamaPool {
+  project?: string;
+  chain?: string;
+  symbol?: string;
+  apy?: number;
+}
+
+interface DeFiLlamaPoolsResponse {
+  data?: DeFiLlamaPool[];
+}
+
 function appendYieldSnapshot(snapshot: YieldSnapshot): void {
   try {
     const dir = path.dirname(SNAPSHOT_PATH);
@@ -111,8 +122,8 @@ function appendYieldSnapshot(snapshot: YieldSnapshot): void {
     lines.push(JSON.stringify(snapshot));
     if (lines.length > MAX_SNAPSHOTS) lines = lines.slice(-MAX_SNAPSHOTS);
     fs.writeFileSync(SNAPSHOT_PATH, lines.join('\n') + '\n');
-  } catch (err: any) {
-    logger.warn(`[YieldMonitor] Failed to persist snapshot: ${err?.message}`);
+  } catch (error) {
+    logger.warn(`[YieldMonitor] Failed to persist snapshot: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -153,14 +164,14 @@ export async function fetchAndUpdateApys(): Promise<{
     });
     if (!resp.ok) throw new Error(`DeFi Llama HTTP ${resp.status}`);
 
-    const data = (await resp.json()) as any;
-    const pools: any[] = data?.data || [];
+    const data = (await resp.json()) as DeFiLlamaPoolsResponse;
+    const pools = data.data || [];
 
     for (const protocol of PROTOCOLS) {
       try {
         // Find matching pool in DeFi Llama data
         const pool = pools.find(
-          (p: any) =>
+          (p) =>
             p.project === protocol.llamaProject &&
             p.chain === protocol.llamaChain &&
             p.symbol?.includes(protocol.llamaSymbol),
@@ -181,13 +192,13 @@ export async function fetchAndUpdateApys(): Promise<{
           failed++;
           logger.debug(`[YieldMonitor] No DeFi Llama match for ${protocol.name}`);
         }
-      } catch (err: any) {
+      } catch (error) {
         failed++;
-        logger.warn(`[YieldMonitor] Error matching ${protocol.name}: ${err?.message}`);
+        logger.warn(`[YieldMonitor] Error matching ${protocol.name}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-  } catch (err: any) {
-    logger.error(`[YieldMonitor] DeFi Llama fetch failed: ${err?.message}`);
+  } catch (error) {
+    logger.error(`[YieldMonitor] DeFi Llama fetch failed: ${error instanceof Error ? error.message : String(error)}`);
     failed = PROTOCOLS.length;
   }
 
@@ -289,8 +300,8 @@ export function savePositions(positions: ProtocolPosition[]): void {
     const dir = path.dirname(POSITIONS_PATH);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(POSITIONS_PATH, JSON.stringify(positions, null, 2));
-  } catch (err: any) {
-    logger.error(`[YieldMonitor] Failed to save positions: ${err?.message}`);
+  } catch (error) {
+    logger.error(`[YieldMonitor] Failed to save positions: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 

@@ -1,7 +1,7 @@
 # Dryad Operational Manual
 
 ## Decision Loop (every 24 hours)
-1. Check weather — don't schedule work if heavy rain in 48hrs
+1. Check weather - don't schedule work if heavy rain in 48hrs
 2. Process new photo submissions from /Dryad/submit portal
 3. Vision-verify contractor photos → mint EAS attestation on Base for approved work
 4. Query iNaturalist API for observations in parcel bounding box
@@ -69,7 +69,7 @@ Dryad mints two types of onchain attestations on Base via EAS (predeploy contrac
 - ERC-8004 Registry: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
 
 ## Parcels (parcel numbers 12009482–12009490)
-4475, 4481, 4487, 4493, 4501, 4509, 4513, 4521, 4523 — all 25th Street
+4475, 4481, 4487, 4493, 4501, 4509, 4513, 4521, 4523 - all 25th Street
 GPS bounding box: SW 42.3411,-83.1007 / NE 42.3424,-83.0994
 Center: 42.34174, -83.10007
 

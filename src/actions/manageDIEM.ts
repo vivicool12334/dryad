@@ -1,9 +1,8 @@
 import type { Action, ActionResult, Content, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { logger } from '@elizaos/core';
-import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseUnits, parseEther } from 'viem';
-import { base, baseSepolia } from 'viem/chains';
-import { privateKeyToAccount } from 'viem/accounts';
+import { parseAbi, formatUnits, parseUnits, parseEther } from 'viem';
 import { CHAIN, FINANCIAL } from '../config/constants.ts';
+import { getRuntimeEvmClients } from './evmClients.ts';
 
 const DIEM_ABI = parseAbi([
   'function balanceOf(address owner) view returns (uint256)',
@@ -13,19 +12,6 @@ const DIEM_ABI = parseAbi([
   'function stake(uint256 amount) returns (bool)',
   'function stakedBalance(address owner) view returns (uint256)',
 ]);
-
-function getClients(runtime: IAgentRuntime) {
-  const privateKey = runtime.getSetting('EVM_PRIVATE_KEY') || process.env.EVM_PRIVATE_KEY;
-  if (!privateKey) throw new Error('EVM_PRIVATE_KEY not configured');
-
-  const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const selectedChain = CHAIN.USE_TESTNET ? baseSepolia : base;
-  const transport = CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
-  const publicClient = createPublicClient({ chain: selectedChain, transport });
-  const walletClient = createWalletClient({ account, chain: selectedChain, transport });
-
-  return { account, publicClient, walletClient };
-}
 
 function getDiemAddress(): `0x${string}` {
   return CHAIN.DIEM_ADDRESS;
@@ -39,12 +25,14 @@ const SWAP_ROUTER_ABI = parseAbi([
   'function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) payable returns (uint256 amountOut)',
 ]);
 
+type QuoteExactInputSingleResult = readonly [bigint, bigint, number, bigint];
+
 /**
  * Buy DIEM with ETH via Uniswap V3 on Base.
- * Returns real transaction hash — no mocks.
+ * Returns real transaction hash - no mocks.
  */
-export async function buyDIEMWithETH(runtime: IAgentRuntime, ethAmount: bigint): Promise<{ hash: string; amountOut: string }> {
-  const { account, publicClient, walletClient } = getClients(runtime);
+async function buyDIEMWithETH(runtime: IAgentRuntime, ethAmount: bigint): Promise<{ hash: string; amountOut: string }> {
+  const { account, publicClient, walletClient } = getRuntimeEvmClients(runtime);
   const diemAddress = getDiemAddress();
 
   // SECURITY: Cap swap amount to prevent accidental wallet drain
@@ -74,13 +62,13 @@ export async function buyDIEMWithETH(runtime: IAgentRuntime, ethAmount: bigint):
         sqrtPriceLimitX96: 0n,
       }],
     });
-    const expectedOut = (quoteResult.result as any)[0] as bigint;
+    const expectedOut = (quoteResult.result as QuoteExactInputSingleResult)[0];
     amountOutMinimum = (expectedOut * 90n) / 100n; // 10% slippage tolerance
     logger.info(`[DIEM] Quote: expected ${expectedOut}, min accepted ${amountOutMinimum}`);
   } catch (quoteErr) {
     // If quote fails, reject the swap rather than proceeding with 0 slippage
     logger.error(`[DIEM] Quote failed, rejecting swap for safety: ${quoteErr}`);
-    throw new Error('Could not get price quote — swap rejected for slippage safety');
+    throw new Error('Could not get price quote - swap rejected for slippage safety');
   }
 
   const hash = await walletClient.writeContract({
@@ -128,14 +116,14 @@ export const manageDIEMAction: Action = {
     runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
     try {
       logger.info('Managing DIEM tokens');
 
-      const { account, publicClient } = getClients(runtime);
+      const { account, publicClient } = getRuntimeEvmClients(runtime);
       const diemAddress = getDiemAddress();
 
       // Get DIEM balance

@@ -19,6 +19,15 @@ interface VersionCheck {
   updateType: 'major' | 'minor' | 'patch' | 'up-to-date' | 'error';
 }
 
+interface PackageManifest {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+}
+
+interface NpmLatestVersionResponse {
+  version?: string;
+}
+
 function compareVersions(current: string, latest: string): 'major' | 'minor' | 'patch' | 'up-to-date' {
   const c = current.replace(/^\^|~/, '').split('.').map(Number);
   const l = latest.split('.').map(Number);
@@ -31,7 +40,7 @@ function compareVersions(current: string, latest: string): 'major' | 'minor' | '
 export const checkUpdatesAction: Action = {
   name: 'CHECK_UPDATES',
   similes: ['CHECK_VERSION', 'SOFTWARE_UPDATES', 'UPDATE_CHECK', 'AM_I_UP_TO_DATE'],
-  description: 'Check if elizaOS or plugins have updates available on npm. Reports only — does NOT auto-update.',
+  description: 'Check if elizaOS or plugins have updates available on npm. Reports only - does NOT auto-update.',
 
   validate: async () => true,
 
@@ -39,16 +48,16 @@ export const checkUpdatesAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
     try {
       // Read current versions from package.json
-      let pkgJson: any;
+      let pkgJson: PackageManifest;
       try {
         const pkgPath = path.join(process.cwd(), 'package.json');
-        pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as PackageManifest;
       } catch {
         throw new Error('Could not read package.json');
       }
@@ -66,7 +75,8 @@ export const checkUpdatesAction: Action = {
         try {
           const res = await fetch(`https://registry.npmjs.org/${pkg}/latest`, { signal: AbortSignal.timeout(3000) });
           if (!res.ok) throw new Error(`${res.status}`);
-          const data = await res.json() as any;
+          const data = await res.json() as NpmLatestVersionResponse;
+          if (!data.version) throw new Error('Missing version in npm response');
           const latest = data.version;
           const updateType = compareVersions(current, latest);
           results.push({ package: pkg, current, latest, updateType });
@@ -101,7 +111,7 @@ export const checkUpdatesAction: Action = {
       if (hasUpdates) {
         report += `\n### Recommendation\n`;
         if (hasMajor) {
-          report += `🔴 **Major version changes detected** — review changelogs before updating. May contain breaking changes.\n`;
+          report += `🔴 **Major version changes detected** - review changelogs before updating. May contain breaking changes.\n`;
         } else {
           report += `Updates available. Safe to apply during next maintenance window.\n`;
           report += `Run: \`bun update ${results.filter(r => r.updateType !== 'up-to-date' && r.updateType !== 'error').map(r => r.package).join(' ')}\`\n`;

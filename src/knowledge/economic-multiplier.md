@@ -1,4 +1,4 @@
-# The Economics of Blight — Costs, Multipliers & ROI
+# The Economics of Blight - Costs, Multipliers & ROI
 
 *Compiled April 2026. Investor-grade citations. Detroit-weighted.*
 
@@ -40,7 +40,7 @@
 - **$3.6 billion in lost property values** citywide from vacancy
 - Translates to **$2M+ annually** in lost property tax revenue
 - **$20M+ annually** in direct city maintenance costs
-- 19,000+ vacant parcels — Detroit has 5-6x more
+- 19,000+ vacant parcels - Detroit has 5-6x more
 - Source: ECONSULT Corporation, "Vacant Land Management in Philadelphia," 2010
 
 ### Detroit Extrapolation
@@ -52,8 +52,8 @@
 ### Critical Vacancy Threshold
 - **4% vacancy rate = the tipping point** beyond which neighborhood decline becomes rapid
 - Below 4%: individual vacant properties don't materially change neighborhood
-- At/above 4%: "Things go south very quickly" — rapid property value decline, population loss, tax base erosion
-- Detroit's estimated vacancy: 20-25% — **far above tipping point**
+- At/above 4%: "Things go south very quickly" - rapid property value decline, population loss, tax base erosion
+- Detroit's estimated vacancy: 20-25% - **far above tipping point**
 - Source: Johns Hopkins Hub Magazine, "Putting a Price on Baltimore's Vacant Housing," Winter 2022; researcher Thomas Miller
 
 ## Detroit Land Bank Authority (DLBA) Financials
@@ -116,7 +116,7 @@
 - Typical abandoned building remediation: **$2,550** (one-time)
 - Typical vacant lot remediation: **$1,597** (one-time)
 - Annual maintenance thereafter: **~$180/year**
-- "Longer a property remains abandoned, the higher the cost of renovation" — cost increases exponentially with years of vacancy
+- "Longer a property remains abandoned, the higher the cost of renovation" - cost increases exponentially with years of vacancy
 - Properties where deterioration exceeds cost-effective repair = permanent loss of redevelopment potential
 - Source: Branas et al., "Urban Blight Remediation as a Cost-Beneficial Solution to Firearm Violence," *AJPH* 106(12): 2158-64 (2016)
 

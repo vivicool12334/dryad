@@ -45,17 +45,8 @@ E2E tests run in a real ElizaOS runtime environment, allowing you to test your p
 
 ## Integration with Project
 
-E2E tests are integrated directly into your project through the main index.ts file:
-
-```typescript
-// src/index.ts
-import { ProjectStarterTestSuite } from './__tests__/e2e/project-starter.e2e';
-
-export const project: Project = {
-  agents: [projectAgent],
-  tests: [ProjectStarterTestSuite], // Direct import!
-};
-```
+There is currently no ElizaOS E2E suite wired into `src/index.ts`. The active test
+coverage in this repo comes from the Bun test files under `src/__tests__`.
 
 ## Running Tests
 
@@ -74,10 +65,9 @@ elizaos test --type component
 
 ## Implementation Details
 
-1. **Direct Import**: Tests are imported directly from the e2e test file - no intermediate export file needed
-2. **Project Integration**: The test suite is added to the project's `tests` array
-3. **Test Discovery**: The ElizaOS test runner automatically finds and executes tests from the project's `tests` array
-4. **Runtime Access**: Each test receives a real runtime instance with full access to:
+1. **Project Integration**: If E2E coverage is reintroduced, add the suite to the project's `tests` array
+2. **Test Discovery**: The ElizaOS test runner executes suites registered on the project
+3. **Runtime Access**: Each test receives a real runtime instance with full access to:
    - Agent character configuration
    - Database and model access
    - All registered plugins and services
@@ -85,13 +75,13 @@ elizaos test --type component
 
 ## Key Differences from Plugin Tests
 
-- **Export Location**: Tests are exported from the `ProjectAgent` in `src/index.ts` (not directly from `Project`)
+- **Export Location**: Register suites in `src/index.ts`
 - **Test Focus**: Tests focus on agent behavior and character configuration rather than plugin functionality
 - **Project Context**: Tests have access to the full project configuration including character settings
 
 ## Writing New Tests
 
-See the comprehensive documentation at the top of `project-starter.e2e.ts` for detailed instructions on adding new tests.
+Create a new `*.e2e.ts` suite only when it is actually wired into the project and exercised by the chosen test runner.
 
 ## Best Practices
 

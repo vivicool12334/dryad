@@ -24,12 +24,18 @@ declare module 'busboy' {
     mimeType: string;
   }
 
+  interface FieldInfo {
+    nameTruncated: boolean;
+    valueTruncated: boolean;
+    encoding: string;
+    mimeType: string;
+  }
+
   interface Busboy extends Readable {
-    on(event: 'field', listener: (name: string, value: string, info: any) => void): this;
+    on(event: 'field', listener: (name: string, value: string, info: FieldInfo) => void): this;
     on(event: 'file', listener: (name: string, stream: Readable, info: FileInfo) => void): this;
     on(event: 'finish', listener: () => void): this;
     on(event: 'error', listener: (err: Error) => void): this;
-    on(event: string, listener: (...args: any[]) => void): this;
   }
 
   function busboy(config: BusboyConfig): Busboy;

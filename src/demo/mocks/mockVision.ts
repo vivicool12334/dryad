@@ -48,13 +48,13 @@ const BAD_WORK_RESULT: MockVisionResult = {
 const PARTIAL_WORK_RESULT: MockVisionResult = {
   score: 0.54,
   approved: false,
-  reasoning: 'Photo shows some disturbance but work appears incomplete. A few cut stumps visible but many invasive stems remain standing. No herbicide marks detected — resprouting is likely without chemical treatment. Approximately 30% of target area appears cleared.',
+  reasoning: 'Photo shows some disturbance but work appears incomplete. A few cut stumps visible but many invasive stems remain standing. No herbicide marks detected - resprouting is likely without chemical treatment. Approximately 30% of target area appears cleared.',
   matchedIndicators: [
     'Some cut stumps visible',
   ],
   flagsTriggered: [
-    'Work appears incomplete — many stems remain',
-    'No herbicide marks — resprouting likely',
+    'Work appears incomplete - many stems remain',
+    'No herbicide marks - resprouting likely',
     'Less than 50% of target area cleared',
   ],
   model: 'demo-vision-v1',
@@ -67,13 +67,13 @@ export const mockVision = {
     demoLog('Queued vision result: GOOD WORK (score 0.82, approved)');
   },
 
-  /** Queue a failing vision result — no work done */
+  /** Queue a failing vision result - no work done */
   queueBadWork() {
     visionQueue.push(BAD_WORK_RESULT);
     demoLog('Queued vision result: BAD WORK (score 0.31, rejected)');
   },
 
-  /** Queue a failing vision result — incomplete work */
+  /** Queue a failing vision result - incomplete work */
   queuePartialWork() {
     visionQueue.push(PARTIAL_WORK_RESULT);
     demoLog('Queued vision result: PARTIAL WORK (score 0.54, rejected)');

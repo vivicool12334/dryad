@@ -1,4 +1,4 @@
-# Green Space–Health Pipeline — Research & Data
+# Green Space–Health Pipeline - Research & Data
 
 *Compiled April 2026. Investor-grade citations. Detroit-weighted.*
 
@@ -7,7 +7,7 @@
 ### Detroit's Asthma Burden
 - **14.3% physician-diagnosed + 14.3% undiagnosed** = ~28.6% of Detroit children affected
 - Asthma hospitalization rates for children: **3x statewide average**
-- Adult asthma rate: **16.2%** (2017-2019) vs. 11.1% statewide — **double the state average**
+- Adult asthma rate: **16.2%** (2017-2019) vs. 11.1% statewide - **double the state average**
 - Asthma-related mortality: **>2x state average**
 - **Detroit rated "most challenging city in nation to live with asthma"** (AAFA, 2024-2025)
 - "F" rating from American Lung Association for air quality
@@ -53,7 +53,7 @@
 
 ## Mental Health (Beyond Philadelphia)
 
-### The Benchmark — Philadelphia RCT
+### The Benchmark - Philadelphia RCT
 - 540 vacant lots greened; cost $1,000-3,000 per lot
 - 18-month follow-up:
   - **40% reduction in feeling depressed**
@@ -122,7 +122,7 @@
 
 ### The Safety Caveat
 - Actual physical activity depends on whether people feel safe using green spaces (crime, lighting, maintenance)
-- This is exactly where sustained stewardship matters — people use spaces that look cared for
+- This is exactly where sustained stewardship matters - people use spaces that look cared for
 
 ## Investor Summary
 

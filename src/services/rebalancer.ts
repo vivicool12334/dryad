@@ -12,10 +12,10 @@
  *   - Auditable: every decision is logged with reasoning
  *   - Liquid: always maintain a cash reserve for operations
  */
-import * as fs from 'fs';
-import * as path from 'path';
-import { logger } from '@elizaos/core';
-import { audit } from './auditLog.ts';
+import * as fs from "fs";
+import * as path from "path";
+import { logger } from "@elizaos/core";
+import { audit } from "./auditLog.ts";
 import {
   fetchAndUpdateApys,
   calculateOptimalAllocation,
@@ -24,14 +24,14 @@ import {
   getYieldHistory,
   type TargetAllocation,
   PROTOCOLS,
-} from './yieldMonitor.ts';
+} from "./yieldMonitor.ts";
 import {
   depositToProtocol,
   withdrawFromProtocol,
   getUsdcBalance,
-} from '../actions/defiYield.ts';
-import { getMevRisk } from '../security/mevGuard.ts';
-import { REBALANCER as REBALANCER_CONFIG } from '../config/constants.ts';
+} from "../actions/defiYield.ts";
+import { getMevRisk } from "../security/mevGuard.ts";
+import { REBALANCER as REBALANCER_CONFIG } from "../config/constants.ts";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -71,15 +71,17 @@ const DEFAULT_CONFIG: RebalancerConfig = {
 // Rebalance state (persisted)
 // ---------------------------------------------------------------------------
 
-interface RebalanceRecord {
+export interface RebalanceAction {
+  protocol: string;
+  action: "deposit" | "withdraw";
+  amountUsd: number;
+  txHash?: string;
+  success: boolean;
+}
+
+export interface RebalanceRecord {
   timestamp: number;
-  actions: Array<{
-    protocol: string;
-    action: 'deposit' | 'withdraw';
-    amountUsd: number;
-    txHash?: string;
-    success: boolean;
-  }>;
+  actions: RebalanceAction[];
   reasoning: string;
   beforeAllocation: Record<string, number>;
   afterAllocation: Record<string, number>;
@@ -87,14 +89,28 @@ interface RebalanceRecord {
   estimatedApyAfter: number;
 }
 
-const REBALANCE_HISTORY_PATH = path.join(process.cwd(), 'data', 'rebalance-history.json');
+export interface RebalancerStatus {
+  lastRebalance: number;
+  daysSinceRebalance: number;
+  currentApy: number;
+  totalDeposited: number;
+  positionCount: number;
+}
+
+const REBALANCE_HISTORY_PATH = path.join(
+  process.cwd(),
+  "data",
+  "rebalance-history.json",
+);
 
 function loadRebalanceHistory(): RebalanceRecord[] {
   try {
     if (fs.existsSync(REBALANCE_HISTORY_PATH)) {
-      return JSON.parse(fs.readFileSync(REBALANCE_HISTORY_PATH, 'utf-8'));
+      return JSON.parse(fs.readFileSync(REBALANCE_HISTORY_PATH, "utf-8"));
     }
-  } catch { /* start fresh */ }
+  } catch {
+    /* start fresh */
+  }
   return [];
 }
 
@@ -107,8 +123,8 @@ function saveRebalanceRecord(record: RebalanceRecord): void {
     const dir = path.dirname(REBALANCE_HISTORY_PATH);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(REBALANCE_HISTORY_PATH, JSON.stringify(trimmed, null, 2));
-  } catch (err: any) {
-    logger.error(`[Rebalancer] Failed to save history: ${err?.message}`);
+  } catch (error) {
+    logger.error(`[Rebalancer] Failed to save history: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -129,7 +145,7 @@ function estimatePortfolioApy(): number {
 
   let weightedApy = 0;
   for (const pos of positions) {
-    const protocol = PROTOCOLS.find(p => p.name === pos.protocolName);
+    const protocol = PROTOCOLS.find((p) => p.name === pos.protocolName);
     if (protocol) {
       weightedApy += (pos.depositedUsd / total) * protocol.currentApy;
     }
@@ -140,7 +156,7 @@ function estimatePortfolioApy(): number {
 function estimateTargetApy(targets: TargetAllocation[]): number {
   let weightedApy = 0;
   for (const target of targets) {
-    const protocol = PROTOCOLS.find(p => p.name === target.protocolName);
+    const protocol = PROTOCOLS.find((p) => p.name === target.protocolName);
     if (protocol) {
       weightedApy += target.targetWeight * protocol.currentApy;
     }
@@ -166,7 +182,7 @@ export interface RebalanceEvaluation {
 
 /**
  * Evaluate whether a rebalance should happen.
- * Does NOT execute anything — just returns the analysis.
+ * Does NOT execute anything - just returns the analysis.
  */
 export async function evaluateRebalance(
   config: RebalancerConfig = DEFAULT_CONFIG,
@@ -178,7 +194,7 @@ export async function evaluateRebalance(
   if (daysSince < config.minRebalanceIntervalDays && lastRebalance > 0) {
     return {
       shouldRebalance: false,
-      reason: `Too soon — ${daysSince.toFixed(1)} days since last rebalance (min: ${config.minRebalanceIntervalDays})`,
+      reason: `Too soon - ${daysSince.toFixed(1)} days since last rebalance (min: ${config.minRebalanceIntervalDays})`,
       targets: [],
       currentApy: estimatePortfolioApy(),
       targetApy: 0,
@@ -197,7 +213,7 @@ export async function evaluateRebalance(
   if (yieldHistory.length < config.minDataPoints) {
     return {
       shouldRebalance: false,
-      reason: `Insufficient data — ${yieldHistory.length} snapshots (need ${config.minDataPoints})`,
+      reason: `Insufficient data - ${yieldHistory.length} snapshots (need ${config.minDataPoints})`,
       targets: [],
       currentApy: estimatePortfolioApy(),
       targetApy: 0,
@@ -229,24 +245,29 @@ export async function evaluateRebalance(
   }
 
   // 5. Calculate optimal allocation
-  const targets = calculateOptimalAllocation(deployable, config.maxExposure, config.maxRiskScore);
+  const targets = calculateOptimalAllocation(
+    deployable,
+    config.maxExposure,
+    config.maxRiskScore,
+  );
   const currentApy = estimatePortfolioApy();
   const targetApy = estimateTargetApy(targets);
   const apyImprovement = targetApy - currentApy;
 
   // 6. Estimate costs and benefits (including MEV risk premium)
-  const movingTargets = targets.filter(t => t.action !== 'hold');
+  const movingTargets = targets.filter((t) => t.action !== "hold");
   const estimatedGasCost = movingTargets.reduce((sum, t) => {
-    const protocol = PROTOCOLS.find(p => p.name === t.protocolName);
+    const protocol = PROTOCOLS.find((p) => p.name === t.protocolName);
     const basGas = protocol?.gasCostPerTx || 0.15;
 
-    // Add MEV risk premium — high-risk protocols (AMM LPs) get a slippage buffer
+    // Add MEV risk premium - high-risk protocols (AMM LPs) get a slippage buffer
     const mevRisk = getMevRisk(t.protocolName);
-    const mevPremium = mevRisk.level === 'high'
-      ? Math.abs(t.deltaUsd) * 0.005 // 0.5% sandwich risk premium on AMMs
-      : mevRisk.level === 'medium'
-        ? Math.abs(t.deltaUsd) * 0.002 // 0.2% on vaults
-        : 0; // lending is safe
+    const mevPremium =
+      mevRisk.level === "high"
+        ? Math.abs(t.deltaUsd) * 0.005 // 0.5% sandwich risk premium on AMMs
+        : mevRisk.level === "medium"
+          ? Math.abs(t.deltaUsd) * 0.002 // 0.2% on vaults
+          : 0; // lending is safe
 
     return sum + basGas + mevPremium;
   }, 0);
@@ -256,15 +277,18 @@ export async function evaluateRebalance(
 
   // 7. Decision logic
   let shouldRebalance = false;
-  let reason = '';
+  let reason = "";
 
   if (totalDeposited === 0 && idleUsdc > config.cashReserveUsd + 50) {
-    // First deployment — always do it
+    // First deployment - always do it
     shouldRebalance = true;
     reason = `Initial deployment: $${deployable.toFixed(0)} USDC idle, deploying to yield protocols`;
   } else if (apyImprovement < config.minApyImprovementThreshold) {
     reason = `APY improvement too small: ${(apyImprovement * 100).toFixed(2)}% (need ${(config.minApyImprovementThreshold * 100).toFixed(2)}%)`;
-  } else if (estimatedAnnualBenefit < estimatedGasCost * config.gasCostMultiplier) {
+  } else if (
+    estimatedAnnualBenefit <
+    estimatedGasCost * config.gasCostMultiplier
+  ) {
     reason = `Not cost-effective: annual benefit $${estimatedAnnualBenefit.toFixed(2)} < ${config.gasCostMultiplier}x gas cost $${(estimatedGasCost * config.gasCostMultiplier).toFixed(2)}`;
   } else {
     shouldRebalance = true;
@@ -305,22 +329,27 @@ export async function executeRebalance(
   for (const pos of positions) {
     beforeAllocation[pos.protocolName] = pos.depositedUsd;
   }
-  beforeAllocation['idle_usdc'] = idleUsdc;
+  beforeAllocation["idle_usdc"] = idleUsdc;
 
-  const actions: RebalanceRecord['actions'] = [];
+  const actions: RebalanceRecord["actions"] = [];
   let totalMoved = 0;
 
   // Phase 1: Withdrawals (free up capital)
-  const withdrawals = targets.filter(t => t.action === 'withdraw');
+  const withdrawals = targets.filter((t) => t.action === "withdraw");
   for (const target of withdrawals) {
-    const moveAmount = Math.min(Math.abs(target.deltaUsd), maxMove - totalMoved);
+    const moveAmount = Math.min(
+      Math.abs(target.deltaUsd),
+      maxMove - totalMoved,
+    );
     if (moveAmount < 5 || totalMoved >= maxMove) continue;
 
-    logger.info(`[Rebalancer] Withdrawing $${moveAmount.toFixed(0)} from ${target.protocolName}`);
+    logger.info(
+      `[Rebalancer] Withdrawing $${moveAmount.toFixed(0)} from ${target.protocolName}`,
+    );
     const result = await withdrawFromProtocol(target.protocolName, moveAmount);
     actions.push({
       protocol: target.protocolName,
-      action: 'withdraw',
+      action: "withdraw",
       amountUsd: moveAmount,
       txHash: result.txHash,
       success: result.success,
@@ -329,7 +358,7 @@ export async function executeRebalance(
   }
 
   // Phase 2: Deposits (deploy capital)
-  const deposits = targets.filter(t => t.action === 'deposit');
+  const deposits = targets.filter((t) => t.action === "deposit");
   const availableUsdc = await getUsdcBalance();
   let deployed = 0;
 
@@ -345,14 +374,16 @@ export async function executeRebalance(
     if (moveAmount < 10 || totalMoved >= maxMove) continue;
 
     // Check protocol minimum
-    const protocol = PROTOCOLS.find(p => p.name === target.protocolName);
+    const protocol = PROTOCOLS.find((p) => p.name === target.protocolName);
     if (protocol && moveAmount < protocol.minDeposit) continue;
 
-    logger.info(`[Rebalancer] Depositing $${moveAmount.toFixed(0)} into ${target.protocolName}`);
+    logger.info(
+      `[Rebalancer] Depositing $${moveAmount.toFixed(0)} into ${target.protocolName}`,
+    );
     const result = await depositToProtocol(target.protocolName, moveAmount);
     actions.push({
       protocol: target.protocolName,
-      action: 'deposit',
+      action: "deposit",
       amountUsd: moveAmount,
       txHash: result.txHash,
       success: result.success,
@@ -369,7 +400,7 @@ export async function executeRebalance(
   for (const pos of newPositions) {
     afterAllocation[pos.protocolName] = pos.depositedUsd;
   }
-  afterAllocation['idle_usdc'] = await getUsdcBalance();
+  afterAllocation["idle_usdc"] = await getUsdcBalance();
 
   const record: RebalanceRecord = {
     timestamp: Date.now(),
@@ -383,14 +414,14 @@ export async function executeRebalance(
 
   saveRebalanceRecord(record);
 
-  const successCount = actions.filter(a => a.success).length;
-  const failCount = actions.filter(a => !a.success).length;
+  const successCount = actions.filter((a) => a.success).length;
+  const failCount = actions.filter((a) => !a.success).length;
 
   audit(
-    'REBALANCE_EXECUTED',
+    "REBALANCE_EXECUTED",
     `${successCount} success, ${failCount} failed, $${totalMoved.toFixed(0)} moved. APY: ${(evaluation.currentApy * 100).toFixed(2)}% → ${(evaluation.targetApy * 100).toFixed(2)}%`,
-    'rebalancer',
-    failCount > 0 ? 'warn' : 'info',
+    "rebalancer",
+    failCount > 0 ? "warn" : "info",
   );
 
   logger.info(
@@ -422,12 +453,18 @@ export async function runRebalanceCheck(
     logger.info(`[Rebalancer] Rebalance triggered: ${evaluation.reason}`);
     const record = await executeRebalance(evaluation, config);
 
-    const successCount = record.actions.filter(a => a.success).length;
+    const successCount = record.actions.filter((a) => a.success).length;
     return `rebalanced: ${successCount} actions, APY ${(record.estimatedApyBefore * 100).toFixed(2)}% → ${(record.estimatedApyAfter * 100).toFixed(2)}%`;
-  } catch (err: any) {
-    logger.error(`[Rebalancer] Rebalance check failed: ${err?.message}`);
-    audit('REBALANCE_ERROR', err?.message || 'Unknown error', 'rebalancer', 'critical');
-    return `error: ${err?.message}`;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`[Rebalancer] Rebalance check failed: ${errorMessage}`);
+    audit(
+      "REBALANCE_ERROR",
+      errorMessage || "Unknown error",
+      "rebalancer",
+      "critical",
+    );
+    return `error: ${errorMessage}`;
   }
 }
 
@@ -439,17 +476,12 @@ export function getRebalanceHistory(): RebalanceRecord[] {
   return loadRebalanceHistory();
 }
 
-export function getRebalancerStatus(): {
-  lastRebalance: number;
-  daysSinceRebalance: number;
-  currentApy: number;
-  totalDeposited: number;
-  positionCount: number;
-} {
+export function getRebalancerStatus(): RebalancerStatus {
   const lastRebalance = getLastRebalanceTime();
   return {
     lastRebalance,
-    daysSinceRebalance: lastRebalance > 0 ? (Date.now() - lastRebalance) / 86400000 : Infinity,
+    daysSinceRebalance:
+      lastRebalance > 0 ? (Date.now() - lastRebalance) / 86400000 : Infinity,
     currentApy: estimatePortfolioApy(),
     totalDeposited: getTotalDeposited(),
     positionCount: loadPositions().length,

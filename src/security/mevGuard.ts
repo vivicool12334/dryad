@@ -11,8 +11,8 @@
  *   2. Slippage bounds on all DeFi interactions
  *   3. Pre-transaction simulation to detect abnormal price impact
  *   4. Transaction deadline enforcement (txs expire if not mined quickly)
- *   5. Amount chunking — break large moves into smaller pieces
- *   6. Timing randomization — don't rebalance at predictable times
+ *   5. Amount chunking - break large moves into smaller pieces
+ *   6. Timing randomization - don't rebalance at predictable times
  */
 import { logger } from '@elizaos/core';
 import { logSecurityEvent } from './sanitize.ts';
@@ -44,7 +44,7 @@ export interface MevGuardConfig {
 
 const DEFAULT_CONFIG: MevGuardConfig = {
   usePrivateRpc: true,
-  // Flashbots Protect on Base — sends txs privately, not visible in public mempool
+  // Flashbots Protect on Base - sends txs privately, not visible in public mempool
   privateRpcUrl: 'https://rpc.flashbots.net/fast?chainId=8453',
   maxSlippageBps: 50, // 0.5% max slippage
   txDeadlineSeconds: 300, // 5 minute deadline
@@ -82,10 +82,10 @@ const PROTOCOL_TYPES: Record<string, ProtocolType> = {
 /**
  * Get the MEV risk level for a protocol interaction.
  *
- * Lending: LOW — deposit/withdraw are single-asset, no price oracle manipulation
- * Vault:   LOW-MEDIUM — MetaMorpho vault, single-asset but aggregated
- * AMM LP:  HIGH — two-sided deposit, vulnerable to sandwich attacks
- * Swap:    HIGHEST — direct price manipulation risk
+ * Lending: LOW - deposit/withdraw are single-asset, no price oracle manipulation
+ * Vault:   LOW-MEDIUM - MetaMorpho vault, single-asset but aggregated
+ * AMM LP:  HIGH - two-sided deposit, vulnerable to sandwich attacks
+ * Swap:    HIGHEST - direct price manipulation risk
  */
 export function getMevRisk(protocolName: string): {
   level: 'low' | 'medium' | 'high';
@@ -103,7 +103,7 @@ export function getMevRisk(protocolName: string): {
         type,
         needsPrivateRpc: false, // Lending deposits aren't sandwichable
         needsSimulation: false,
-        recommendedSlippageBps: 10, // 0.1% — lending rates barely move
+        recommendedSlippageBps: 10, // 0.1% - lending rates barely move
       };
     case 'vault':
       return {
@@ -149,7 +149,7 @@ export async function getProtectedTransport(protocolName: string) {
     return http(config.privateRpcUrl);
   }
 
-  // Standard Base RPC for low-risk operations — use configured RPC URL
+  // Standard Base RPC for low-risk operations - use configured RPC URL
   const { CHAIN } = await import('../config/constants.ts');
   return CHAIN.RPC_URL ? http(CHAIN.RPC_URL) : http();
 }
@@ -344,9 +344,10 @@ export async function simulateTransaction(
 
     // Default: assume safe
     return { safe: true, expectedOutput: amountUsd, priceImpact: 0 };
-  } catch (err: any) {
-    logger.warn(`[MevGuard] Simulation failed for ${protocolName}: ${err?.message}`);
-    // If simulation fails, be conservative — still allow lending, block AMM
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.warn(`[MevGuard] Simulation failed for ${protocolName}: ${message}`);
+    // If simulation fails, be conservative - still allow lending, block AMM
     if (risk.type === 'lending') {
       return { safe: true, expectedOutput: amountUsd, priceImpact: 0 };
     }
@@ -354,7 +355,7 @@ export async function simulateTransaction(
       safe: false,
       expectedOutput: 0,
       priceImpact: 1,
-      reason: `Simulation failed: ${err?.message}`,
+      reason: `Simulation failed: ${message}`,
     };
   }
 }
@@ -410,12 +411,12 @@ export async function preflightCheck(
     warnings.push(`Split into ${chunks.length} chunks to reduce MEV exposure`);
   }
 
-  // 3. Check time of day — avoid rebalancing during peak MEV hours
+  // 3. Check time of day - avoid rebalancing during peak MEV hours
   // MEV bots are most active during high-volume trading periods (US market hours)
   const hour = new Date().getUTCHours();
   if (hour >= 13 && hour <= 20 && risk.level === 'high') {
-    warnings.push('Peak MEV hours (US trading session) — consider delaying high-risk transactions');
-    // Don't block, just warn — the rebalancer can decide
+    warnings.push('Peak MEV hours (US trading session) - consider delaying high-risk transactions');
+    // Don't block, just warn - the rebalancer can decide
   }
 
   // 4. Slippage bounds

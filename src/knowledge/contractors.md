@@ -2,7 +2,7 @@
 
 ## Active Contractors
 
-(None yet — Dryad will populate this as contractors are onboarded)
+(None yet - Dryad will populate this as contractors are onboarded)
 
 ## Contractor Template
 When adding a new contractor, use this format:

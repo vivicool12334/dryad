@@ -13,19 +13,42 @@ import * as fs from 'fs';
 import { logger } from '@elizaos/core';
 import { audit } from './auditLog.ts';
 import { DEMO_MODE, demoLog } from '../config/constants.ts';
+import type { MockVisionResult } from '../demo/mocks/mockVision.ts';
 
 // Lazy-load mock vision to avoid build-time resolution when demo/ doesn't exist
-let mockVision: any = null;
-function getMockVision() {
+interface MockVisionModule {
+  getNext: () => MockVisionResult;
+}
+
+interface ChatCompletionResponse {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+}
+
+const FALLBACK_MOCK_RESULT: MockVisionResult = {
+  score: 0.75,
+  approved: true,
+  reasoning: 'mock fallback',
+  matchedIndicators: [],
+  flagsTriggered: [],
+  model: 'mock-fallback',
+};
+
+let mockVision: MockVisionModule | null = null;
+function getMockVision(): MockVisionModule {
   if (!mockVision) {
     try {
       const p = ['..', 'demo', 'mocks', 'mockVision.ts'].join('/');
-      mockVision = require(p);
+      const loaded = require(p) as { mockVision?: MockVisionModule; getNext?: () => MockVisionResult };
+      mockVision = loaded.mockVision || (loaded.getNext ? { getNext: loaded.getNext } : null);
     } catch {
-      mockVision = { getNext: () => ({ score: 75, approved: true, notes: 'mock fallback' }) };
+      mockVision = null;
     }
   }
-  return mockVision;
+  return mockVision || { getNext: () => FALLBACK_MOCK_RESULT };
 }
 
 // ---------------------------------------------------------------------------
@@ -44,7 +67,7 @@ export interface VisualChecklist {
  * These get injected into the analysis prompt so the model knows
  * exactly which visual evidence supports or contradicts the claim.
  */
-export const WORK_TYPE_CHECKLISTS: Record<string, VisualChecklist> = {
+const WORK_TYPE_CHECKLISTS: Record<string, VisualChecklist> = {
   'invasive_removal': {
     description: 'Removal of invasive plant species (buckthorn, honeysuckle, phragmites, etc.)',
     expectedIndicators: [
@@ -75,7 +98,7 @@ export const WORK_TYPE_CHECKLISTS: Record<string, VisualChecklist> = {
     ],
     redFlags: [
       'No visible new plantings in the photo',
-      'Site looks undisturbed — no soil work or planting evidence',
+      'Site looks undisturbed - no soil work or planting evidence',
       'Photo is indoors or clearly not at the work site',
       'Only mature, established plants visible (no new plantings)',
     ],
@@ -203,7 +226,7 @@ Respond with ONLY a valid JSON object (no markdown, no code fences):
 Scoring guide:
 - 0.8–1.0: Clear evidence of the claimed work, multiple indicators present
 - 0.6–0.79: Likely shows the claimed work but some ambiguity
-- 0.4–0.59: Uncertain — could be the claimed work but evidence is weak
+- 0.4–0.59: Uncertain - could be the claimed work but evidence is weak
 - 0.2–0.39: Unlikely to show the claimed work
 - 0.0–0.19: Photo clearly does not show the claimed work or is unrelated`;
 }
@@ -258,7 +281,7 @@ async function callVisionModel(
 ): Promise<{ text: string; model: string }> {
   const veniceKey = process.env.VENICE_API_KEY;
   const veniceBaseUrl = process.env.VENICE_BASE_URL || 'https://api.venice.ai/api/v1';
-  // Use the large model for vision tasks — more capable for image analysis
+  // Use the large model for vision tasks - more capable for image analysis
   const veniceVisionModel = process.env.VENICE_VISION_MODEL || process.env.VENICE_LARGE_MODEL || 'qwen/qwen-2.5-vl';
 
   // Build content array with text + images
@@ -294,14 +317,14 @@ async function callVisionModel(
       });
 
       if (resp.ok) {
-        const data = (await resp.json()) as any;
+        const data = (await resp.json()) as ChatCompletionResponse;
         const text = data?.choices?.[0]?.message?.content || '';
         return { text, model: veniceVisionModel };
       }
 
       logger.warn(`[Dryad Vision] Venice API error: ${resp.status}`);
-    } catch (err: any) {
-      logger.warn(`[Dryad Vision] Venice call failed: ${err?.message}`);
+    } catch (error) {
+      logger.warn(`[Dryad Vision] Venice call failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -325,12 +348,12 @@ async function callVisionModel(
       });
 
       if (resp.ok) {
-        const data = (await resp.json()) as any;
+        const data = (await resp.json()) as ChatCompletionResponse;
         const text = data?.choices?.[0]?.message?.content || '';
         return { text, model: 'gpt-4o-mini' };
       }
-    } catch (err: any) {
-      logger.warn(`[Dryad Vision] OpenAI fallback failed: ${err?.message}`);
+    } catch (error) {
+      logger.warn(`[Dryad Vision] OpenAI fallback failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -369,7 +392,7 @@ function parseVerificationResponse(raw: string): {
       score: Math.max(0, Math.min(1, score)),
       reasoning: `Failed to parse structured response. Raw: ${raw.slice(0, 200)}`,
       matchedIndicators: [],
-      flagsTriggered: ['Response parsing failed — manual review recommended'],
+      flagsTriggered: ['Response parsing failed - manual review recommended'],
     };
   }
 }
@@ -394,7 +417,7 @@ export async function verifyWorkPhoto(opts: {
   if (DEMO_MODE) {
     const mock = getMockVision().getNext();
     demoLog(`Vision verify (DEMO) for ${workType} at ${parcelAddress}: score=${mock.score}, approved=${mock.approved}`);
-    audit('VISION_VERIFY', `DEMO: ${parcelAddress} — score ${mock.score} ${mock.approved ? 'APPROVED' : 'REJECTED'}`, 'visionVerify', mock.approved ? 'info' : 'warn');
+    audit('VISION_VERIFY', `DEMO: ${parcelAddress} - score ${mock.score} ${mock.approved ? 'APPROVED' : 'REJECTED'}`, 'visionVerify', mock.approved ? 'info' : 'warn');
     return {
       score: mock.score,
       approved: mock.approved,
@@ -466,8 +489,8 @@ export async function verifyWorkPhoto(opts: {
     );
 
     return result;
-  } catch (error: any) {
-    const errorMsg = error?.message || String(error);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(`[Dryad Vision] Verification failed: ${errorMsg}`);
     audit('VISION_VERIFY', `ERROR: ${errorMsg}`, 'vision_verify', 'critical');
 
@@ -476,7 +499,7 @@ export async function verifyWorkPhoto(opts: {
       approved: false,
       reasoning: `Vision verification failed: ${errorMsg}`,
       matchedIndicators: [],
-      flagsTriggered: ['Verification system error — manual review required'],
+      flagsTriggered: ['Verification system error - manual review required'],
       workType,
       model: 'none',
       timestamp: Date.now(),
@@ -502,7 +525,7 @@ export async function verifyBeforeAfter(opts: {
   if (DEMO_MODE) {
     const mock = getMockVision().getNext();
     demoLog(`Vision before/after (DEMO) for ${workType} at ${parcelAddress}: score=${mock.score}`);
-    audit('VISION_VERIFY_COMPARE', `DEMO: ${parcelAddress} — score ${mock.score}`, 'visionVerify', mock.approved ? 'info' : 'warn');
+    audit('VISION_VERIFY_COMPARE', `DEMO: ${parcelAddress} - score ${mock.score}`, 'visionVerify', mock.approved ? 'info' : 'warn');
     return {
       score: mock.score, approved: mock.approved, reasoning: mock.reasoning,
       matchedIndicators: mock.matchedIndicators, flagsTriggered: mock.flagsTriggered,
@@ -549,8 +572,8 @@ export async function verifyBeforeAfter(opts: {
     );
 
     return result;
-  } catch (error: any) {
-    const errorMsg = error?.message || String(error);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(`[Dryad Vision] Before/after verification failed: ${errorMsg}`);
     return {
       score: 0, approved: false,
@@ -559,18 +582,4 @@ export async function verifyBeforeAfter(opts: {
       workType, model: 'none', timestamp: Date.now(), error: errorMsg,
     };
   }
-}
-
-/**
- * Get the visual checklist for a work type (useful for the submission form UI).
- */
-export function getChecklist(workType: string): VisualChecklist {
-  return WORK_TYPE_CHECKLISTS[workType] || DEFAULT_CHECKLIST;
-}
-
-/**
- * List all known work types with checklists.
- */
-export function getWorkTypes(): string[] {
-  return Object.keys(WORK_TYPE_CHECKLISTS);
 }

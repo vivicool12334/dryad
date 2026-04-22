@@ -1,11 +1,11 @@
-# Heat Islands & Climate Resilience — Research & Data
+# Heat Islands & Climate Resilience - Research & Data
 
 *Compiled April 2026. Investor-grade citations. Detroit-weighted.*
 
 ## Heat-Related Mortality in Detroit
 
 ### Heatwave Mortality Modeling
-- Detroit would suffer **107 heat-related deaths** during a severe heatwave (with operational grid) — 15 deaths per 100,000 population
+- Detroit would suffer **107 heat-related deaths** during a severe heatwave (with operational grid) - 15 deaths per 100,000 population
 - For comparison: Atlanta = 2 deaths, Phoenix = 19 deaths in same scenario
 - **Heat + blackout scenario: estimated 220 deaths** in Detroit (assumes functioning healthcare; actual likely higher)
 - Higher rate than hotter cities due to limited AC access and higher poverty rates
@@ -24,7 +24,7 @@
 ## Detroit's Heat Inequality
 
 ### Exposure
-- **86% of Detroit neighborhoods** experience temps 8°F+ higher than surrounding rural areas — **highest percentage of any major US city**
+- **86% of Detroit neighborhoods** experience temps 8°F+ higher than surrounding rural areas - **highest percentage of any major US city**
 - Comparison: New York 78%, Houston 73%, Dallas 75%
 - **3,160 residents** live in intra-urban heat islands 10°F+ hotter than nearby areas
 - Detroit ranked **#2 most vulnerable large city in the U.S.** to extreme heat events (Knowlton et al. 2012)
@@ -39,7 +39,7 @@
 
 ### Root Cause
 - Historical white flight (1950s-1960s) concentrated tree cover in wealthy suburbs
-- 19% of remaining canopy sits over unprotected vacant land — vulnerable to development
+- 19% of remaining canopy sits over unprotected vacant land - vulnerable to development
 - Only 6% of Detroit's land is parks/recreation vs. 15% national median
 - Source: Urban Energy Justice Lab; Planet Detroit; Detroit Future City
 

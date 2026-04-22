@@ -1,4 +1,4 @@
-# The Ecological Time Bomb — Invasive Species, SLF, & Unmanaged Urban Land
+# The Ecological Time Bomb - Invasive Species, SLF, & Unmanaged Urban Land
 
 *Compiled April 2026. Investor-grade citations. Detroit/Michigan-weighted.*
 
@@ -6,8 +6,8 @@
 
 ### Current Distribution (November 2025)
 - **6 Michigan counties confirmed:** Jackson, Lenawee, Macomb, Monroe, Oakland, Wayne
-- Wayne County (Detroit metro) = **established infestation zone** — residents no longer need to report sightings (endemic status)
-- Spotted in **Dearborn** (November 2025) — less than 10 miles from Dryad's lots
+- Wayne County (Detroit metro) = **established infestation zone** - residents no longer need to report sightings (endemic status)
+- Spotted in **Dearborn** (November 2025) - less than 10 miles from Dryad's lots
 - Jackson County newly confirmed (2025)
 - Source: MDARD, November 6, 2025 press release; MSU Extension
 
@@ -19,7 +19,7 @@
 
 ### Agricultural Threat to Michigan
 - Michigan's agriculture and food industry generates **over $90 billion annually**
-- **11,000 acres of juice grapes + 3,300 acres of wine grapes** — all at risk
+- **11,000 acres of juice grapes + 3,300 acres of wine grapes** - all at risk
 - SLF feeds on **70+ plant species** including grapes, apples, hops, stone fruits, hardwoods
 - Tree of Heaven (preferred host) abundant on urban vacant lots = breeding ground reservoirs
 - Source: MDARD; MSU Extension; Bridge Michigan
@@ -43,7 +43,7 @@
 ### The Canopy Collapse
 - Detroit lost **over 1 million ash trees** to emerald ash borer
 - Regional loss (southeast Michigan): **30 million ash trees** since 2002 discovery
-- Detroit pre-EAB had ash-dominated canopy (legacy of post-Dutch Elm Disease replanting) — near-total canopy loss in many neighborhoods
+- Detroit pre-EAB had ash-dominated canopy (legacy of post-Dutch Elm Disease replanting) - near-total canopy loss in many neighborhoods
 - Source: Lionel Bradford, President, Greening of Detroit (2025); MSU Forest Carbon and Climate Program
 
 ### Economic Impact
@@ -52,7 +52,7 @@
 - Source: MSU Firewood Education/Forest Health database; Smith et al., *Arboriculture & Urban Forestry*
 
 ### Compounding Effects
-- Ash loss created ideal conditions for Tree of Heaven and spotted lanternfly — sunny, compacted, hot urban microsites
+- Ash loss created ideal conditions for Tree of Heaven and spotted lanternfly - sunny, compacted, hot urban microsites
 - Summer temperatures in low-canopy neighborhoods **5-10°F higher** than nearby treed areas
 - Soil exposure and compaction accelerated invasive weed colonization
 - Source: SUNY ESF; MSU FCCP white paper
@@ -109,7 +109,7 @@
 
 ### Global Invasive Species Cost Trends
 - 1970-2017: **$1.288 trillion** total invasive species costs globally
-- Annual mean: $26.8 billion/year — but 2017 alone was **$162.7 billion** (6.1x average, accelerating)
+- Annual mean: $26.8 billion/year - but 2017 alone was **$162.7 billion** (6.1x average, accelerating)
 - Costs doubling every 6 years
 - Source: *Nature* journal study (2023); UN-backed IPBES report
 
@@ -120,7 +120,7 @@
 - Pollinator/ecosystem services collapse: **$200-400 million/year** (crop pollination value)
 - Lost stormwater management from eliminated canopy: **$100-200 million/year**
 - **Total estimated 2045 annual cost (unmanaged): $1.0-1.8 billion/year regionally**
-- Proactive management alternative: **$100-200 million/year** — a **5-10x ROI**
+- Proactive management alternative: **$100-200 million/year** - a **5-10x ROI**
 - Sources: Penn State modeling; USDA Forest Service; IPBES; MSU FCCP
 
 ## Investor Summary

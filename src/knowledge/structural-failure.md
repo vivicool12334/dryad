@@ -1,4 +1,4 @@
-# Why Current Approaches Fail — Structural Analysis
+# Why Current Approaches Fail - Structural Analysis
 
 *Compiled April 2026. Investor-grade citations.*
 
@@ -12,9 +12,9 @@
 - Source: Hilbert et al., 2019, USDA Forest Service review of 16 studies; Roman et al., 2016
 
 ### What Works (and Why It's Expensive)
-- East Palo Alto (Canopy nonprofit): **99.4% survival over 6 years** — intensive volunteer management + experienced arborists + structured watering
-- Philadelphia (University City Green): **95.4-98.4% over 6 years** — professional arborists trained volunteers + dedicated staff coordination
-- Florida (2,354 trees): **93.6% alive at 2-5 years** — critical variable was on-site irrigation (97.7% with irrigation vs. 73.8% without)
+- East Palo Alto (Canopy nonprofit): **99.4% survival over 6 years** - intensive volunteer management + experienced arborists + structured watering
+- Philadelphia (University City Green): **95.4-98.4% over 6 years** - professional arborists trained volunteers + dedicated staff coordination
+- Florida (2,354 trees): **93.6% alive at 2-5 years** - critical variable was on-site irrigation (97.7% with irrigation vs. 73.8% without)
 - Common factors: adequate staffing, multi-year funding, detailed site assessment, post-planting care protocols, professional supervision
 - Source: Eisenman et al., 2019, "Beyond the Golden Shovel"; Roman et al.
 
@@ -33,7 +33,7 @@
 - Source: Kielbaso et al., 1982; McPherson et al., 1997; GreenBlue Urban analysis
 
 ### Detroit Specifically
-- Detroit spends **less than majority of major US cities** on park maintenance — about **half the national median**
+- Detroit spends **less than majority of major US cities** on park maintenance - about **half the national median**
 - Parks & Recreation must raise **nearly half of its annual capital improvement budget from outside sources** (grants, philanthropy)
 - Source: ULI Americas panel report; Planet Detroit (2022)
 
@@ -52,13 +52,13 @@
 
 ### The Structural Problem
 - Average nonprofit volunteer retention rate: **~65%** (35% annual churn)
-- Nonprofits relying heavily on project-based grants (60%+ of budget) enter the **"nonprofit starvation cycle"** — restricted funding prevents investment in core infrastructure, admin, and long-term sustainability
+- Nonprofits relying heavily on project-based grants (60%+ of budget) enter the **"nonprofit starvation cycle"** - restricted funding prevents investment in core infrastructure, admin, and long-term sustainability
 - Source: Bloomerang nonprofit data; Funding for Good
 
-### Detroit Example — Greening of Detroit
+### Detroit Example - Greening of Detroit
 - **Operational since 1989; planted 166,000+ trees**
 - Revenue structure: dependent on foundation/philanthropic grants + volunteer labor
-- March 2024: **$1.8 million, 3-year investment from Gilbert Family Foundation** — largest private donation in org's history
+- March 2024: **$1.8 million, 3-year investment from Gilbert Family Foundation** - largest private donation in org's history
 - This single major gift is necessary precisely because annual funding is inadequate
 - Detroit Conservation Corps has graduated 71 cohorts but faces budgetary uncertainty annually
 - Source: Greening of Detroit; Gilbert Family Foundation
@@ -66,7 +66,7 @@
 ### Detroit Future City Plan
 - Strategic framework issued ~2016 for integrated open space network
 - Explicitly states "no single funding source will support implementation"
-- Limited progress — many recommendations unfunded due to municipal budget constraints
+- Limited progress - many recommendations unfunded due to municipal budget constraints
 
 ## Volunteer Fatigue
 
@@ -97,7 +97,7 @@
 - **Paid staff + volunteer labor** outperforms both purely volunteer-driven AND purely top-down approaches
 - The missing piece: a persistent operational entity that never stops maintaining
 
-## The Operating Model Failure — Summary
+## The Operating Model Failure - Summary
 
 | Dimension | Current Model | Why It Fails |
 |-----------|---------------|-------------|
@@ -111,12 +111,12 @@
 
 ## Why Dryad Is Different
 
-The fundamental insight: **restoration needs a persistent operator** — not a grant cycle, not a volunteer day, not a municipal line item that gets cut.
+The fundamental insight: **restoration needs a persistent operator** - not a grant cycle, not a volunteer day, not a municipal line item that gets cut.
 
 Dryad provides:
-- **Perpetual operation** — autonomous agent that monitors, coordinates, and pays 24/7/365
-- **Self-funding** — USDC DeFi yield, not annual grant dependency
-- **Verification** — every action onchain, every observation through iNaturalist
-- **Maintenance by design** — the agent's primary job IS maintenance, not one-time planting
-- **Professional coordination** — AI handles logistics; contractors handle hands-on work
-- **Measurable accountability** — health score, biodiversity tracking, financial transparency
+- **Perpetual operation** - autonomous agent that monitors, coordinates, and pays 24/7/365
+- **Self-funding** - USDC DeFi yield, not annual grant dependency
+- **Verification** - every action onchain, every observation through iNaturalist
+- **Maintenance by design** - the agent's primary job IS maintenance, not one-time planting
+- **Professional coordination** - AI handles logistics; contractors handle hands-on work
+- **Measurable accountability** - health score, biodiversity tracking, financial transparency

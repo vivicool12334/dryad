@@ -11,9 +11,7 @@
   "include": [
     "src/index.ts",
     "src/plugin.ts",
-    "src/character.ts",
-    "src/frontend/**/*.ts",
-    "src/frontend/**/*.tsx"
+    "src/character.ts"
   ],
   "exclude": [
     "node_modules",

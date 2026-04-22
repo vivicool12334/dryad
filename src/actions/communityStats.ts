@@ -23,10 +23,35 @@ let cached: CommunityMetrics | null = null;
 let cacheTime = 0;
 const CACHE_MS = 6 * 3600000;
 
-async function fetchJSON(url: string): Promise<any> {
+interface InatObserverResult {
+  user?: {
+    login?: string;
+  };
+  observation_count?: number;
+}
+
+interface InatObservationResult {
+  taxon?: {
+    preferred_common_name?: string;
+    name?: string;
+  };
+  species_guess?: string;
+  user?: {
+    login?: string;
+  };
+  observed_on?: string;
+  created_at?: string;
+}
+
+interface InatResponse<T> {
+  total_results?: number;
+  results?: T[];
+}
+
+async function fetchJSON<T>(url: string): Promise<T> {
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
   if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 export async function getCommunityMetrics(): Promise<CommunityMetrics> {
@@ -38,26 +63,26 @@ export async function getCommunityMetrics(): Promise<CommunityMetrics> {
 
   try {
     // Total observations
-    const obsData = await fetchJSON(`${INAT_BASE}/observations?project_id=${INAT_PROJECT}&per_page=0`);
+    const obsData = await fetchJSON<InatResponse<never>>(`${INAT_BASE}/observations?project_id=${INAT_PROJECT}&per_page=0`);
     totalObs = obsData.total_results || 0;
 
     // Research grade count
-    const rgData = await fetchJSON(`${INAT_BASE}/observations?project_id=${INAT_PROJECT}&quality_grade=research&per_page=0`);
+    const rgData = await fetchJSON<InatResponse<never>>(`${INAT_BASE}/observations?project_id=${INAT_PROJECT}&quality_grade=research&per_page=0`);
     researchGrade = rgData.total_results || 0;
 
     // Observers
-    const obsrvData = await fetchJSON(`${INAT_BASE}/observations/observers?project_id=${INAT_PROJECT}&per_page=10`);
-    topObservers = (obsrvData.results || []).map((r: any) => ({
+    const obsrvData = await fetchJSON<InatResponse<InatObserverResult>>(`${INAT_BASE}/observations/observers?project_id=${INAT_PROJECT}&per_page=10`);
+    topObservers = (obsrvData.results || []).map((r) => ({
       username: r.user?.login || '?',
       count: r.observation_count || 0,
     }));
 
     // Species count
-    const spData = await fetchJSON(`${INAT_BASE}/observations/species_counts?project_id=${INAT_PROJECT}&per_page=0`);
+    const spData = await fetchJSON<InatResponse<never>>(`${INAT_BASE}/observations/species_counts?project_id=${INAT_PROJECT}&per_page=0`);
     speciesCount = spData.total_results || 0;
 
     // Most recent
-    const recentData = await fetchJSON(`${INAT_BASE}/observations?project_id=${INAT_PROJECT}&order=desc&order_by=created_at&per_page=1`);
+    const recentData = await fetchJSON<InatResponse<InatObservationResult>>(`${INAT_BASE}/observations?project_id=${INAT_PROJECT}&order=desc&order_by=created_at&per_page=1`);
     const recent = recentData.results?.[0];
     if (recent) {
       mostRecent = {
@@ -104,7 +129,7 @@ export async function getCommunityMetrics(): Promise<CommunityMetrics> {
 export const communityStatsAction: Action = {
   name: 'COMMUNITY_STATS',
   similes: ['ENGAGEMENT_STATS', 'VOLUNTEER_COUNT', 'COMMUNITY_REPORT', 'WHO_IS_HELPING'],
-  description: 'Track and report on community participation — iNaturalist observations, photo submissions, volunteer activity.',
+  description: 'Track and report on community participation - iNaturalist observations, photo submissions, volunteer activity.',
 
   validate: async () => true,
 
@@ -112,7 +137,7 @@ export const communityStatsAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {

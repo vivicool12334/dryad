@@ -4,16 +4,8 @@ import type { Action, Content, IAgentRuntime, Memory, State } from '@elizaos/cor
 import { logger } from '@elizaos/core';
 import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Utility functions for reusing core package tests in project-starter tests
- */
-
-/**
- * Runs core package action tests against the provided actions
- * @param actions The actions to test
- */
+/** Shared helpers for the starter-style test suite. */
 export const runCoreActionTests = (actions: Action[]) => {
-  // Validate action structure (similar to core tests)
   for (const action of actions) {
     if (!action.name) {
       throw new Error('Action missing name property');
@@ -35,7 +27,6 @@ export const runCoreActionTests = (actions: Action[]) => {
     }
   }
 
-  // Validate example structure
   for (const action of actions) {
     for (const example of action.examples ?? []) {
       for (const message of example) {
@@ -52,14 +43,12 @@ export const runCoreActionTests = (actions: Action[]) => {
     }
   }
 
-  // Validate uniqueness of action names
   const names = actions.map((action) => action.name);
   const uniqueNames = new Set(names);
   if (names.length !== uniqueNames.size) {
     throw new Error('Duplicate action names found');
   }
 
-  // Test action formatting
   const formattedNames = formatActionNames(actions);
   if (!formattedNames && actions.length > 0) {
     throw new Error('formatActionNames failed to produce output');
@@ -82,9 +71,6 @@ export const runCoreActionTests = (actions: Action[]) => {
   };
 };
 
-/**
- * Creates a mock runtime for testing
- */
 export const createMockRuntime = (): IAgentRuntime => {
   return {
     initPromise: Promise.resolve(),
@@ -93,16 +79,13 @@ export const createMockRuntime = (): IAgentRuntime => {
       system: 'You are a helpful assistant for testing.',
     },
     getSetting: (key: string) => null,
-    // Include real model functionality
     models: {},
-    // Add real database functionality
     db: {
       get: async () => null,
       set: async () => true,
       delete: async () => true,
       getKeys: async () => [],
     },
-    // Add real memory functionality
     memory: {
       add: async () => {},
       get: async () => null,
@@ -119,11 +102,7 @@ export const createMockRuntime = (): IAgentRuntime => {
   } as any as IAgentRuntime;
 };
 
-/**
- * Documents test results for logging and debugging
- */
 export const documentTestResult = (testName: string, result: any, error: Error | null = null) => {
-  // Clean, useful test documentation for developers
   logger.info(`✓ Testing: ${testName}`);
 
   if (error) {
@@ -142,7 +121,6 @@ export const documentTestResult = (testName: string, result: any, error: Error |
       }
     } else if (typeof result === 'object') {
       try {
-        // Show key information in a clean format
         const keys = Object.keys(result);
         if (keys.length > 0) {
           const preview = keys.slice(0, 3).join(', ');
@@ -156,9 +134,6 @@ export const documentTestResult = (testName: string, result: any, error: Error |
   }
 };
 
-/**
- * Creates a mock message for testing
- */
 export const createMockMessage = (text: string): Memory => {
   return {
     entityId: uuidv4(),
@@ -170,9 +145,6 @@ export const createMockMessage = (text: string): Memory => {
   } as Memory;
 };
 
-/**
- * Creates a mock state for testing
- */
 export const createMockState = (): State => {
   return {
     values: {},

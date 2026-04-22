@@ -16,7 +16,7 @@ const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
       const { initDemo } = require('./' + demoPath);
       initDemo();
     } catch {
-      logger.warn('[Dryad] Demo runner not available — skipping');
+      logger.warn('[Dryad] Demo runner not available - skipping');
     }
   }
 };

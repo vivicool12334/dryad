@@ -7,7 +7,7 @@ import { recordApiCall } from './selfAssess.ts';
 
 // Three-tier MNFI-sourced invasive species priority system
 export const INVASIVE_PRIORITY_1: Record<string, string> = {
-  // Aggressive woody invaders — triggers contractor hiring
+  // Aggressive woody invaders - triggers contractor hiring
   'Rhamnus': 'Common Buckthorn',
   'Frangula': 'Glossy Buckthorn',
   'Elaeagnus': 'Autumn Olive',
@@ -17,7 +17,7 @@ export const INVASIVE_PRIORITY_1: Record<string, string> = {
 };
 
 export const INVASIVE_PRIORITY_2: Record<string, string> = {
-  // Aggressive herbaceous invaders — triggers monitoring alerts
+  // Aggressive herbaceous invaders - triggers monitoring alerts
   'Phalaris': 'Reed Canary Grass',
   'Lythrum': 'Purple Loosestrife',
   'Centaurea': 'Spotted Knapweed',
@@ -37,7 +37,7 @@ export const INVASIVE_SPECIES: Record<string, string> = {
   'Phragmites': 'Common Reed (non-native)', // Note: native subsp. americanus should be left alone
 };
 
-// Native indicator species — bonus for health score
+// Native indicator species - bonus for health score
 const NATIVE_INDICATORS: string[] = [
   'Andropogon', 'Schizachyrium', 'Sorghastrum', 'Panicum', // prairie grasses
   'Asclepias', 'Echinacea', 'Rudbeckia', 'Monarda', 'Liatris', // key forbs
@@ -83,14 +83,14 @@ export const checkBiodiversityAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State,
-    _options: any,
+    _options,
     callback: HandlerCallback,
     _responses: Memory[]
   ): Promise<ActionResult> => {
     try {
       logger.info('Checking biodiversity via iNaturalist API (parcel-filtered)');
 
-      // Use bounding box query instead of radius — iNaturalist supports nelat/nelng/swlat/swlng
+      // Use bounding box query instead of radius - iNaturalist supports nelat/nelng/swlat/swlng
       const { sw, ne } = PARCEL_BOUNDS;
       const url = `${INATURALIST_BASE}?nelat=${ne.lat}&nelng=${ne.lng}&swlat=${sw.lat}&swlng=${sw.lng}&per_page=200&taxon_name=Plantae&order_by=observed_on`;
 
@@ -183,7 +183,7 @@ export const checkBiodiversityAction: Action = {
       // Sort by priority (1 = most urgent)
       invasivesFound.sort((a, b) => a.priority - b.priority);
 
-      // Compute health score (0-100) — weighted by priority tier and native indicators
+      // Compute health score (0-100) - weighted by priority tier and native indicators
       const p1Count = invasivesFound.filter((i) => i.priority === 1).reduce((s, i) => s + i.count, 0);
       const p2Count = invasivesFound.filter((i) => i.priority === 2).reduce((s, i) => s + i.count, 0);
       const p3Count = invasivesFound.filter((i) => i.priority === 3).reduce((s, i) => s + i.count, 0);
@@ -214,7 +214,7 @@ export const checkBiodiversityAction: Action = {
           }
         }
       } catch (e) {
-        // Non-critical — don't fail the action if learning fails
+        // Non-critical - don't fail the action if learning fails
       }
 
       recordApiCall('iNaturalist', true);
@@ -225,12 +225,12 @@ export const checkBiodiversityAction: Action = {
           ? invasivesFound
               .map(
                 (i) =>
-                  `- [${priorityLabels[i.priority]}] **${i.common}** (${i.scientific}): ${i.count} obs on ${Array.from(i.parcels).join(', ')}${i.latestDate ? ` — last seen ${i.latestDate}` : ''}`
+                  `- [${priorityLabels[i.priority]}] **${i.common}** (${i.scientific}): ${i.count} obs on ${Array.from(i.parcels).join(', ')}${i.latestDate ? ` - last seen ${i.latestDate}` : ''}`
               )
               .join('\n')
           : 'No invasive species detected within parcel boundaries.';
 
-      const responseText = `## Biodiversity Report — 25th Street Parcels, Detroit
+      const responseText = `## Biodiversity Report - 25th Street Parcels, Detroit
 
 **Bounding box:** ${sw.lat.toFixed(5)},${sw.lng.toFixed(5)} to ${ne.lat.toFixed(5)},${ne.lng.toFixed(5)}
 **iNaturalist observations in area:** ${totalFetched}

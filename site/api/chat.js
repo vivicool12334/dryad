@@ -18,6 +18,6 @@ module.exports = async function handler(req, res) {
     const data = await response.json();
     return res.status(200).json(data);
   } catch (err) {
-    return res.status(502).json({ text: "I'm having trouble connecting right now. Try asking about the project, Detroit's vacant land, native species, or how to get involved!", fallback: true });
+    return res.status(502).json({ text: "I'm having trouble connecting right now. Try asking about the project, Detroit's vacant land, native species, or how to get involved!" });
   }
 }

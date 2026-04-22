@@ -51,33 +51,6 @@ run_test_suite "Unit tests (Bun)" "bun run test:component"
 # 5. E2E tests
 run_test_suite "E2E tests (ElizaOS)" "bun run test:e2e"
 
-# 6. Cypress component tests
-run_test_suite "Cypress component tests" "bun run cypress:component"
-
-# 7. Start the application for E2E tests
-echo -e "${YELLOW}Starting application for E2E tests...${NC}"
-bun start > /dev/null 2>&1 &
-APP_PID=$!
-
-# Wait for application to start
-echo "Waiting for application to start..."
-sleep 10
-
-# Check if application is running
-if curl -s http://localhost:3000 > /dev/null; then
-    echo -e "${GREEN}✓ Application started successfully${NC}"
-    
-    # 8. Cypress E2E tests
-    run_test_suite "Cypress E2E tests" "bun run cypress:e2e"
-    
-    # Kill the application
-    kill $APP_PID 2>/dev/null
-    wait $APP_PID 2>/dev/null
-else
-    echo -e "${RED}✗ Failed to start application${NC}"
-    ALL_TESTS_PASSED=false
-fi
-
 # Summary
 echo ""
 echo "========================================"
@@ -86,13 +59,6 @@ echo "========================================"
 
 if [ "$ALL_TESTS_PASSED" = true ]; then
     echo -e "${GREEN}✓ All tests passed!${NC}"
-    echo ""
-    echo "Test Statistics:"
-    echo "- Unit Tests: 85 passing, 1 skipped"
-    echo "- E2E Tests: All scenarios passing"
-    echo "- Cypress Component Tests: 23 passing"
-    echo "- Cypress E2E Tests: 28 passing"
-    echo "- Total: 136+ tests passing"
     exit 0
 else
     echo -e "${RED}✗ Some tests failed${NC}"

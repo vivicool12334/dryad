@@ -1,19 +1,7 @@
 /**
- * Mock API layer for demo mode.
- *
- * Replaces external API calls (iNaturalist, CoinGecko, Open-Meteo) with
- * controllable responses. Each mock has a "scenario queue" — you can push
- * specific responses to simulate state transitions (e.g., ETH price crash).
- *
- * Usage:
- *   import { mockAPIs } from '../demo/mocks/mockApis.ts';
- *   if (DEMO_MODE) mockAPIs.install();
+ * Demo-mode fetch interceptor for the external APIs Dryad depends on.
  */
 import { demoLog } from '../../config/constants.ts';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 export interface MockiNaturalistObs {
   taxon: {
@@ -35,29 +23,21 @@ export interface MockWeatherDay {
   soilTemp: number;
 }
 
-// ---------------------------------------------------------------------------
-// Scenario queues — push overrides, pop on each call, fall back to default
-// ---------------------------------------------------------------------------
-
 const ethPriceQueue: number[] = [];
 const weatherQueue: Array<{ safe: boolean; data?: Partial<MockWeatherDay>[] }> = [];
 const inatQueue: Array<{ observations: MockiNaturalistObs[] }> = [];
 
-// ---------------------------------------------------------------------------
-// Default mock data
-// ---------------------------------------------------------------------------
-
 const DEFAULT_ETH_PRICE = 2600;
 
 const DEFAULT_INAT_OBSERVATIONS: MockiNaturalistObs[] = [
-  // P1 invasive — Common Buckthorn
+  // P1 invasive - Common Buckthorn
   { taxon: { name: 'Rhamnus cathartica', preferred_common_name: 'Common Buckthorn', ancestry: '1/2/47126/211194/47125/47124/47602' }, location: '42.3417,-83.1001', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 100001 },
   { taxon: { name: 'Rhamnus cathartica', preferred_common_name: 'Common Buckthorn', ancestry: '1/2/47126/211194/47125/47124/47602' }, location: '42.3419,-83.1003', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 100002 },
   { taxon: { name: 'Rhamnus cathartica', preferred_common_name: 'Common Buckthorn', ancestry: '1/2/47126/211194/47125/47124/47602' }, location: '42.3415,-83.0998', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 100003 },
-  // P2 invasive — Garlic Mustard
+  // P2 invasive - Garlic Mustard
   { taxon: { name: 'Alliaria petiolata', preferred_common_name: 'Garlic Mustard', ancestry: '1/2/47126/47125/47124/47604' }, location: '42.3418,-83.1002', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 100004 },
   { taxon: { name: 'Alliaria petiolata', preferred_common_name: 'Garlic Mustard', ancestry: '1/2/47126/47125/47124/47604' }, location: '42.3416,-83.0999', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'needs_id', id: 100005 },
-  // P3 — Tree of Heaven
+  // P3 - Tree of Heaven
   { taxon: { name: 'Ailanthus altissima', preferred_common_name: 'Tree of Heaven', ancestry: '1/2/47126/47125/47124/47605' }, location: '42.3420,-83.1005', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 100006 },
   // Native indicators
   { taxon: { name: 'Andropogon gerardii', preferred_common_name: 'Big Bluestem', ancestry: '1/2/47163/47162/47161/47160' }, location: '42.3417,-83.1001', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 100010 },
@@ -86,16 +66,11 @@ const DEFAULT_WEATHER_SAFE: MockWeatherDay[] = [
   { tempMax: 25, tempMin: 13, precipitation: 0, windMax: 14, soilTemp: 16 },
 ];
 
-// ---------------------------------------------------------------------------
-// Mock fetch interceptor
-// ---------------------------------------------------------------------------
-
 let originalFetch: typeof globalThis.fetch | null = null;
 
 function mockFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
-  // iNaturalist
   if (url.includes('api.inaturalist.org')) {
     const obs = inatQueue.length > 0 ? inatQueue.shift()! : { observations: DEFAULT_INAT_OBSERVATIONS };
     demoLog(`iNaturalist mock → ${obs.observations.length} observations`);
@@ -111,7 +86,6 @@ function mockFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Respon
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
   }
 
-  // CoinGecko ETH price
   if (url.includes('coingecko.com') || url.includes('api.coingecko')) {
     const price = ethPriceQueue.length > 0 ? ethPriceQueue.shift()! : DEFAULT_ETH_PRICE;
     demoLog(`CoinGecko mock → ETH = $${price}`);
@@ -120,7 +94,6 @@ function mockFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Respon
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
   }
 
-  // Open-Meteo weather
   if (url.includes('api.open-meteo.com')) {
     const scenario = weatherQueue.length > 0 ? weatherQueue.shift()! : { safe: true };
     const days = scenario.data || DEFAULT_WEATHER_SAFE;
@@ -145,7 +118,6 @@ function mockFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Respon
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
   }
 
-  // DeFi Llama
   if (url.includes('yields.llama.fi') || url.includes('defillama')) {
     demoLog(`DeFi Llama mock → returning default APYs`);
     return Promise.resolve(new Response(JSON.stringify({
@@ -158,19 +130,14 @@ function mockFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Respon
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
   }
 
-  // Everything else — pass through to real fetch
   if (originalFetch) return originalFetch(input, init);
   return Promise.reject(new Error(`No mock for URL: ${url}`));
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
 export const mockAPIs = {
   /** Intercept global fetch with mock responses */
   install() {
-    if (originalFetch) return; // Already installed
+    if (originalFetch) return;
     originalFetch = globalThis.fetch;
     globalThis.fetch = mockFetch as typeof globalThis.fetch;
     demoLog('Mock API layer installed (iNaturalist, CoinGecko, Open-Meteo, DeFi Llama)');
@@ -214,7 +181,7 @@ export const mockAPIs = {
     demoLog(`Queued ${observations.length} iNaturalist observations`);
   },
 
-  /** Queue heavy invasive pressure (lots of P1 species) */
+  /** Queue heavy invasive pressure. */
   queueInvasivePressure() {
     const heavyInvasives: MockiNaturalistObs[] = [];
     for (let i = 0; i < 20; i++) {
@@ -226,7 +193,6 @@ export const mockAPIs = {
         id: 200000 + i,
       });
     }
-    // Add a few natives so health score isn't zero
     heavyInvasives.push(
       { taxon: { name: 'Andropogon gerardii', preferred_common_name: 'Big Bluestem', ancestry: '1/2/47163' }, location: '42.3417,-83.1001', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 200100 },
       { taxon: { name: 'Rudbeckia hirta', preferred_common_name: 'Black-eyed Susan', ancestry: '1/2/47126' }, location: '42.3418,-83.1002', observed_on: new Date().toISOString().split('T')[0], quality_grade: 'research', id: 200101 },

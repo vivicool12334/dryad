@@ -9,19 +9,35 @@
  *   - Treasury snapshots (data/treasury-snapshots.jsonl)
  *   - Health snapshots (data/health-snapshots.jsonl)
  *
- * The output is a single .html file with embedded CSS — no external deps.
+ * The output is a single .html file with embedded CSS - no external deps.
  * Drop it in an email, host it on IPFS, or open it locally.
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { getAllEvents, getScenarioResults, type DemoEvent } from './eventCollector.ts';
+import { getAllEvents, getScenarioResults, type DemoConfigSummary, type DemoEvent, type SecurityTestResult } from './eventCollector.ts';
 import { TIMING, TX_LIMITS, FINANCIAL, CHAIN, DEMO_MODE } from '../config/constants.ts';
+import { getErrorMessage, isFileNotFoundError } from '../utils/fileErrors.ts';
+import type { AuditEntry } from '../services/auditLog.ts';
+import type { LoopHistoryEntry } from '../services/loopHistory.ts';
+import type { TreasurySnapshot } from '../services/treasurySnapshots.ts';
+import type { HealthSnapshot } from '../services/healthSnapshots.ts';
 
-function readJsonl(filePath: string): any[] {
+function readJsonl<T>(filePath: string): T[] {
   try {
     if (!fs.existsSync(filePath)) return [];
-    return fs.readFileSync(filePath, 'utf-8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
-  } catch { return []; }
+    return fs.readFileSync(filePath, 'utf-8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line) as T);
+  } catch (error) {
+    if (isFileNotFoundError(error)) return [];
+    throw new Error(`Failed to read report data from ${filePath}: ${getErrorMessage(error)}`);
+  }
+}
+
+function isConfigSummaryEvent(event: DemoEvent): event is DemoEvent<'config_summary'> {
+  return event.type === 'config_summary';
+}
+
+function isSecurityTestEvent(event: DemoEvent): event is DemoEvent<'security_test'> {
+  return event.type === 'security_test';
 }
 
 function escapeHtml(str: string): string {
@@ -47,39 +63,36 @@ export function generateProofReport(): string {
   const scenarios = getScenarioResults();
   const dataDir = path.join(process.cwd(), 'data');
 
-  const auditLog = readJsonl(path.join(dataDir, 'audit-log.jsonl'));
-  const loopHistory = readJsonl(path.join(dataDir, 'loop-history.jsonl'));
-  const treasurySnaps = readJsonl(path.join(dataDir, 'treasury-snapshots.jsonl'));
-  const healthSnaps = readJsonl(path.join(dataDir, 'health-snapshots.jsonl'));
+  const auditLog = readJsonl<AuditEntry>(path.join(dataDir, 'audit-log.jsonl'));
+  const loopHistory = readJsonl<LoopHistoryEntry>(path.join(dataDir, 'loop-history.jsonl'));
+  const treasurySnaps = readJsonl<TreasurySnapshot>(path.join(dataDir, 'treasury-snapshots.jsonl'));
+  const healthSnaps = readJsonl<HealthSnapshot>(path.join(dataDir, 'health-snapshots.jsonl'));
 
   const demoStart = events.find(e => e.type === 'demo_start')?.timestamp || Date.now();
   const demoEnd = events.find(e => e.type === 'demo_end')?.timestamp || Date.now();
   const durationSec = (demoEnd - demoStart) / 1000;
 
-  const configEvent = events.find(e => e.type === 'config_summary');
-  const config = configEvent?.data || {};
+  const configEvent = events.find(isConfigSummaryEvent);
+  const config: Partial<DemoConfigSummary> = configEvent?.data ?? {};
 
   // Build security test results
-  const securityEvent = events.find(e => e.type === 'security_test');
-  const securityTests: any[] = securityEvent?.data?.tests || [];
+  const securityEvent = events.find(isSecurityTestEvent);
+  const securityTests: SecurityTestResult[] = securityEvent?.data.tests ?? [];
 
   // Count key metrics
   const loopsRun = loopHistory.length;
-  const loopSuccesses = loopHistory.filter((l: any) => l.status === 'success').length;
+  const loopSuccesses = loopHistory.filter((l) => l.status === 'success').length;
   const totalAuditEvents = auditLog.length;
-  const criticalEvents = auditLog.filter((a: any) => a.severity === 'critical').length;
-  const visionEvents = auditLog.filter((a: any) => a.type === 'VISION_VERIFY' || a.type === 'VISION_VERIFY_COMPARE');
-  const emailEvents = auditLog.filter((a: any) => a.type === 'EMAIL_SENT');
-  const txEvents = auditLog.filter((a: any) => a.type === 'TRANSACTION_SUCCESS');
-  const blockedTxEvents = auditLog.filter((a: any) => a.type === 'TRANSACTION_BLOCKED' || a.type === 'TX_REJECTED');
-  const modeChanges = auditLog.filter((a: any) => a.type === 'TREASURY_MODE_CHANGE');
+  const visionEvents = auditLog.filter((a) => a.type === 'VISION_VERIFY' || a.type === 'VISION_VERIFY_COMPARE');
+  const emailEvents = auditLog.filter((a) => a.type === 'EMAIL_SENT');
+  const modeChanges = auditLog.filter((a) => a.type === 'TREASURY_MODE_CHANGE');
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dryad Demo Proof Report — ${formatDate(demoStart)}</title>
+<title>Dryad Demo Proof Report - ${formatDate(demoStart)}</title>
 <style>
   :root {
     --bg: #0d0f09;
@@ -246,7 +259,7 @@ export function generateProofReport(): string {
 
   <!-- Header -->
   <div class="header-banner">
-    <h1>Dryad Autonomous Agent — Proof Report</h1>
+    <h1>Dryad Autonomous Agent - Proof Report</h1>
     <p class="subtitle">
       Generated ${formatDate(demoStart)} at ${formatTime(demoStart)} ET &middot;
       Demo duration: ${durationSec.toFixed(0)}s &middot;
@@ -263,7 +276,7 @@ export function generateProofReport(): string {
   <p style="margin-bottom: 16px; color: var(--text);">
     This report was generated by running the Dryad autonomous agent in demo mode with
     scaled-down parameters (1000x reduction in financial values, 2-minute decision cycles).
-    The agent executed its full autonomous decision loop — the same code that runs in production —
+    The agent executed its full autonomous decision loop - the same code that runs in production -
     and every scenario below was driven by the real orchestration logic, not by calling functions in isolation.
   </p>
 
@@ -285,7 +298,7 @@ export function generateProofReport(): string {
       <div class="metric-label">Emails Sent</div>
     </div>
     <div class="metric">
-      <div class="metric-value">${securityTests.filter((t: any) => t.blocked).length}</div>
+      <div class="metric-value">${securityTests.filter((t) => t.blocked).length}</div>
       <div class="metric-label">Transactions Blocked</div>
     </div>
     <div class="metric">
@@ -311,7 +324,7 @@ export function generateProofReport(): string {
 
   <!-- Decision Loop Results -->
   <h2>Decision Loop Execution</h2>
-  <p style="margin-bottom: 12px;">Each row is one complete autonomous cycle. The agent ran these on its own timer — no human triggered them.</p>
+  <p style="margin-bottom: 12px;">Each row is one complete autonomous cycle. The agent ran these on its own timer - no human triggered them.</p>
   ${loopHistory.length > 0 ? `
   <div class="card">
     <table>
@@ -319,22 +332,22 @@ export function generateProofReport(): string {
         <tr><th>Cycle</th><th>Status</th><th>Duration</th><th>Season</th><th>Steps</th><th>Actions</th></tr>
       </thead>
       <tbody>
-        ${loopHistory.map((l: any, i: number) => `
+        ${loopHistory.map((l, i: number) => `
         <tr>
           <td class="mono">#${i + 1}</td>
           <td><span class="badge ${l.status === 'success' ? 'badge-pass' : 'badge-fail'}">${l.status}</span></td>
           <td class="mono">${(l.durationMs / 1000).toFixed(1)}s</td>
-          <td>${escapeHtml(l.season || '—')}</td>
+          <td>${escapeHtml(l.season || '-')}</td>
           <td class="mono">${l.steps?.length || 0}</td>
-          <td>${(l.actionsTriggered || []).map((a: string) => `<span class="code">${escapeHtml(a)}</span>`).join(' ') || '—'}</td>
-        </tr>
-        ${l.steps?.length ? `
-        <tr><td colspan="6">
-          <details><summary>Step details</summary><div>
-            <table>
-              <thead><tr><th>Step</th><th>Status</th><th>Duration</th><th>Result</th></tr></thead>
-              <tbody>
-                ${l.steps.map((s: any) => `
+                  <td>${(l.actionsTriggered || []).map((a: string) => `<span class="code">${escapeHtml(a)}</span>`).join(' ') || '-'}</td>
+                </tr>
+                ${l.steps?.length ? `
+                <tr><td colspan="6">
+                  <details><summary>Step details</summary><div>
+                    <table>
+                      <thead><tr><th>Step</th><th>Status</th><th>Duration</th><th>Result</th></tr></thead>
+                      <tbody>
+                ${l.steps.map((s) => `
                 <tr>
                   <td class="mono">${escapeHtml(s.name)}</td>
                   <td><span class="${s.status === 'ok' ? 'pass' : s.status === 'error' ? 'fail' : 'warn'}">${s.status}</span></td>
@@ -360,7 +373,7 @@ export function generateProofReport(): string {
         <tr><th>Test</th><th>Amount</th><th>Result</th><th>Status</th></tr>
       </thead>
       <tbody>
-        ${securityTests.map((t: any) => `
+        ${securityTests.map((t) => `
         <tr class="${t.blocked ? '' : ''}">
           <td>${escapeHtml(t.name)}</td>
           <td class="mono">$${t.amount.toFixed(4)}</td>
@@ -381,7 +394,7 @@ export function generateProofReport(): string {
         <tr><th>Time</th><th>Type</th><th>Details</th><th>Severity</th></tr>
       </thead>
       <tbody>
-        ${visionEvents.map((v: any) => `
+        ${visionEvents.map((v) => `
         <tr>
           <td class="mono">${formatTime(new Date(v.timestamp).getTime())}</td>
           <td class="mono">${escapeHtml(v.type)}</td>
@@ -402,10 +415,10 @@ export function generateProofReport(): string {
         <tr><th>Time</th><th>wstETH</th><th>ETH Price</th><th>Est. USD</th><th>Annual Yield</th><th>Mode</th></tr>
       </thead>
       <tbody>
-        ${treasurySnaps.map((t: any) => `
+        ${treasurySnaps.map((t) => `
         <tr>
           <td class="mono">${formatTime(t.timestamp)}</td>
-          <td class="mono">${parseFloat(t.wstEthBalance || 0).toFixed(4)}</td>
+          <td class="mono">${parseFloat(t.wstEthBalance || '0').toFixed(4)}</td>
           <td class="mono">$${(t.ethPriceUsd || 0).toLocaleString()}</td>
           <td class="mono">$${(t.estimatedUsd || 0).toFixed(2)}</td>
           <td class="mono">$${(t.annualYieldUsd || 0).toFixed(3)}/yr</td>
@@ -424,7 +437,7 @@ export function generateProofReport(): string {
         <tr><th>Time</th><th>Health</th><th>P1 Invasives</th><th>P2</th><th>P3</th><th>Native Spp.</th><th>Indicators</th><th>Season</th></tr>
       </thead>
       <tbody>
-        ${healthSnaps.map((h: any) => `
+        ${healthSnaps.map((h) => `
         <tr>
           <td class="mono">${formatTime(h.timestamp)}</td>
           <td class="mono" style="color: ${h.healthScore >= 70 ? 'var(--green-bright)' : h.healthScore >= 40 ? 'var(--amber)' : 'var(--red)'};">${h.healthScore}/100</td>
@@ -448,7 +461,7 @@ export function generateProofReport(): string {
         <tr><th>Time</th><th>Type</th><th>Severity</th><th>Details</th></tr>
       </thead>
       <tbody>
-        ${auditLog.slice(-50).map((a: any) => `
+        ${auditLog.slice(-50).map((a) => `
         <tr>
           <td class="mono" style="white-space:nowrap;">${escapeHtml((a.timestamp || '').substring(11, 19))}</td>
           <td class="mono" style="white-space:nowrap;font-size:11px;">${escapeHtml(a.type)}</td>
@@ -462,7 +475,7 @@ export function generateProofReport(): string {
   <!-- Footer -->
   <div class="footer">
     <p>
-      <strong>Dryad</strong> — Autonomous Land Management Agent &middot; ERC-8004 #35293 &middot; dryadforest.eth
+      <strong>Dryad</strong> - Autonomous Land Management Agent &middot; ERC-8004 #35293 &middot; dryadforest.eth
     </p>
     <p style="margin-top: 4px;">
       9 vacant lots at 4475–4523 25th Street, Detroit MI &middot; Chadsey-Condon neighborhood

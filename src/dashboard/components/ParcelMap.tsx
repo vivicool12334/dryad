@@ -1,31 +1,67 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { Card, Loading } from '../App';
+import { Card } from './ui';
+import { PARCELS, PARCEL_CENTER } from '../../shared/parcels';
+
+interface LeafletLayer {
+  _dryadParcel?: boolean;
+  addTo: (map: LeafletMapInstance) => unknown;
+  bindPopup?: (content: string) => unknown;
+}
+
+interface LeafletMapInstance {
+  eachLayer: (callback: (layer: LeafletLayer) => void) => void;
+  removeLayer: (layer: LeafletLayer) => void;
+  remove: () => void;
+}
+
+interface LeafletGlobal {
+  map: (
+    element: HTMLDivElement | null,
+    options: { center: [number, number]; zoom: number; zoomControl: boolean },
+  ) => LeafletMapInstance;
+  tileLayer: (
+    url: string,
+    options: Record<string, string | number>,
+  ) => { addTo: (map: LeafletMapInstance) => unknown };
+  geoJSON: (
+    data: unknown,
+    options: {
+      style: Record<string, string | number>;
+      onEachFeature: (feature: ParcelFeature | undefined, layer: LeafletLayer) => void;
+    },
+  ) => LeafletLayer;
+  divIcon: (options: {
+    html: string;
+    className: string;
+    iconSize: [number, number];
+    iconAnchor: [number, number];
+  }) => unknown;
+  marker: (
+    coordinates: [number, number],
+    options: { icon: unknown },
+  ) => LeafletLayer;
+}
+
+interface ParcelFeature {
+  properties?: {
+  address?: string;
+  Address?: string;
+  SITEADDRESS?: string;
+  parcelno?: string;
+  parcelNumber?: string;
+  };
+}
 
 // SECURITY: Escape HTML entities in GeoJSON properties to prevent XSS
 function escHtml(s: string): string {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// Parcel center points (fallback if GeoJSON fetch fails)
-const PARCEL_CENTERS = [
-  { address: '4475 25th St', parcelNumber: '12009490', lat: 42.34143, lng: -83.09995 },
-  { address: '4481 25th St', parcelNumber: '12009489', lat: 42.34150, lng: -83.09999 },
-  { address: '4487 25th St', parcelNumber: '12009488', lat: 42.34158, lng: -83.10003 },
-  { address: '4493 25th St', parcelNumber: '12009487', lat: 42.34166, lng: -83.10007 },
-  { address: '4501 25th St', parcelNumber: '12009486', lat: 42.34176, lng: -83.10012 },
-  { address: '4509 25th St', parcelNumber: '12009485', lat: 42.34184, lng: -83.10016 },
-  { address: '4513 25th St', parcelNumber: '12009484', lat: 42.34192, lng: -83.10020 },
-  { address: '4521 25th St', parcelNumber: '12009483', lat: 42.34199, lng: -83.10024 },
-  { address: '4523 25th St', parcelNumber: '12009482', lat: 42.34207, lng: -83.10028 },
-];
-
-const CENTER: [number, number] = [42.34174, -83.10007];
-
 export default function ParcelMap() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<LeafletMapInstance | null>(null);
   const [mapReady, setMapReady] = useState(false);
 
   const { data: geojson } = useQuery({
@@ -46,24 +82,29 @@ export default function ParcelMap() {
     ? (latest.invasivesP1 > 0 ? '#ef5350' : latest.invasivesP2 > 0 ? '#f9a825' : '#4caf50')
     : '#4caf50';
 
-  // Initialize Leaflet map — wait for CDN script to be ready
+  // Initialize Leaflet map - wait for CDN script to be ready
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    const getLeaflet = (): LeafletGlobal | null => {
+      const { L } = window as Window & { L?: LeafletGlobal };
+      return L ?? null;
+    };
+
     const tryInit = () => {
-      const L = (window as any).L;
+      const L = getLeaflet();
       if (!L) {
-        // CDN script not loaded yet — retry
+        // CDN script not loaded yet - retry
         setTimeout(tryInit, 200);
         return;
       }
       initMap(L);
     };
 
-    const initMap = (L: any) => {
+    const initMap = (L: LeafletGlobal) => {
 
     const map = L.map(mapRef.current, {
-      center: CENTER,
+      center: PARCEL_CENTER,
       zoom: 18,
       zoomControl: true,
     });
@@ -99,13 +140,13 @@ export default function ParcelMap() {
 
   // Add/update parcel markers when map is ready
   useEffect(() => {
-    const L = (window as any).L;
+    const { L } = window as Window & { L?: LeafletGlobal };
     if (!L || !mapInstanceRef.current || !mapReady) return;
 
     const map = mapInstanceRef.current;
 
     // Remove existing layers
-    map.eachLayer((layer: any) => {
+    map.eachLayer((layer: LeafletLayer) => {
       if (layer._dryadParcel) map.removeLayer(layer);
     });
 
@@ -119,10 +160,10 @@ export default function ParcelMap() {
           fillColor: invasiveColor,
           fillOpacity: 0.25,
         },
-        onEachFeature: (feature: any, layer: any) => {
-          const addr = escHtml(feature.properties?.address || feature.properties?.Address || feature.properties?.SITEADDRESS || 'Parcel');
-          const parcelNo = escHtml(feature.properties?.parcelno || feature.properties?.parcelNumber || '');
-          layer.bindPopup(`
+        onEachFeature: (feature: ParcelFeature | undefined, layer: LeafletLayer) => {
+          const addr = escHtml(feature?.properties?.address || feature?.properties?.Address || feature?.properties?.SITEADDRESS || 'Parcel');
+          const parcelNo = escHtml(feature?.properties?.parcelno || feature?.properties?.parcelNumber || '');
+          layer.bindPopup?.(`
             <div style="font-family: var(--font-mono, monospace); font-size: 12px; color: #e0e0e0;">
               <strong style="color: #4caf50">${addr}</strong><br/>
               Parcel #${parcelNo}<br/>
@@ -136,18 +177,18 @@ export default function ParcelMap() {
       geoLayer.addTo(map);
     } else {
       // Fallback: marker pins at parcel centers
-      PARCEL_CENTERS.forEach(p => {
+      PARCELS.forEach((parcel) => {
         const icon = L.divIcon({
           html: `<div style="width:12px;height:12px;border-radius:50%;background:${invasiveColor};border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,0.5)"></div>`,
           className: '',
           iconSize: [12, 12],
           iconAnchor: [6, 6],
         });
-        const marker = L.marker([p.lat, p.lng], { icon });
-        marker.bindPopup(`
+        const marker = L.marker([parcel.lat, parcel.lng], { icon });
+        marker.bindPopup?.(`
           <div style="font-family: monospace; font-size: 12px; color: #e0e0e0;">
-            <strong style="color: #4caf50">${p.address}</strong><br/>
-            Parcel #${p.parcelNumber}<br/>
+            <strong style="color: #4caf50">${parcel.address}</strong><br/>
+            Parcel #${parcel.parcelNumber}<br/>
             <span style="color: #81c784">30 × 110 ft</span>
           </div>
         `);
@@ -158,7 +199,7 @@ export default function ParcelMap() {
   }, [geojson, invasiveColor, mapReady]);
 
   return (
-    <Card title="25th Street Parcels — Detroit, MI">
+    <Card title="25th Street Parcels - Detroit, MI">
       <div style={{ fontSize: 12, color: 'var(--text-dim)', display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 4 }}>
         <span>9 lots · 0.68 acres · 4475–4523 25th Street · Chadsey-Condon</span>
         <div style={{ display: 'flex', gap: 10 }}>

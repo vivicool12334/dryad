@@ -20,29 +20,14 @@ describe('Character Configuration', () => {
   });
 
   it('should have conditionally included plugins based on environment variables', () => {
-    // This test is a simple placeholder since we can't easily test dynamic imports in test environments
-    // The actual functionality is tested at runtime by the starter test suite
+    expect(character.plugins).toContain('@elizaos/plugin-sql');
 
-    // Save the original env values
-    const originalOpenAIKey = process.env.OPENAI_API_KEY;
-    const originalAnthropicKey = process.env.ANTHROPIC_API_KEY;
+    if (process.env.OPENAI_API_KEY) {
+      expect(character.plugins).toContain('@elizaos/plugin-openai');
+    }
 
-    try {
-      // Verify if plugins array includes the core plugin
-      expect(character.plugins).toContain('@elizaos/plugin-sql');
-
-      // Plugins array should have conditional plugins based on environment variables
-      if (process.env.OPENAI_API_KEY) {
-        expect(character.plugins).toContain('@elizaos/plugin-openai');
-      }
-
-      if (process.env.ANTHROPIC_API_KEY) {
-        expect(character.plugins).toContain('@elizaos/plugin-anthropic');
-      }
-    } finally {
-      // Restore original env values
-      process.env.OPENAI_API_KEY = originalOpenAIKey;
-      process.env.ANTHROPIC_API_KEY = originalAnthropicKey;
+    if (process.env.ANTHROPIC_API_KEY) {
+      expect(character.plugins).toContain('@elizaos/plugin-anthropic');
     }
   });
 
@@ -58,7 +43,6 @@ describe('Character Configuration', () => {
     expect(Array.isArray(character.bio)).toBe(true);
     if (character.bio && Array.isArray(character.bio)) {
       expect(character.bio.length).toBeGreaterThan(0);
-      // Check if bio entries are non-empty strings
       character.bio.forEach((trait) => {
         expect(typeof trait).toBe('string');
         expect(trait.length).toBeGreaterThan(0);
@@ -71,12 +55,10 @@ describe('Character Configuration', () => {
     if (character.messageExamples && Array.isArray(character.messageExamples)) {
       expect(character.messageExamples.length).toBeGreaterThan(0);
 
-      // Check structure of first example
       const firstExample = character.messageExamples[0];
       expect(Array.isArray(firstExample)).toBe(true);
-      expect(firstExample.length).toBeGreaterThan(1); // At least a user message and a response
+      expect(firstExample.length).toBeGreaterThan(1);
 
-      // Check that messages have name and content
       firstExample.forEach((message) => {
         expect(message).toHaveProperty('name');
         expect(message).toHaveProperty('content');

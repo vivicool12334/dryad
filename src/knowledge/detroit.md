@@ -21,7 +21,7 @@
 - 87% of Detroit buildings are more than a quarter-mile walk from a park
 - Higher social vulnerability scores correlate directly with lower green space availability
 - Tree canopy declined 23% since 1950
-- Low-income neighborhoods have 30% less canopy — a legacy of white flight (1950s–60s)
+- Low-income neighborhoods have 30% less canopy - a legacy of white flight (1950s–60s)
 - 19% of remaining canopy over unprotected vacant land
 - Only 20% of parkland is natural areas (vs 57% national median)
 - 286 of 875 block groups below 75 on Tree Equity Score
@@ -44,7 +44,7 @@
 
 ## DFC "Saving for the Future" (October 2025)
 - Calls for creation of Detroit GreenSpace Conservancy
-- Focus on natural areas over traditional parks — greater ecological services, lower maintenance
+- Focus on natural areas over traditional parks - greater ecological services, lower maintenance
 - Conservation easements for permanent protection
 - Michigan Qualified Conservation Organizations get property tax exemptions
 - Recreational Land Use Statute shields landowners from liability
@@ -66,4 +66,4 @@
 - Keep Growing Detroit, Detroit Future City, Greening of Detroit
 - Michigan Community Resources
 - Detroit Vacant Land CDC / Detroit Land Lab
-- Saginaw Basin Land Conservancy (1,300+ lots restored — closest analog)
+- Saginaw Basin Land Conservancy (1,300+ lots restored - closest analog)

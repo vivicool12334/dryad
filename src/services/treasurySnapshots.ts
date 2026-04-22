@@ -1,9 +1,10 @@
 /**
- * Persistent treasury snapshots — one per decision loop cycle.
+ * Persistent treasury snapshots - one per decision loop cycle.
  * Appends to data/treasury-snapshots.jsonl for trend charting.
  */
-import * as fs from 'fs';
 import * as path from 'path';
+import { getErrorMessage, isFileNotFoundError } from '../utils/fileErrors.ts';
+import { appendJsonlRecord, readJsonlRecords } from '../utils/jsonlLog.ts';
 
 export interface TreasurySnapshot {
   timestamp: number;
@@ -23,30 +24,19 @@ const memoryBuffer: TreasurySnapshot[] = [];
 const MAX_BUFFER = 365; // one year at daily snapshots
 
 export function appendTreasurySnapshot(snap: TreasurySnapshot): void {
-  memoryBuffer.push(snap);
-  if (memoryBuffer.length > MAX_BUFFER) memoryBuffer.shift();
-
-  try {
-    const dir = path.dirname(LOG_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(LOG_PATH, JSON.stringify(snap) + '\n');
-  } catch {
-    // in-memory fallback
-  }
+  appendJsonlRecord(LOG_PATH, memoryBuffer, snap, MAX_BUFFER, (error) => {
+    console.warn(`[treasurySnapshots] Failed to persist treasury snapshot, using memory buffer: ${getErrorMessage(error)}`);
+  });
 }
 
 export function getTreasuryHistory(days: number = 30): TreasurySnapshot[] {
   const cutoff = Date.now() - days * 86400000;
-  try {
-    if (fs.existsSync(LOG_PATH)) {
-      const raw = fs.readFileSync(LOG_PATH, 'utf-8').trim();
-      if (!raw) return [];
-      const all = raw.split('\n').filter(Boolean).map(l => JSON.parse(l) as TreasurySnapshot);
-      return all.filter(s => s.timestamp >= cutoff).reverse();
+  const history = readJsonlRecords<TreasurySnapshot>(LOG_PATH, (error) => {
+    if (!isFileNotFoundError(error)) {
+      console.warn(`[treasurySnapshots] Failed to read treasury snapshots, using memory buffer: ${getErrorMessage(error)}`);
     }
-  } catch {
-    // fall through
-  }
+  });
+  if (history) return history.filter((snapshot) => snapshot.timestamp >= cutoff).reverse();
   return [...memoryBuffer].filter(s => s.timestamp >= cutoff).reverse();
 }
 

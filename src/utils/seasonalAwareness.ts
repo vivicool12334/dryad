@@ -24,7 +24,7 @@ export function getCurrentSeason(): SeasonalContext {
   if (month >= 11 || month < 3 || (month === 3 && day <= 15)) {
     return {
       season: 'DORMANT',
-      description: 'Dormant season — minimal field activity',
+      description: 'Dormant season - minimal field activity',
       priorities: ['planning', 'soil testing', 'community outreach', 'grant applications'],
       contractorWorkTypes: ['hazard_tree_removal'],
       healthScoreThresholdMultiplier: 0.7,
@@ -50,7 +50,7 @@ export function getCurrentSeason(): SeasonalContext {
   if (month === 5 || month === 6) {
     return {
       season: 'SPRING',
-      description: 'Prime planting window — bare-root oak stock goes in',
+      description: 'Prime planting window - bare-root oak stock goes in',
       priorities: ['planting', 'seeding', 'monitoring establishment', 'invasive removal'],
       contractorWorkTypes: ['planting', 'seeding', 'invasive_removal', 'watering'],
       healthScoreThresholdMultiplier: 1.0,
@@ -63,7 +63,7 @@ export function getCurrentSeason(): SeasonalContext {
   if (month === 7 || month === 8) {
     return {
       season: 'SUMMER',
-      description: 'Monitoring intensive — iNaturalist surveys peak',
+      description: 'Monitoring intensive - iNaturalist surveys peak',
       priorities: ['monitoring', 'watering new plantings', 'community engagement', 'iNaturalist surveys'],
       contractorWorkTypes: ['monitoring', 'watering', 'spot_removal', 'mowing'],
       healthScoreThresholdMultiplier: 1.0,

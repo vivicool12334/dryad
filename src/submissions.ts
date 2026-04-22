@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { isWithinParcels, findNearestParcel, MAX_PARCEL_DISTANCE_METERS } from './parcels.ts';
 import { SUBMISSIONS } from './config/constants.ts';
+import { getErrorMessage, isFileNotFoundError } from './utils/fileErrors.ts';
 
 export interface PhotoSubmission {
   id: string;
@@ -66,8 +67,13 @@ function loadFromDisk() {
   try {
     const raw = fs.readFileSync(getStorePath(), 'utf-8');
     submissions = JSON.parse(raw);
-  } catch {
-    submissions = [];
+  } catch (error) {
+    if (isFileNotFoundError(error)) {
+      submissions = [];
+      loaded = true;
+      return;
+    }
+    throw new Error(`Failed to load submissions from ${getStorePath()}: ${getErrorMessage(error)}`);
   }
   loaded = true;
 }
@@ -77,8 +83,21 @@ function saveToDisk() {
     const dir = path.dirname(getStorePath());
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(getStorePath(), JSON.stringify(submissions, null, 2));
-  } catch (e) {
-    console.error('Failed to save submissions:', e);
+  } catch (error) {
+    throw new Error(`Failed to save submissions to ${getStorePath()}: ${getErrorMessage(error)}`);
+  }
+}
+
+function persistSubmissionsChange<T>(mutate: () => T): T {
+  loadFromDisk();
+  const previous = structuredClone(submissions);
+  try {
+    const result = mutate();
+    saveToDisk();
+    return result;
+  } catch (error) {
+    submissions = previous;
+    throw error;
   }
 }
 
@@ -112,21 +131,21 @@ export function validateSubmission(
 }
 
 export function addSubmission(sub: Omit<PhotoSubmission, 'id' | 'submittedAt' | 'verified' | 'verificationErrors' | 'processed' | 'nearestParcel' | 'distanceMeters'> & { imageHash?: string; photoPath?: string; exifLat?: number; exifLng?: number }): PhotoSubmission {
-  loadFromDisk();
-  const validation = validateSubmission(sub.lat, sub.lng, sub.timestamp);
-  const submission: PhotoSubmission = {
-    ...sub,
-    id: `sub_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`,
-    submittedAt: Date.now(),
-    nearestParcel: validation.nearestParcel,
-    distanceMeters: validation.distance,
-    verified: validation.valid,
-    verificationErrors: validation.errors,
-    processed: false,
-  };
-  submissions.push(submission);
-  saveToDisk();
-  return submission;
+  return persistSubmissionsChange(() => {
+    const validation = validateSubmission(sub.lat, sub.lng, sub.timestamp);
+    const submission: PhotoSubmission = {
+      ...sub,
+      id: `sub_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`,
+      submittedAt: Date.now(),
+      nearestParcel: validation.nearestParcel,
+      distanceMeters: validation.distance,
+      verified: validation.valid,
+      verificationErrors: validation.errors,
+      processed: false,
+    };
+    submissions.push(submission);
+    return submission;
+  });
 }
 
 export function getSubmissions(opts?: { unprocessedOnly?: boolean; limit?: number }): PhotoSubmission[] {
@@ -143,13 +162,13 @@ export function getSubmissions(opts?: { unprocessedOnly?: boolean; limit?: numbe
 }
 
 export function markProcessed(ids: string[]) {
-  loadFromDisk();
-  for (const sub of submissions) {
-    if (ids.includes(sub.id)) {
-      sub.processed = true;
+  persistSubmissionsChange(() => {
+    for (const sub of submissions) {
+      if (ids.includes(sub.id)) {
+        sub.processed = true;
+      }
     }
-  }
-  saveToDisk();
+  });
 }
 
 export function getAllSubmissions(): PhotoSubmission[] {
@@ -171,28 +190,26 @@ export function updateSubmissionVision(
     model: string;
   },
 ): PhotoSubmission | null {
-  loadFromDisk();
-  const sub = submissions.find((s) => s.id === id);
-  if (!sub) return null;
+  return persistSubmissionsChange(() => {
+    const sub = submissions.find((s) => s.id === id);
+    if (!sub) return null;
 
-  sub.visionScore = vision.score;
-  sub.visionApproved = vision.approved;
-  sub.visionReasoning = vision.reasoning;
-  sub.visionMatchedIndicators = vision.matchedIndicators;
-  sub.visionFlagsTriggered = vision.flagsTriggered;
-  sub.visionModel = vision.model;
-  sub.visionVerifiedAt = Date.now();
+    sub.visionScore = vision.score;
+    sub.visionApproved = vision.approved;
+    sub.visionReasoning = vision.reasoning;
+    sub.visionMatchedIndicators = vision.matchedIndicators;
+    sub.visionFlagsTriggered = vision.flagsTriggered;
+    sub.visionModel = vision.model;
+    sub.visionVerifiedAt = Date.now();
 
-  // If vision rejected the photo, mark as unverified
-  if (!vision.approved) {
-    sub.verified = false;
-    if (!sub.verificationErrors.includes('Vision verification failed')) {
-      sub.verificationErrors.push('Vision verification failed');
+    if (!vision.approved) {
+      sub.verified = false;
+      if (!sub.verificationErrors.includes('Vision verification failed')) {
+        sub.verificationErrors.push('Vision verification failed');
+      }
     }
-  }
-
-  saveToDisk();
-  return sub;
+    return sub;
+  });
 }
 
 /**
@@ -202,28 +219,28 @@ export function updateSubmissionAttestation(
   id: string,
   attestation: { uid: string; txHash: string },
 ): PhotoSubmission | null {
-  loadFromDisk();
-  const sub = submissions.find((s) => s.id === id);
-  if (!sub) return null;
-  sub.easAttestationUid = attestation.uid;
-  sub.easTxHash = attestation.txHash;
-  sub.easAttestedAt = Date.now();
-  saveToDisk();
-  return sub;
+  return persistSubmissionsChange(() => {
+    const sub = submissions.find((s) => s.id === id);
+    if (!sub) return null;
+    sub.easAttestationUid = attestation.uid;
+    sub.easTxHash = attestation.txHash;
+    sub.easAttestedAt = Date.now();
+    return sub;
+  });
 }
 
 /**
  * Attach a "before" photo to a submission for before/after comparison.
  */
 export function setBeforePhoto(id: string, beforePhotoPath: string, beforePhotoHash?: string): PhotoSubmission | null {
-  loadFromDisk();
-  const sub = submissions.find((s) => s.id === id);
-  if (!sub) return null;
+  return persistSubmissionsChange(() => {
+    const sub = submissions.find((s) => s.id === id);
+    if (!sub) return null;
 
-  sub.beforePhotoPath = beforePhotoPath;
-  sub.beforePhotoHash = beforePhotoHash;
-  saveToDisk();
-  return sub;
+    sub.beforePhotoPath = beforePhotoPath;
+    sub.beforePhotoHash = beforePhotoHash;
+    return sub;
+  });
 }
 
 /**

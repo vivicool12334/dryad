@@ -1,7 +1,7 @@
 /**
  * Direct Twitter v2 API posting for Dryad.
  * Uses the Free tier tweet creation endpoint (POST /2/tweets).
- * No timeline reads, no interactions — just posting.
+ * No timeline reads, no interactions - just posting.
  */
 import { logger } from '@elizaos/core';
 
@@ -58,7 +58,7 @@ function generateOAuthHeader(method: string, url: string, body?: Record<string, 
  */
 export async function postTweet(text: string): Promise<string | null> {
   if (!isConfigured()) {
-    logger.warn('[Twitter] API credentials not configured — skipping tweet');
+    logger.warn('[Twitter] API credentials not configured - skipping tweet');
     return null;
   }
 
@@ -102,7 +102,7 @@ export async function postTweet(text: string): Promise<string | null> {
  */
 export async function postThread(tweets: string[]): Promise<string[]> {
   if (!isConfigured()) {
-    logger.warn('[Twitter] API credentials not configured — skipping thread');
+    logger.warn('[Twitter] API credentials not configured - skipping thread');
     return [];
   }
 

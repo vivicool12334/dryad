@@ -39,7 +39,7 @@ export const TIMING = {
   /** Cooling-off period for new allowlisted addresses */
   COOLING_OFF_HOURS: DEMO_MODE ? 0.03 : 24,  // ~2 min vs 24 hours
 
-  /** How often weekly reports fire — in demo, every Nth cycle */
+  /** How often weekly reports fire - in demo, every Nth cycle */
   WEEKLY_REPORT_EVERY_N_CYCLES: DEMO_MODE ? 5 : null,  // null = real Monday schedule
 
   /** Tweet on every cycle in demo, Mon/Thu in production */
@@ -62,7 +62,7 @@ export const FINANCIAL = {
   /** Annual cost if land value tax passes */
   ANNUAL_COST_WITH_LVT: 1278 * SCALE,
 
-  /** stETH APR (percentage stays the same — it's a rate, not a dollar amount) */
+  /** stETH APR (percentage stays the same - it's a rate, not a dollar amount) */
   STETH_APR: 0.035,
 
   /** Treasury balance needed for self-sustainability: operating_cost / APR */
@@ -122,20 +122,11 @@ export const REBALANCER = {
   MIN_APY_IMPROVEMENT_THRESHOLD: DEMO_MODE ? 0.001 : 0.005,
   GAS_COST_MULTIPLIER: 3,
   MAX_MOVE_PERCENT: 0.30,
-  CASH_RESERVE_USD: DEMO_MODE ? 0.50 : 10,  // $10 reserve (POC phase — raise to $500 when treasury > $5K)
+  CASH_RESERVE_USD: DEMO_MODE ? 0.50 : 10,  // $10 reserve (POC phase - raise to $500 when treasury > $5K)
   MAX_EXPOSURE: 0.60,  // Allow 60% in one protocol (only 2 protocols active)
   MAX_RISK_SCORE: 5,
-  MIN_DATA_POINTS: 1,  // Deploy on first APY fetch (POC phase — raise to 7 for production)
+  MIN_DATA_POINTS: 1,  // Deploy on first APY fetch (POC phase - raise to 7 for production)
 } as const;
-
-// ---------------------------------------------------------------------------
-// Protocol min deposits (scaled)
-// ---------------------------------------------------------------------------
-
-export const PROTOCOL_OVERRIDES = DEMO_MODE ? {
-  'Aave V3 USDC': { minDeposit: 0.01 },
-  'Compound V3 USDC': { minDeposit: 0.01 },
-} : null;
 
 // ---------------------------------------------------------------------------
 // Chain configuration
@@ -148,14 +139,14 @@ export const CHAIN = {
   /** Chain ID */
   CHAIN_ID: DEMO_MODE ? 84532 : 8453,
 
-  /** Contract addresses — testnet overrides come from env vars */
+  /** Contract addresses - testnet overrides come from env vars */
   USDC_ADDRESS: (DEMO_MODE
     ? process.env.DEMO_USDC_ADDRESS || '0x036CbD53842c5426634e7929541eC2318f3dCF7e'  // USDC on Base Sepolia
     : process.env.USDC_BASE_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
   ) as `0x${string}`,
 
   WSTETH_ADDRESS: (DEMO_MODE
-    ? process.env.DEMO_WSTETH_ADDRESS || '0x0000000000000000000000000000000000000000'  // Placeholder — mock in demo
+    ? process.env.DEMO_WSTETH_ADDRESS || '0x0000000000000000000000000000000000000000'  // Placeholder - mock in demo
     : process.env.STETH_BASE_ADDRESS || '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452'
   ) as `0x${string}`,
 
@@ -175,26 +166,9 @@ export const CHAIN = {
     : process.env.BASE_RPC_URL || undefined,  // undefined = viem default
 } as const;
 
-// ---------------------------------------------------------------------------
-// Buffer sizes (smaller in demo for snappy display)
-// ---------------------------------------------------------------------------
-
-export const BUFFERS = {
-  MAX_AUDIT_ENTRIES: DEMO_MODE ? 50 : 500,
-  MAX_LOOP_HISTORY: DEMO_MODE ? 20 : 100,
-  MAX_TREASURY_SNAPSHOTS: DEMO_MODE ? 50 : 365,
-  MAX_HEALTH_SNAPSHOTS: DEMO_MODE ? 50 : 365,
-  MAX_YIELD_SNAPSHOTS: DEMO_MODE ? 50 : 365,
-  MAX_REBALANCE_HISTORY: DEMO_MODE ? 20 : 100,
-} as const;
-
-// ---------------------------------------------------------------------------
-// Submission validation
-// ---------------------------------------------------------------------------
-
 export const SUBMISSIONS = {
   MAX_AGE_HOURS: TIMING.MAX_SUBMISSION_AGE_HOURS,
-  /** Max distance from parcel in meters — relaxed in demo */
+  /** Max distance from parcel in meters - relaxed in demo */
   MAX_PARCEL_DISTANCE_METERS: DEMO_MODE ? 500 : 50,
 } as const;
 
