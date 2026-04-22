@@ -63,7 +63,6 @@ Dryad mints two types of onchain attestations on Base via EAS (predeploy contrac
 ## Addresses
 - Agent wallet: 0xf2f7527D86e2173c91fF1c10Ede03f6f84510880 (dryadforest.eth)
 - USDC (Base): 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-- wstETH (Base, legacy): 0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452
 - DIEM Token: 0xf4d97f2da56e8c3098f3a8d538db630a2606a024
 - Uniswap V3 Router: 0x2626664c2603336E57B271c5C0b26F421741e481
 - ERC-8004 Registry: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
