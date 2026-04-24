@@ -15,12 +15,14 @@ import express from 'express'
 import { ethers } from 'ethers'
 import { RiskCycleService } from './services/riskCycle.js'
 import { TreasuryManager } from './services/treasuryManager.js'
+import { YieldOptimizer } from './services/yieldOptimizer.js'
 
 const CYCLE_INTERVAL_MS = Number(process.env.RISK_CYCLE_INTERVAL_SECONDS ?? 60) * 1000
 const PORT = Number(process.env.AGENT_PORT ?? 3010)
 
 const riskCycle = new RiskCycleService()
-const treasury = new TreasuryManager()
+const treasury  = new TreasuryManager()
+const optimizer = new YieldOptimizer()
 
 // ---------------------------------------------------------------------------
 // Status API (used by dashboard)
@@ -38,7 +40,7 @@ statusApp.get('/api/status', async (_req, res) => {
     Promise.resolve(riskCycle.getStatus()),
     treasury.getState(),
   ])
-  res.json({ ...cycleStatus, treasury: treasuryState })
+  res.json({ ...cycleStatus, treasury: treasuryState, yieldOptimizer: optimizer.getStatus() })
 })
 
 // Manual cycle trigger (useful for demo)
@@ -46,6 +48,13 @@ statusApp.post('/api/trigger-cycle', async (_req, res) => {
   console.log('[Agent] Manual cycle triggered')
   const result = await riskCycle.runCycle()
   res.json(result)
+})
+
+// Manual yield optimization trigger
+statusApp.post('/api/optimize-yield', async (_req, res) => {
+  console.log('[Agent] Manual yield optimization triggered')
+  const decision = await optimizer.optimize()
+  res.json(decision)
 })
 
 statusApp.listen(PORT, () => {
@@ -71,8 +80,9 @@ async function startCycleTimer() {
       const signer = new ethers.Wallet(buyerKey, provider)
       await treasury.init(signer, provider)
       await riskCycle.init(signer, provider, treasury)
+      await optimizer.init(signer, provider)
       await treasury.logState()
-      console.log('[Agent] GatewayClient + on-chain services + treasury initialized')
+      console.log('[Agent] GatewayClient + on-chain services + treasury + yield optimizer initialized')
     } catch (err) {
       console.error('[Agent] Failed to init on-chain services:', err)
     }
@@ -82,10 +92,12 @@ async function startCycleTimer() {
 
   // First cycle immediately
   await riskCycle.runCycle()
+  await optimizer.optimize()
 
   // Then on interval
   setInterval(async () => {
     await riskCycle.runCycle()
+    await optimizer.optimize()
   }, CYCLE_INTERVAL_MS)
 }
 
