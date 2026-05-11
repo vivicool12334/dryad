@@ -14,6 +14,7 @@ import { selfAssessAction } from './actions/selfAssess.ts';
 import { checkUpdatesAction } from './actions/checkUpdates.ts';
 import { communityStatsAction } from './actions/communityStats.ts';
 import { generateReportAction } from './actions/generateReport.ts';
+import { checkSatelliteImageryAction } from './actions/checkSatelliteImagery.ts';
 import contractorReputationProvider from './providers/contractorReputation.ts';
 import { dryadRoutes } from './routes.ts';
 import { DecisionLoopService } from './services/decisionLoop.ts';
@@ -46,6 +47,7 @@ const dryadPlugin: Plugin = {
     checkUpdatesAction,
     communityStatsAction,
     generateReportAction,
+    checkSatelliteImageryAction,
   ],
 
   providers: [knowledgeProvider, contractorReputationProvider],

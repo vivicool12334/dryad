@@ -1,0 +1,25 @@
+{
+  "scene_id": "LC08_L2SP_019031_20250909_02_T1",
+  "platform": "landsat-8",
+  "capture_datetime": "2025-09-09T16:10:29.826537+00:00",
+  "cloud_cover": 0.54,
+  "detroit_bbox": [
+    -83.3,
+    42.18,
+    -82.9,
+    42.45
+  ],
+  "chadsey_bbox": [
+    -83.13,
+    42.32,
+    -83.07,
+    42.36
+  ],
+  "detroit_mean_lst_f": 84.64596557617188,
+  "detroit_min_lst_f": 66.23092651367188,
+  "detroit_max_lst_f": 94.74132537841797,
+  "chadsey_mean_lst_f": 89.68215942382812,
+  "chadsey_min_lst_f": 84.90361785888672,
+  "chadsey_max_lst_f": 96.05792999267578,
+  "generated_at": "2026-05-11T00:09:40.277581+00:00"
+}

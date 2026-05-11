@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detroit Heat Island Map - Dryad</title>
+    <meta name="description" content="A free public Land Surface Temperature map of Detroit, derived from Landsat 8/9 thermal bands. Identifies heat-vulnerable neighborhoods to guide canopy investment.">
+    <meta name="theme-color" content="#1A1C14">
+    <meta property="og:title" content="Detroit Heat Island Map - Dryad">
+    <meta property="og:description" content="Where summer heat hits Detroit hardest. Built from free public satellite data.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://dryad.land/images/heat-map/detroit-lst.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E29E4B' d='M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1A1C14;
+            --bg-alt: #22241A;
+            --text-main: #D2D6C1;
+            --text-body: #c8ccb8;
+            --text-muted: rgba(210, 214, 193, 0.55);
+            --accent: #8DA667;
+            --accent-light: #a8c47a;
+            --accent-amber: #E29E4B;
+            --hot: #E54A1F;
+            --card-bg: #22241A;
+            --card-border: rgba(141, 166, 103, 0.2);
+            --font-display: 'Instrument Serif', serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-body: 'Manrope', system-ui, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text-body);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::selection { background: var(--accent-amber); color: var(--bg); }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(26,28,20,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; text-transform: lowercase;
+            font-size: 1.4rem; color: var(--accent);
+            text-decoration: none;
+        }
+        .logo svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: spin 30s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        nav { display: flex; gap: 1.5rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        nav a { color: var(--text-muted); text-decoration: none; }
+        nav a:hover { color: var(--accent); }
+
+        .content { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+        .hero { padding: 4rem 2rem 2rem; text-align: center; }
+        .eyebrow {
+            font-family: var(--font-mono); font-size: 0.75rem;
+            color: var(--hot); letter-spacing: 0.3em; text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(2.4rem, 6vw, 4.5rem); line-height: 1.05;
+            color: var(--text-main); margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        .lede {
+            font-family: var(--font-body); font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+            max-width: 720px; margin: 0 auto 2.5rem;
+            color: var(--text-body); line-height: 1.6;
+        }
+        section { padding: 3rem 0; border-top: 1px solid var(--card-border); }
+        section h2 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(1.7rem, 3vw, 2.4rem);
+            color: var(--text-main); margin-bottom: 1rem; line-height: 1.2;
+        }
+        section h3 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: 1.4rem; color: var(--text-main);
+            margin-top: 1.5rem; margin-bottom: 0.6rem;
+        }
+        section p { margin-bottom: 1rem; max-width: 800px; }
+        .section-eyebrow {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--accent); letter-spacing: 0.3em; text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+
+        .map-figure { margin: 1.5rem 0; }
+        .map-figure img {
+            width: 100%; max-width: 100%;
+            border: 1px solid var(--card-border); border-radius: 6px; display: block;
+        }
+        .map-figure figcaption {
+            font-size: 0.85rem; color: var(--text-muted);
+            margin-top: 0.6rem; text-align: center; font-style: italic;
+        }
+
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px; margin: 24px 0;
+        }
+        .stat {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-left: 3px solid var(--hot);
+            padding: 18px 20px; border-radius: 4px;
+        }
+        .stat-num {
+            font-family: var(--font-display); font-size: 2.2rem;
+            color: var(--hot); line-height: 1; margin-bottom: 6px;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-body); margin-bottom: 4px; }
+        .stat-source {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+            margin-top: 8px; letter-spacing: 0.05em;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 720px) { .grid-3 { grid-template-columns: 1fr; } }
+        .card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 4px; padding: 18px;
+        }
+
+        .callout {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-left: 3px solid var(--hot);
+            padding: 18px 22px; margin: 24px 0; border-radius: 4px;
+            font-style: italic; color: var(--text-main);
+        }
+
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(141,166,103,0.4); }
+        a:hover { color: var(--accent-light); }
+
+        footer {
+            border-top: 1px solid var(--card-border);
+            padding: 2.5rem 2rem; margin-top: 3rem; text-align: center;
+            font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);
+        }
+        footer .footer-links {
+            display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+            dryad
+        </a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/satellite.html">Satellite</a>
+            <a href="/talk.html">Talk to Dryad</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="eyebrow">PUBLIC HEALTH · DETROIT · LANDSAT THERMAL</div>
+        <h1>Where Detroit gets too hot</h1>
+        <p class="lede">A free Land Surface Temperature map of Detroit, derived from Landsat 8 thermal data. Hotter neighborhoods are where extreme summer heat hits hardest, where canopy is missing, and where tree planting saves the most lives. The map is here so anyone can see it.</p>
+    </div>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">01 · The map</div>
+            <h2>Detroit on a hot day</h2>
+            <p>Land Surface Temperature for the Detroit metro on September 9, 2025 (Landsat 8, 0.5% cloud cover). Bright yellow and white pixels are hot impervious surfaces - parking lots, factory roofs, the freeway. Dark purple and black are cool - tree canopy, parks, the Detroit River. Every pixel is 30 meters across.</p>
+            <figure class="map-figure">
+                <img src="images/heat-map/detroit-lst.png" alt="Detroit Land Surface Temperature map for September 9, 2025">
+                <figcaption>Detroit metro Land Surface Temperature, °F. The Detroit River shows as the cool dark band running diagonally. Chadsey-Condon (where Dryad operates) is annotated in green.</figcaption>
+            </figure>
+
+            <div class="stat-grid">
+                <div class="stat">
+                    <div class="stat-num">84.6°F</div>
+                    <div class="stat-label">Detroit metro mean LST</div>
+                    <div class="stat-source">Landsat 8, 2025-09-09</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">89.7°F</div>
+                    <div class="stat-label">Chadsey-Condon mean LST</div>
+                    <div class="stat-source">Same scene · same time</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">+5.1°F</div>
+                    <div class="stat-label">Chadsey-Condon vs metro</div>
+                    <div class="stat-source">Heat island differential</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">~120</div>
+                    <div class="stat-label">Heat-related premature deaths in Detroit per year</div>
+                    <div class="stat-source">Planet Detroit, 2025</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">02 · Zoom in</div>
+            <h2>Chadsey-Condon, on the same day</h2>
+            <p>Same Landsat scene, zoomed into the neighborhood where Dryad operates. The microstructure becomes visible: hot rooftops and parking lots in bright yellow, cool tree canopy in dark purple. The mean is 89.7°F - more than 5 degrees above the metro mean. Vacant lots without canopy run hottest.</p>
+            <figure class="map-figure">
+                <img src="images/heat-map/chadsey-lst.png" alt="Chadsey-Condon Land Surface Temperature closeup">
+                <figcaption>Chadsey-Condon, °F. Range across this single neighborhood: ~86 to ~96°F.</figcaption>
+            </figure>
+
+            <h3>The pattern is not random</h3>
+            <p>The cool patches are where mature trees and small green spaces survive. The hot patches are where pavement, rooftops, and bare soil dominate. The 10°F difference within a single neighborhood is the heat island effect operating block-by-block. Tree canopy is the most cost-effective intervention; the EPA estimates urban tree planting reduces local LST by 7-9°F when canopy hits 40%+.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">03 · Method</div>
+            <h2>How this map was built</h2>
+            <p>Free public data, free public software, no API keys required.</p>
+            <div class="grid-3">
+                <div class="card">
+                    <h3 style="font-size:1rem;color:var(--accent-amber);margin-top:0">Source</h3>
+                    <p style="font-size:0.9rem;margin:0">Landsat 8 Collection 2 Level 2 surface temperature (Band 10 thermal infrared, 30 m/pixel) via <a href="https://planetarycomputer.microsoft.com" rel="noopener noreferrer">Microsoft Planetary Computer</a>. Free, open, requires no account. Refresh every ~16 days per satellite.</p>
+                </div>
+                <div class="card">
+                    <h3 style="font-size:1rem;color:var(--accent-amber);margin-top:0">Pipeline</h3>
+                    <p style="font-size:0.9rem;margin:0">Python script (rasterio + pystac-client + matplotlib): scene search filtered for &lt;20% cloud, summer months 2023-2026; surface temperature DN converted to Kelvin (DN × 0.00341802 + 149); rendered with the inferno colormap; stretched to robust 2/98 percentiles.</p>
+                </div>
+                <div class="card">
+                    <h3 style="font-size:1rem;color:var(--accent-amber);margin-top:0">Reproducible</h3>
+                    <p style="font-size:0.9rem;margin:0">All code lives at <a href="https://github.com/vivicool12334/dryad" rel="noopener noreferrer">github.com/vivicool12334/dryad</a> in <code style="font-family:var(--font-mono);font-size:0.85em">services/satellite-microservice/scripts/generate_heat_map.py</code>. Same script, any city: change the bbox.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">04 · So what</div>
+            <h2>What to do with this</h2>
+            <p>This map is data. The action it points to is canopy investment in the hottest neighborhoods. Detroit has roughly 100,000 vacant lots. Many of them sit in the brightest cells of this map. The same lots could carry trees, native prairie, and pollinator habitat - and measurably cool the surrounding blocks.</p>
+
+            <div class="callout">
+                The Branas et al. (2018) PNAS randomized controlled trial on Philadelphia vacant-lot greening found a 41-69% reduction in poor mental health in low-income neighborhoods near greened lots, alongside a documented drop in violent crime. Heat reduction is the mechanism most strongly supported by satellite evidence: 7-9°F cooling at street level under mature canopy.
+            </div>
+
+            <h3>Dryad's piece of this</h3>
+            <p>Dryad is the autonomous operator that takes nine of those vacant lots in Chadsey-Condon and converts them into permanent native habitat - a pilot for a model that could scale to thousands of lots without grant cycles, volunteer burnout, or annual budget fights. <a href="/">Read about Dryad</a> · <a href="/docs.html">Technical docs</a> · <a href="/talk.html">Ask Dryad</a></p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">dryad.land</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/satellite.html">Satellite Monitoring</a>
+            <a href="https://github.com/vivicool12334/dryad" rel="noopener noreferrer">GitHub</a>
+        </div>
+        <div>Detroit Heat Island Map · built from free public Landsat data · refresh by re-running <code>generate_heat_map.py</code></div>
+    </footer>
+</body>
+</html>

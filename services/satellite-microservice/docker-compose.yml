@@ -1,0 +1,18 @@
+services:
+  satellite:
+    build: .
+    container_name: dryad-satellite
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9006:9006"   # bind to localhost only; agent talks to us internally
+    environment:
+      - LOG_LEVEL=INFO
+      - WEB3_STORAGE_TOKEN=${WEB3_STORAGE_TOKEN:-}
+      - IPFS_GATEWAY=${IPFS_GATEWAY:-https://w3s.link/ipfs/}
+    volumes:
+      - ./output:/app/output
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

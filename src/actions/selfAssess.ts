@@ -18,6 +18,7 @@ const metrics = {
     iNaturalist: { total: 0, failures: 0 },
     weather: { total: 0, failures: 0 },
     coinGecko: { total: 0, failures: 0 },
+    satellite: { total: 0, failures: 0 },
   },
   startTime: Date.now(),
 };
@@ -28,14 +29,16 @@ export function recordLoopExecution(success: boolean): void {
   else metrics.loopFailures++;
 }
 
-export function recordApiCall(api: 'iNaturalist' | 'weather' | 'coinGecko', success: boolean): void {
+export type TrackedApi = 'iNaturalist' | 'weather' | 'coinGecko' | 'satellite';
+
+export function recordApiCall(api: TrackedApi, success: boolean): void {
   if (metrics.apiCalls[api]) {
     metrics.apiCalls[api].total++;
     if (!success) metrics.apiCalls[api].failures++;
   }
 }
 
-function apiUptime(api: 'iNaturalist' | 'weather' | 'coinGecko'): string {
+function apiUptime(api: TrackedApi): string {
   const { total, failures } = metrics.apiCalls[api];
   if (total === 0) return 'no calls yet';
   return `${Math.round(((total - failures) / total) * 100)}% (${total - failures}/${total})`;

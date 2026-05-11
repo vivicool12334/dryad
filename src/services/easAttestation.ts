@@ -43,9 +43,16 @@ const SCHEMA_STRING =
 const OBSERVATION_SCHEMA_STRING =
   'string observerName,string speciesName,string commonName,string qualityGrade,uint64 observationId,string parcelAddress,string location,uint64 observedAt,bool isInvasive';
 
+// ── Dryad Satellite Observation Attestation Schema ──
+// NDVI/EVI are stored as int16 = round(value * 10000), range -10000..10000.
+// e.g. NDVI 0.4640 -> 4640. Recover with value/10000.
+const SATELLITE_OBSERVATION_SCHEMA_STRING =
+  'string parcelAddress,string parcelNumber,int16 ndviX10000,int16 eviX10000,uint8 cloudCover,uint64 captureTimestamp,string sceneId,string satellite,string rasterIpfsHash,string previewIpfsHash';
+
 // Schema UIDs are stored after registration (or loaded from env if already registered)
 let cachedSchemaUid: Hex | null = null;
 let cachedObservationSchemaUid: Hex | null = null;
+let cachedSatelliteSchemaUid: Hex | null = null;
 
 // ── ABI fragments we need ──
 const SCHEMA_REGISTRY_ABI = [
@@ -407,5 +414,152 @@ export async function attestObservation(params: {
   }
 
   logger.info(`[EAS] Observation attested: uid=${uid} tx=${hash} species=${params.speciesName}`);
+  return { uid, txHash: hash };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Satellite Observation Attestations
+// ═══════════════════════════════════════════════════════════
+
+/** Clamp a signed value to int16 range. */
+function toInt16(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(-32768, Math.min(32767, Math.round(value)));
+}
+
+/** Encode an NDVI/EVI value (-1..1) as int16 (-10000..10000). */
+export function encodeIndexAsInt16(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return toInt16(value * 10000);
+}
+
+/**
+ * Get or register Dryad's satellite observation attestation schema.
+ */
+export async function getOrRegisterSatelliteSchema(): Promise<Hex> {
+  if (process.env.EAS_SATELLITE_SCHEMA_UID) {
+    cachedSatelliteSchemaUid = process.env.EAS_SATELLITE_SCHEMA_UID as Hex;
+    return cachedSatelliteSchemaUid;
+  }
+
+  if (cachedSatelliteSchemaUid) return cachedSatelliteSchemaUid;
+
+  const { publicClient, walletClient } = getClients();
+  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`;
+
+  const expectedUid = computeSchemaUid(SATELLITE_OBSERVATION_SCHEMA_STRING, ZERO_ADDRESS, true);
+
+  try {
+    const existing = await publicClient.readContract({
+      address: SCHEMA_REGISTRY_ADDRESS,
+      abi: SCHEMA_REGISTRY_ABI,
+      functionName: 'getSchema',
+      args: [expectedUid],
+    });
+
+    if (existing && existing.uid !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+      cachedSatelliteSchemaUid = expectedUid;
+      logger.info(`[EAS] Satellite schema already registered: ${expectedUid}`);
+      return expectedUid;
+    }
+  } catch {
+    // Not registered yet
+  }
+
+  logger.info(`[EAS] Registering satellite schema on ${CHAIN.USE_TESTNET ? 'Base Sepolia' : 'Base mainnet'}...`);
+  const hash = await walletClient.writeContract({
+    address: SCHEMA_REGISTRY_ADDRESS,
+    abi: SCHEMA_REGISTRY_ABI,
+    functionName: 'register',
+    args: [SATELLITE_OBSERVATION_SCHEMA_STRING, ZERO_ADDRESS, true],
+  });
+
+  const receipt = await publicClient.waitForTransactionReceipt({ hash, timeout: 60_000 });
+  logger.info(`[EAS] Satellite schema registered in tx ${hash} (block ${receipt.blockNumber})`);
+
+  cachedSatelliteSchemaUid = expectedUid;
+  return expectedUid;
+}
+
+/**
+ * Mint an onchain attestation for a single satellite observation.
+ * Use sparingly. For monthly-batch usage, call attestSatelliteCycle().
+ */
+export async function attestSatelliteObservation(params: {
+  parcelAddress: string;
+  parcelNumber: string;
+  ndviMean: number;          // -1..1
+  eviMean: number;           // -1..1
+  cloudCover: number;        // 0..100
+  captureTimestamp: number;  // unix seconds
+  sceneId: string;
+  satellite: string;
+  rasterIpfsHash: string;
+  previewIpfsHash: string;
+}): Promise<{ uid: Hex; txHash: Hex }> {
+  const schemaUid = await getOrRegisterSatelliteSchema();
+  const { publicClient, walletClient, account } = getClients();
+
+  const cloudCoverByte = Math.max(0, Math.min(255, Math.round(params.cloudCover)));
+
+  const encodedData = encodeAbiParameters(
+    parseAbiParameters(
+      'string parcelAddress, string parcelNumber, int16 ndviX10000, int16 eviX10000, uint8 cloudCover, uint64 captureTimestamp, string sceneId, string satellite, string rasterIpfsHash, string previewIpfsHash',
+    ),
+    [
+      params.parcelAddress,
+      params.parcelNumber,
+      encodeIndexAsInt16(params.ndviMean),
+      encodeIndexAsInt16(params.eviMean),
+      cloudCoverByte,
+      BigInt(params.captureTimestamp),
+      params.sceneId,
+      params.satellite,
+      params.rasterIpfsHash,
+      params.previewIpfsHash,
+    ],
+  );
+
+  const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000' as Hex;
+
+  await ensureSufficientGas();
+
+  const hash = await walletClient.writeContract({
+    address: EAS_ADDRESS,
+    abi: EAS_ABI,
+    functionName: 'attest',
+    gas: 600_000n,
+    args: [
+      {
+        schema: schemaUid,
+        data: {
+          recipient: account.address, // Dryad attests to itself
+          expirationTime: 0n,
+          revocable: true,
+          refUID: ZERO_BYTES32,
+          data: encodedData,
+          value: 0n,
+        },
+      },
+    ],
+  });
+
+  const receipt = await publicClient.waitForTransactionReceipt({ hash, timeout: 60_000 });
+
+  const attestedTopic = keccak256(
+    new TextEncoder().encode('Attested(address,address,bytes32,bytes32)'),
+  );
+
+  let uid: Hex = ZERO_BYTES32;
+  for (const log of receipt.logs) {
+    if (log.address.toLowerCase() === EAS_ADDRESS.toLowerCase() && log.topics[0] === attestedTopic) {
+      uid = (log.data.slice(0, 66)) as Hex;
+      break;
+    }
+  }
+
+  logger.info(
+    `[EAS] Satellite obs attested: uid=${uid} tx=${hash} parcel=${params.parcelAddress} ndvi=${params.ndviMean.toFixed(3)}`,
+  );
   return { uid, txHash: hash };
 }

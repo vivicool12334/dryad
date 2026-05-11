@@ -33,9 +33,19 @@ import { TIMING, FINANCIAL, DEMO_MODE, demoLog, demoSection, logConfig } from '.
 import { getUsdcBalance } from '../actions/defiYield.ts';
 import { loadPositions } from './yieldMonitor.ts';
 import { getPendingApplications, approveContractor, type Contractor } from '../contractors.ts';
-import { attestWorkSubmission, getOrRegisterSchema, getAttestationUrl, attestObservation, getOrRegisterObservationSchema } from './easAttestation.ts';
+import { attestWorkSubmission, getOrRegisterSchema, getAttestationUrl, attestObservation, getOrRegisterObservationSchema, attestSatelliteObservation } from './easAttestation.ts';
 import { updateSubmissionAttestation } from '../submissions.ts';
 import { getErrorMessage, isFileNotFoundError } from '../utils/fileErrors.ts';
+import {
+  runSatelliteCycle,
+  flushSatelliteAttestations,
+  shouldRunWeeklyCycle,
+  shouldFlushMonthlyAttestations,
+  pendingAttestationCount,
+  daysSinceLastCycle,
+  daysSinceLastAttestationFlush,
+  type NdviAnomaly,
+} from './satelliteMonitor.ts';
 
 const CYCLE_INTERVAL_MS = TIMING.CYCLE_INTERVAL_MS;
 const CONTRACTOR_EMAIL = process.env.CONTRACTOR_EMAIL || 'powahgen@gmail.com';
@@ -229,6 +239,47 @@ export class DecisionLoopService extends Service {
         return `health=${result.healthScore}/100, obs=${result.observationsTotal}, P1=${result.invasivesP1} P2=${result.invasivesP2} P3=${result.invasivesP3}`;
       });
 
+      // 2b. Satellite cycle (weekly cadence)
+      await runStep('satellite', async () => {
+        if (!shouldRunWeeklyCycle()) {
+          const days = daysSinceLastCycle();
+          return `not due (${days === Infinity ? 'never run' : days.toFixed(1) + 'd ago'})`;
+        }
+        try {
+          const { cycle, deltas, anomalies } = await runSatelliteCycle();
+          recordApiCall('satellite', true);
+
+          if (anomalies.length > 0) {
+            actionsTriggered.push('satelliteAnomalyAlert');
+            await this.sendSatelliteAnomalyAlert(anomalies, cycle.cycle_id, cycle);
+          }
+
+          const validObs = cycle.observations.filter((o) => !o.error);
+          const ndviMean = validObs.length > 0
+            ? validObs.reduce((s, o) => s + o.ndvi_mean, 0) / validObs.length
+            : 0;
+          return `cycle=${cycle.cycle_id} obs=${validObs.length}/${cycle.observations.length} ndvi=${ndviMean.toFixed(3)} anomalies=${anomalies.length}`;
+        } catch (e) {
+          recordApiCall('satellite', false);
+          throw e;
+        }
+      });
+
+      // 2c. Monthly attestation flush
+      await runStep('satellite_attest_flush', async () => {
+        if (!shouldFlushMonthlyAttestations()) {
+          const days = daysSinceLastAttestationFlush();
+          const pending = pendingAttestationCount();
+          return `not due (pending=${pending}, last=${days === Infinity ? 'never' : days.toFixed(1) + 'd ago'})`;
+        }
+        const result = await flushSatelliteAttestations(async (params) => {
+          const { uid, txHash } = await attestSatelliteObservation(params);
+          return { uid, txHash };
+        });
+        if (result.succeeded > 0) actionsTriggered.push('satelliteAttestationFlush');
+        return `attempted=${result.attempted} succeeded=${result.succeeded} failed=${result.failed}`;
+      });
+
       // 3. Check treasury health
       await runStep('treasury', async () => {
         const result = await this.checkTreasuryHealth();
@@ -315,6 +366,46 @@ export class DecisionLoopService extends Service {
       });
     } finally {
       this._running = false;
+    }
+  }
+
+  /**
+   * Email an alert when satellite-detected NDVI drops cross the anomaly threshold.
+   * One email per cycle that has anomalies, summarizing all affected parcels.
+   */
+  private async sendSatelliteAnomalyAlert(
+    anomalies: NdviAnomaly[],
+    cycleId: string,
+    cycle: { observations: { parcel_address: string; preview_ipfs_url: string | null }[] },
+  ): Promise<void> {
+    if (anomalies.length === 0) return;
+    const recipient = process.env.SATELLITE_ALERT_EMAIL || CONTRACTOR_EMAIL;
+    const noun = anomalies.length === 1 ? 'parcel' : 'parcels';
+    const subject = `Dryad satellite alert: ${anomalies.length} ${noun} with NDVI drop`;
+    const lines = [
+      `Dryad satellite cycle ${cycleId} detected ${anomalies.length} ${noun} with NDVI drop > 0.15 in 7 days.`,
+      '',
+      `Affected ${noun}:`,
+      ...anomalies.map((a) => {
+        const previewUrl = cycle.observations.find(
+          (o) => o.parcel_address === a.parcel_address,
+        )?.preview_ipfs_url;
+        const detail =
+          `  - ${a.parcel_address}: NDVI ${a.ndvi_prev.toFixed(3)} -> ${a.ndvi_now.toFixed(3)} (delta ${a.ndvi_delta.toFixed(3)} over ${a.days_between.toFixed(1)} days)`;
+        return previewUrl ? `${detail}\n      preview: ${previewUrl}` : detail;
+      }),
+      '',
+      'Recommended action: schedule a site visit to investigate (recent invasive growth, fire, removal, or unexpected disturbance).',
+      '',
+      'Source: Sentinel-2 L2A via Microsoft Planetary Computer.',
+      `Cycle ID: ${cycleId}`,
+      'Local data: data/satellite-history.jsonl',
+    ];
+    try {
+      await sendDryadEmail(recipient, subject, lines.join('\n'));
+      logger.info(`[satellite] anomaly alert emailed to ${recipient} for cycle ${cycleId}`);
+    } catch (e) {
+      logger.error(`[satellite] failed to email anomaly alert: ${getErrorMessage(e)}`);
     }
   }
 

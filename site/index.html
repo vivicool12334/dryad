@@ -1,1438 +1,2202 @@
-<html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dryad - The Forest That Owns Itself</title>
-    <meta name="description" content="Dryad is an experimental AI Agent that turns blighted Detroit land into biodiverse neighborhood green spaces.">
+    <meta name="description" content="Dryad is a live autonomous agent restoring nine Detroit vacant lots into maintained native habitat with verifiable work, local contractors, and a self-sustaining treasury.">
     <meta property="og:title" content="Dryad - The Forest That Owns Itself">
-    <meta property="og:description" content="Autonomous AI agent restoring native ecosystems on Detroit vacant land. dryadforest.eth • ERC-8004 #35293 on Base.">
+    <meta property="og:description" content="A live AI agent restoring nine Detroit parcels into native habitat, with onchain proof and a treasury built for long-term stewardship.">
     <meta property="og:image" content="https://dryad.land/images/lots/street-view-main.jpg">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dryad.land">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#1A1C14">
-    <meta property="og:url" content="https://dryad.land">
+    <meta name="theme-color" content="#171912">
     <link rel="canonical" href="https://dryad.land/">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E29E4B' d='M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <style>
         :root {
-            --bg: #1A1C14;
-            --bg-alt: #22241A;
-            --text-main: #D2D6C1;
-            --text-body: #c8ccb8;
-            --text-muted: rgba(210, 214, 193, 0.7);
-            --accent: #8DA667;
-            --accent-light: #a8c47a;
-            --accent-amber: #E29E4B;
-            --card-bg: #22241A;
-            --card-border: rgba(141, 166, 103, 0.2);
-            --danger: #c44;
-            --space-unit: max(2vw, 20px);
-            --font-display: 'Instrument Serif', serif;
-            --font-mono: 'Space Mono', monospace;
-            --font-body: 'Manrope', system-ui, sans-serif;
+            --bg: #171912;
+            --bg-alt: #1d2017;
+            --bg-deep: #10120d;
+            --surface: rgba(31, 34, 24, 0.92);
+            --surface-soft: rgba(226, 230, 213, 0.07);
+            --surface-strong: #23271c;
+            --line: rgba(184, 212, 140, 0.18);
+            --line-strong: rgba(184, 212, 140, 0.36);
+            --text: #e2e6d5;
+            --body: #cfd4c0;
+            --muted: rgba(226, 230, 213, 0.72);
+            --faint: rgba(226, 230, 213, 0.54);
+            --green: #8da667;
+            --green-light: #b8d48c;
+            --amber: #e29e4b;
+            --clay: #cb6f43;
+            --shadow: 0 24px 80px rgba(7, 9, 5, 0.35);
+            --font-display: "Instrument Serif", Georgia, serif;
+            --font-body: "Manrope", system-ui, sans-serif;
+            --font-mono: "Space Mono", ui-monospace, monospace;
+            --max: 1160px;
+            --pad: clamp(20px, 5vw, 80px);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 88px;
+            overflow-x: hidden;
+        }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-body);
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            letter-spacing: 0.02em;
-            width: 100%;
+            margin: 0;
+            min-width: 320px;
+            background:
+                radial-gradient(circle at 16% 12%, rgba(141, 166, 103, 0.12), transparent 28rem),
+                radial-gradient(circle at 86% 36%, rgba(226, 158, 75, 0.09), transparent 30rem),
+                var(--bg);
+            color: var(--body);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.7;
             -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden;
         }
 
-        ::selection { background: var(--accent-amber); color: var(--bg); }
-
-        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(141, 166, 103, 0.4); transition: border-color 0.3s; }
-        a:hover { border-bottom-color: var(--accent); }
-        a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        /* Links inside text blocks always show underline for accessibility */
-        p a, li a, td a, .evidence-block a, .stat-context a { text-decoration: underline; text-underline-offset: 3px; }
-
-        /* ── HERO - Terminal split panel ── */
-        .hero {
-            width: 100%;
-            height: calc(100vh - 63px);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 160px 160px;
         }
 
-        .hero-header {
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            align-items: center;
-            padding: 0.9rem 2rem;
-            border-bottom: 1px solid var(--card-border);
-            background: rgba(26,28,20,0.97);
-            backdrop-filter: blur(12px);
-            flex-shrink: 0;
+        ::selection {
+            background: var(--amber);
+            color: var(--bg-deep);
+        }
+
+        a {
+            color: inherit;
+            text-decoration-color: rgba(184, 212, 140, 0.45);
+            text-decoration-thickness: 1px;
+            text-underline-offset: 4px;
+        }
+
+        a:hover {
+            color: var(--green-light);
+            text-decoration-color: var(--green-light);
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        summary:focus-visible {
+            outline: 2px solid var(--amber);
+            outline-offset: 4px;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: -80px;
+            z-index: 200;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: var(--amber);
+            color: var(--bg-deep);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            transition: top 0.2s ease;
+        }
+
+        .skip-link:focus {
+            top: 16px;
+        }
+
+        .site-header {
             position: sticky;
             top: 0;
             z-index: 100;
+            border-bottom: 1px solid rgba(184, 212, 140, 0.14);
+            background: rgba(16, 18, 13, 0.78);
+            backdrop-filter: blur(18px);
+            transition: background 0.2s ease, border-color 0.2s ease;
         }
 
-        .hero-header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.4); border-bottom-color: rgba(141,166,103,0.35); }
-        .logo-area {
-            display: flex;
+        .site-header.is-scrolled {
+            background: rgba(16, 18, 13, 0.94);
+            border-bottom-color: rgba(184, 212, 140, 0.28);
+        }
+
+        .nav-shell {
+            width: calc(100% - 32px);
+            max-width: var(--max);
+            min-height: 72px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .brand {
+            display: inline-flex;
             align-items: center;
             gap: 10px;
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.92rem;
             font-weight: 700;
-            text-transform: lowercase;
-            font-size: 1.4rem;
-            letter-spacing: -0.02em;
-            color: var(--accent);
-        }
-        .logo-area:hover { border-bottom: none !important; color: var(--accent-light); }
-
-        .logo-area svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: logo-spin 30s linear infinite; }
-        @keyframes logo-spin { to { transform: rotate(360deg); } }
-
-        .hero-nav { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
-        .hero-nav a { color: var(--text-muted); border-bottom: none; padding: 12px 14px; min-height: 44px; display: inline-flex; align-items: center; }
-        .hero-nav a:hover { color: var(--accent-amber); text-decoration: underline; text-underline-offset: 4px; }
-        .hero-nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-
-        .menu-toggle { display: none; background: none; border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-muted); padding: 8px 10px; cursor: pointer; font-size: 1.2rem; line-height: 1; min-width: 44px; min-height: 44px; }
-        .menu-toggle:hover { color: var(--accent-amber); border-color: var(--accent); }
-
-        .hero-main {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            flex-grow: 1;
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        .hero-left {
-            border-right: 1px solid var(--card-border);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 1.8rem 2rem;
-            overflow-y: auto;
-        }
-
-        .hero-title {
-            font-family: var(--font-display);
-            font-size: clamp(3.2rem, 6vw, 6rem);
-            line-height: 0.88;
-            font-weight: 400;
-            text-transform: none;
             letter-spacing: -0.03em;
-            color: var(--accent-amber);
-            margin-bottom: 1.2rem;
+            text-decoration: none;
         }
 
-        .hero-subtitle {
-            font-family: var(--font-display);
-            font-size: clamp(1.1rem, 1.8vw, 1.6rem);
-            line-height: 1.3;
-            text-transform: none;
-            color: var(--text-main);
-            margin-bottom: 1.5rem;
-            max-width: 92%;
+        .brand-mark {
+            width: 24px;
+            height: 24px;
+            flex: 0 0 auto;
+            fill: var(--amber);
         }
 
-        .hero-details {
-            font-size: max(0.8rem, 12px);
-            color: var(--text-muted);
-            line-height: 1.6;
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 0.5rem 1.2rem;
-            margin-top: auto;
-            border-top: 1px solid var(--card-border);
-            padding-top: 0.8rem;
-        }
-        .hero-details .hl { color: var(--accent); }
-
-        #hero-particles {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
+        .nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
-        .hero-grain {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-            background-size: 128px 128px;
-            animation: grain-shift 0.5s steps(4) infinite;
+        .nav-links a {
+            padding: 11px 12px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.16s ease, color 0.16s ease;
         }
-        @keyframes grain-shift { to { background-position: 128px 128px; } }
 
-        .hero-main { position: relative; z-index: 3; }
-        .hero-footer { position: relative; z-index: 3; }
+        .nav-links a:hover {
+            background: rgba(226, 230, 213, 0.07);
+            color: var(--text);
+        }
 
-        .hero-right {
+        .nav-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 10px 16px;
+            border: 1px solid rgba(226, 158, 75, 0.5);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-decoration: none;
+            background: rgba(226, 158, 75, 0.12);
+            transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+        }
+
+        .nav-cta:hover {
+            color: var(--text);
+            border-color: var(--amber);
+            background: rgba(226, 158, 75, 0.18);
+        }
+
+        .nav-cta:active {
+            transform: translateY(1px);
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(226, 230, 213, 0.06);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .menu-toggle span,
+        .menu-toggle span::before,
+        .menu-toggle span::after {
+            display: block;
+            width: 18px;
+            height: 1px;
+            background: currentColor;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .menu-toggle span {
             position: relative;
-            background: linear-gradient(170deg, #14150F 0%, #1A1C14 40%, #1f2117 100%);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
         }
 
-        /* ── Mobile chat CTA (replaces widget on small screens) ── */
-        .chat-cta-mobile { display: none; }
-        .chat-widget-wrap { display: contents; }
+        .menu-toggle span::before,
+        .menu-toggle span::after {
+            content: "";
+            position: absolute;
+            left: 0;
+        }
 
-        /* ── Chat widget ── */
-        .chat-hdr {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--card-border);
-            background: rgba(20,21,15,0.6);
-            flex-shrink: 0;
+        .menu-toggle span::before {
+            top: -6px;
+        }
+
+        .menu-toggle span::after {
+            top: 6px;
+        }
+
+        .menu-toggle.is-open span {
+            background: transparent;
+        }
+
+        .menu-toggle.is-open span::before {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .menu-toggle.is-open span::after {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        .shell {
+            width: calc(100% - var(--pad) - var(--pad));
+            max-width: var(--max);
+            margin: 0 auto;
+        }
+
+        .hero {
+            min-height: clamp(600px, calc(100dvh - 260px), 740px);
+            position: relative;
             display: flex;
+            align-items: end;
+            overflow: hidden;
+            border-bottom: 1px solid var(--line);
+            background: var(--bg-deep);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(16, 18, 13, 0.92) 0%, rgba(16, 18, 13, 0.78) 36%, rgba(16, 18, 13, 0.22) 72%),
+                linear-gradient(180deg, rgba(16, 18, 13, 0.2) 0%, rgba(16, 18, 13, 0.58) 78%, rgba(23, 25, 18, 1) 100%),
+                url("images/lots/street-view-main.jpg") center / cover no-repeat;
+            transform: scale(1.01);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto 0 0 0;
+            height: 170px;
+            background: linear-gradient(180deg, transparent, var(--bg));
+        }
+
+        .hero-shell {
+            position: relative;
+            z-index: 1;
+            width: calc(100% - var(--pad) - var(--pad));
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: clamp(72px, 10vw, 128px) 0 34px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+            gap: clamp(28px, 6vw, 80px);
+            align-items: end;
+        }
+
+        .hero-copy {
+            max-width: 760px;
+            min-width: 0;
+        }
+
+        .eyebrow {
+            display: inline-flex;
             align-items: center;
             gap: 10px;
+            margin: 0 0 18px;
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
         }
-        .chat-hdr-dot {
-            width: 8px; height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
-            animation: dot-pulse 2s ease-in-out infinite;
-            flex-shrink: 0;
-        }
-        @keyframes dot-pulse { 0%,100%{opacity:0.4;transform:scale(0.9)} 50%{opacity:1;transform:scale(1.1)} }
-        .chat-hdr-text { flex: 1; }
-        .chat-hdr-text strong {
-            font-family: var(--font-display);
-            font-size: 1.3rem;
-            color: var(--accent-amber);
-            font-weight: 400;
-        }
-        .chat-hdr-text span { display: block; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.08em; }
-        .chat-status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; margin-left: auto; padding: 4px 8px; border-radius: 3px; }
-        .chat-status-badge.live { background: rgba(76,175,80,0.2); color: #4CAF50; }
-        .chat-status-badge.offline { background: rgba(255,152,0,0.25); color: #FFB74D; }
-        .chat-status-badge::before { content: '●'; font-size: 0.8rem; }
-        .chat-status-badge.live::before { animation: dot-pulse 1.5s ease-in-out infinite; }
 
-        #chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .eyebrow::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: var(--green-light);
+            box-shadow: 0 0 0 5px rgba(184, 212, 140, 0.12);
         }
-        #chat-messages::-webkit-scrollbar { width: 4px; }
-        #chat-messages::-webkit-scrollbar-track { background: transparent; }
-        #chat-messages::-webkit-scrollbar-thumb { background: rgba(141,166,103,0.15); border-radius: 2px; }
 
-        .chat-welcome {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 16px 20px;
-            gap: 12px;
-            min-height: 0;
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
         }
-        .chat-welcome-icon {
-            width: 36px; height: 36px;
-            fill: var(--accent);
-            opacity: 0.5;
-        }
-        .chat-welcome h3 {
+
+        h1 {
+            max-width: 860px;
+            margin-bottom: 22px;
+            color: var(--text);
             font-family: var(--font-display);
-            font-size: 1.6rem;
-            color: var(--accent-amber);
+            font-size: clamp(3.2rem, 9vw, 7.5rem);
             font-weight: 400;
+            letter-spacing: -0.035em;
+            line-height: 0.9;
         }
-        .chat-welcome p {
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            max-width: 280px;
+
+        h1 span {
+            display: block;
+        }
+
+        .hero-subhead {
+            max-width: 650px;
+            margin-bottom: 30px;
+            color: var(--body);
+            font-size: clamp(1.08rem, 1.8vw, 1.35rem);
             line-height: 1.55;
         }
 
-        .chat-chips {
+        .hero-subhead span {
+            display: block;
+        }
+
+        .hero-actions,
+        .section-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 48px;
+            padding: 13px 18px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+        }
+
+        .button svg {
+            width: 15px;
+            height: 15px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .button.primary {
+            background: var(--amber);
+            color: var(--bg-deep);
+        }
+
+        .button.primary:hover {
+            color: var(--bg-deep);
+            background: #efad5d;
+        }
+
+        .button.secondary {
+            border-color: rgba(226, 230, 213, 0.28);
+            color: var(--text);
+            background: rgba(226, 230, 213, 0.06);
+        }
+
+        .button.secondary:hover {
+            border-color: rgba(226, 230, 213, 0.5);
+            color: var(--text);
+            background: rgba(226, 230, 213, 0.1);
+        }
+
+        .button:active {
+            transform: translateY(1px);
+        }
+
+        .hero-proof {
+            align-self: stretch;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 7px;
+            grid-template-columns: 1fr;
+            gap: 1px;
+            overflow: hidden;
+            border: 1px solid rgba(226, 230, 213, 0.2);
+            border-radius: 8px;
+            background: rgba(226, 230, 213, 0.16);
+            box-shadow: var(--shadow);
+        }
+
+        .proof-line {
+            padding: 18px;
+            background: rgba(16, 18, 13, 0.68);
+            backdrop-filter: blur(16px);
+        }
+
+        .proof-label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .proof-value {
+            color: var(--text);
+            font-family: var(--font-display);
+            font-size: clamp(1.75rem, 4vw, 2.9rem);
+            line-height: 1;
+        }
+
+        .proof-note {
+            margin: 9px 0 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .ticker {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(184, 212, 140, 0.18);
+            border-bottom: 1px solid rgba(184, 212, 140, 0.18);
+            background: rgba(29, 32, 23, 0.84);
+            overflow: hidden;
+        }
+
+        .ticker-track {
+            width: calc(100% - 32px);
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: 12px 0;
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .ticker-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ticker strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        section {
+            border-bottom: 1px solid var(--line);
+            padding: clamp(62px, 10vw, 112px) 0;
+        }
+
+        #project {
+            padding-top: 24px;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.8fr) minmax(320px, 1.2fr);
+            gap: clamp(32px, 7vw, 92px);
+            align-items: start;
+        }
+
+        .section-grid > * {
+            min-width: 0;
+        }
+
+        .section-kicker {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            max-width: 760px;
+            margin-bottom: 18px;
+            color: var(--text);
+            font-family: var(--font-display);
+            font-size: clamp(2.45rem, 5vw, 4.8rem);
+            font-weight: 400;
+            letter-spacing: -0.03em;
+            line-height: 0.98;
+            overflow-wrap: break-word;
+        }
+
+        h3 {
+            color: var(--text);
+            font-family: var(--font-display);
+            font-size: 1.55rem;
+            font-weight: 400;
+            line-height: 1.12;
+        }
+
+        .lede {
+            max-width: 760px;
+            margin-bottom: 0;
+            color: var(--body);
+            font-size: clamp(1.05rem, 1.8vw, 1.24rem);
+            line-height: 1.62;
+            overflow-wrap: break-word;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--line);
+        }
+
+        .impact-stat {
+            min-width: 0;
+            min-height: 210px;
+            padding: clamp(22px, 3vw, 34px);
+            background: rgba(29, 32, 23, 0.82);
+        }
+
+        .impact-stat.lead {
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background:
+                linear-gradient(180deg, rgba(226, 158, 75, 0.12), rgba(29, 32, 23, 0.88)),
+                rgba(29, 32, 23, 0.9);
+        }
+
+        .stat-number {
+            display: block;
+            margin-bottom: 14px;
+            color: var(--amber);
+            font-family: var(--font-display);
+            font-size: clamp(3.3rem, 7vw, 6.8rem);
+            letter-spacing: -0.04em;
+            line-height: 0.85;
+        }
+
+        .impact-stat:not(.lead) .stat-number {
+            font-size: clamp(2.6rem, 4.6vw, 4.4rem);
+        }
+
+        .stat-label {
+            display: block;
+            margin-bottom: 12px;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.35;
+            overflow-wrap: break-word;
+        }
+
+        .stat-source {
+            display: block;
+            margin-top: 16px;
+            color: var(--faint);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .story-steps {
+            display: grid;
+            gap: 14px;
+        }
+
+        .story-step {
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            gap: 22px;
+            padding: 22px 0;
+            border-top: 1px solid var(--line);
+        }
+
+        .story-step:last-child {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .step-index {
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .story-step h3 {
+            margin-bottom: 8px;
+        }
+
+        .story-step p {
+            max-width: 680px;
+            margin-bottom: 0;
+            color: var(--muted);
+        }
+
+        .solution-band {
+            margin-top: 34px;
+            padding: clamp(22px, 4vw, 34px);
+            border: 1px solid rgba(226, 158, 75, 0.34);
+            border-left: 4px solid var(--amber);
+            border-radius: 8px;
+            background: rgba(226, 158, 75, 0.09);
+        }
+
+        .solution-band p {
+            max-width: 900px;
+            margin: 0;
+            color: var(--text);
+            font-size: clamp(1.1rem, 2vw, 1.45rem);
+            line-height: 1.5;
+        }
+
+        .loop-panel {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(29, 32, 23, 0.72);
+        }
+
+        .loop-step {
+            display: grid;
+            grid-template-columns: 112px 1fr minmax(120px, 0.38fr);
+            gap: 22px;
+            align-items: center;
+            padding: 22px clamp(18px, 3vw, 28px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .loop-step:last-child {
+            border-bottom: none;
+        }
+
+        .loop-step:hover {
+            background: rgba(226, 230, 213, 0.04);
+        }
+
+        .loop-code {
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .loop-step h3 {
+            margin-bottom: 4px;
+        }
+
+        .loop-step p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .loop-proof {
+            justify-self: end;
+            color: var(--faint);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            line-height: 1.45;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: right;
+        }
+
+        .land-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+            gap: clamp(28px, 6vw, 72px);
+            align-items: center;
+        }
+
+        .photo-stack {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 12px;
+        }
+
+        .photo-frame {
+            position: relative;
+            min-height: 260px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface-strong);
+        }
+
+        .photo-frame.large {
+            grid-row: span 2;
+            min-height: 520px;
+        }
+
+        .photo-frame img {
             width: 100%;
-            max-width: 320px;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .photo-frame:hover img {
+            transform: scale(1.025);
+        }
+
+        .caption {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 18px;
+            background: linear-gradient(180deg, transparent, rgba(16, 18, 13, 0.88));
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .caption span {
+            display: block;
+            margin-top: 4px;
+            color: var(--faint);
+            font-family: var(--font-mono);
+            font-size: 0.64rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .land-facts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            margin-top: 22px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--line);
+        }
+
+        .land-fact {
+            padding: 18px;
+            background: rgba(29, 32, 23, 0.84);
+        }
+
+        .land-fact strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--amber);
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        #parcel-map {
+            width: 100%;
+            height: clamp(320px, 48vw, 520px);
+            margin-top: 24px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface-strong);
+            z-index: 0;
+        }
+
+        .proof-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--line);
+        }
+
+        .proof-card {
+            min-height: 260px;
+            padding: 24px;
+            background: rgba(29, 32, 23, 0.84);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .proof-card h3 {
+            margin-bottom: 12px;
+        }
+
+        .proof-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.58;
+        }
+
+        .proof-card a {
+            align-self: flex-start;
+            margin-top: 18px;
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .evidence-wrap {
+            display: grid;
+            gap: 12px;
+        }
+
+        details {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(29, 32, 23, 0.76);
+            overflow: hidden;
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 22px 24px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 18px;
+            align-items: center;
+            color: var(--text);
+            font-family: var(--font-display);
+            font-size: clamp(1.35rem, 2vw, 1.8rem);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: "+";
+            color: var(--amber);
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .detail-body {
+            padding: 0 24px 24px;
+        }
+
+        .detail-body p {
+            max-width: 860px;
+            margin-bottom: 18px;
+            color: var(--muted);
+        }
+
+        .mini-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--line);
+        }
+
+        .mini-stat {
+            padding: 18px;
+            background: rgba(16, 18, 13, 0.54);
+        }
+
+        .mini-stat strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--amber);
+            font-family: var(--font-display);
+            font-size: 2.3rem;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .cite {
+            margin: 18px 0 0;
+            color: var(--faint);
+            font-size: 0.78rem;
+            line-height: 1.55;
+        }
+
+        .finance-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.8fr) minmax(360px, 1.2fr);
+            gap: clamp(32px, 6vw, 80px);
+            align-items: start;
+        }
+
+        .finance-card {
+            padding: clamp(24px, 4vw, 36px);
+            border: 1px solid rgba(226, 158, 75, 0.32);
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, rgba(226, 158, 75, 0.1), rgba(29, 32, 23, 0.82)),
+                rgba(29, 32, 23, 0.88);
+        }
+
+        .finance-card .stat-number {
+            margin-bottom: 18px;
+        }
+
+        .finance-list {
+            display: grid;
+            gap: 1px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--line);
+        }
+
+        .finance-row {
+            display: grid;
+            grid-template-columns: 1.1fr 0.5fr 0.7fr 1fr;
+            gap: 16px;
+            padding: 17px 18px;
+            background: rgba(29, 32, 23, 0.84);
+            align-items: center;
+        }
+
+        .finance-row.header {
+            color: var(--green-light);
+            font-family: var(--font-mono);
+            font-size: 0.67rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .finance-row:not(.header) {
+            color: var(--body);
+            font-size: 0.95rem;
+        }
+
+        .finance-row strong {
+            color: var(--text);
+        }
+
+        .ask-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 0.8fr) minmax(340px, 1.2fr);
+            gap: clamp(32px, 6vw, 80px);
+            align-items: start;
+        }
+
+        .chat-widget {
+            min-height: 640px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--line-strong);
+            border-radius: 8px;
+            background: rgba(16, 18, 13, 0.72);
+            box-shadow: var(--shadow);
+        }
+
+        .chat-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+            background: rgba(29, 32, 23, 0.88);
+        }
+
+        .chat-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: var(--green-light);
+            box-shadow: 0 0 0 6px rgba(184, 212, 140, 0.1);
+            animation: pulse 2.6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.55;
+                transform: scale(0.94);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .chat-title {
+            flex: 1;
+        }
+
+        .chat-title strong {
+            display: block;
+            color: var(--text);
+            font-family: var(--font-display);
+            font-size: 1.55rem;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .chat-title span,
+        .chat-status-badge {
+            color: var(--faint);
+            font-family: var(--font-mono);
+            font-size: 0.64rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .chat-status-badge.live {
+            color: var(--green-light);
+        }
+
+        .chat-status-badge.offline {
+            color: var(--amber);
+        }
+
+        #chat-messages {
+            flex: 1;
+            min-height: 0;
+            padding: 22px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-welcome {
+            margin: auto;
+            max-width: 430px;
+            text-align: center;
+        }
+
+        .chat-welcome-mark {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 16px;
+            fill: var(--amber);
+            opacity: 0.9;
+        }
+
+        .chat-welcome h3 {
+            margin-bottom: 10px;
+        }
+
+        .chat-welcome p {
+            margin: 0;
+            color: var(--muted);
         }
 
         .chat-msg {
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-family: var(--font-body);
-            font-size: 0.92rem;
-            line-height: 1.65;
-            max-width: 88%;
+            max-width: min(88%, 520px);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.94rem;
+            line-height: 1.62;
             white-space: pre-wrap;
-            animation: msg-in 0.25s ease-out;
+            animation: message-in 0.22s ease-out;
         }
-        @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes message-in {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .chat-msg.user {
-            background: var(--accent);
-            color: #fff;
             align-self: flex-end;
-            border-bottom-right-radius: 3px;
+            background: var(--green);
+            color: var(--bg-deep);
+            font-weight: 700;
         }
+
         .chat-msg.agent {
-            background: rgba(34,36,26,0.8);
-            color: var(--text-body);
             align-self: flex-start;
-            border-bottom-left-radius: 3px;
-            border: 1px solid rgba(141,166,103,0.12);
+            border: 1px solid var(--line);
+            background: rgba(29, 32, 23, 0.86);
+            color: var(--body);
         }
-        .chat-msg.typing { animation: chat-pulse 1.2s infinite; }
-        @keyframes chat-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+        .chat-msg.typing {
+            animation: pulse 1.2s ease-in-out infinite;
+        }
 
         .chat-suggestions {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
-            padding: 8px 14px 6px;
-            flex-shrink: 0;
-            border-top: 1px solid var(--card-border);
-            background: rgba(20,21,15,0.5);
+            gap: 8px;
+            padding: 14px 18px;
+            border-top: 1px solid var(--line);
+            background: rgba(29, 32, 23, 0.72);
         }
+
         .chat-sug-btn {
-            padding: 8px 14px;
             min-height: 36px;
-            border: 1px solid rgba(141,166,103,0.3);
-            border-radius: 14px;
-            background: rgba(141,166,103,0.06);
-            color: var(--accent);
-            font-size: 0.72rem;
+            padding: 8px 11px;
+            border: 1px solid rgba(184, 212, 140, 0.22);
+            border-radius: 999px;
+            background: rgba(184, 212, 140, 0.08);
+            color: var(--green-light);
             cursor: pointer;
-            font-family: var(--font-body);
-            transition: all 0.2s;
+            font-size: 0.78rem;
+            line-height: 1.2;
+            transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
         }
-        .chat-sug-btn:hover { background: rgba(141,166,103,0.15); border-color: var(--accent); }
+
+        .chat-sug-btn:hover {
+            border-color: rgba(184, 212, 140, 0.5);
+            background: rgba(184, 212, 140, 0.14);
+        }
+
+        .chat-sug-btn:active {
+            transform: translateY(1px);
+        }
 
         .chat-input-area {
             display: flex;
-            gap: 8px;
-            padding: 10px 14px;
-            border-top: 1px solid var(--card-border);
-            background: rgba(20,21,15,0.7);
-            flex-shrink: 0;
+            gap: 10px;
+            padding: 16px 18px;
+            border-top: 1px solid var(--line);
+            background: rgba(16, 18, 13, 0.82);
         }
+
         .chat-input-area input {
             flex: 1;
-            padding: 11px 14px;
-            border: 1px solid rgba(141,166,103,0.15);
-            border-radius: 10px;
-            background: rgba(26,28,20,0.8);
-            color: var(--text-main);
-            font-family: var(--font-body);
-            font-size: 0.9rem;
+            min-width: 0;
+            height: 48px;
+            padding: 0 14px;
+            border: 1px solid rgba(184, 212, 140, 0.2);
+            border-radius: 8px;
+            background: rgba(226, 230, 213, 0.06);
+            color: var(--text);
             outline: none;
-            transition: border-color 0.2s;
         }
-        .chat-input-area input:focus { border-color: var(--accent); }
-        .chat-input-area input::placeholder { color: rgba(210,214,193,0.45); }
+
+        .chat-input-area input::placeholder {
+            color: rgba(226, 230, 213, 0.44);
+        }
+
         .chat-input-area button {
-            padding: 10px 18px;
-            background: var(--accent);
-            color: var(--bg);
-            border: none;
-            border-radius: 10px;
+            min-width: 94px;
+            height: 48px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--amber);
+            color: var(--bg-deep);
             cursor: pointer;
             font-family: var(--font-mono);
             font-size: 0.72rem;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            transition: background 0.2s;
-        }
-        .chat-input-area button:hover { background: var(--accent-light); }
-
-        .chat-footer { font-size: 0.6rem; color: rgba(210,214,193,0.5); text-align: center; padding: 5px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-        .hero-footer {
-            border-top: 1px solid var(--card-border);
-            padding: 0.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            background: var(--bg);
-            flex-shrink: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-        .hero-footer a { color: var(--text-muted); border-bottom: none; padding: 8px 6px; min-height: 44px; display: inline-flex; align-items: center; }
-        .hero-footer a:hover { color: var(--accent-amber); }
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
-
-        /* ── CONTENT SECTIONS ── */
-        .content { max-width: 960px; margin: 0 auto; padding: 0 32px; overflow-wrap: break-word; word-wrap: break-word; }
-
-        section {
-            padding: 60px 0;
-            border-bottom: 1px solid var(--card-border);
-            font-family: var(--font-body);
-            font-size: 0.95rem;
-            letter-spacing: 0;
-        }
-
-        section h2 {
-            font-family: var(--font-display);
-            font-size: clamp(2.2rem, 3.5vw, 3.5rem);
-            font-weight: 400;
-            color: var(--accent-amber);
-            margin-bottom: 12px;
-            line-height: 1.1;
-            text-transform: none;
-            letter-spacing: -0.02em;
-        }
-
-        section h3 {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: 400;
-            color: var(--text-main);
-            margin-bottom: 10px;
-            text-transform: none;
-        }
-
-        section p {
-            line-height: 1.75;
-            margin-bottom: 16px;
-            max-width: 680px;
-            color: var(--text-body);
-        }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 24px;
-            transition: border-color 0.2s;
-        }
-        .card:hover { border-color: rgba(141,166,103,0.4); }
-
-        .stat-big {
-            font-family: var(--font-display);
-            font-size: 2.8rem;
-            font-weight: 400;
-            color: var(--accent-amber);
-            line-height: 1;
-        }
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: 4px;
-        }
-
-        /* ── Crisis stats - editorial impact band ── */
-        .crisis-band {
-            display: grid;
-            gap: 22px;
-        }
-        .crisis-band-intro {
-            max-width: 620px;
-        }
-        .crisis-band-kicker {
-            display: inline-block;
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            margin-bottom: 10px;
-        }
-        .crisis-band-intro p {
-            font-family: var(--font-body);
-            font-size: 1rem;
-            line-height: 1.65;
-            color: var(--text-muted);
-            max-width: 58ch;
-            margin-bottom: 0;
-        }
-        .crisis-grid {
-            display: grid;
-            grid-template-columns: 1.7fr 1fr 1fr 1fr;
-            gap: 24px;
-            align-items: start;
-            padding-top: 22px;
-            border-top: 1px solid rgba(141,166,103,0.16);
-        }
-        .crisis-stat {
-            padding-left: 20px;
-            border-left: 1px solid rgba(141,166,103,0.14);
-        }
-        .crisis-stat:first-child {
-            padding-left: 0;
-            border-left: none;
-        }
-        .crisis-stat .stat-kicker {
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            margin-bottom: 12px;
-        }
-        .crisis-stat .stat-number {
-            font-family: var(--font-display);
-            font-size: clamp(2.9rem, 5vw, 4.4rem);
-            font-weight: 400;
-            color: var(--accent-amber);
-            line-height: 0.95;
-            margin-bottom: 10px;
-        }
-        .crisis-stat .stat-context {
-            font-family: var(--font-body);
-            font-size: 1rem;
-            color: var(--text-main);
-            line-height: 1.35;
-            margin-bottom: 8px;
-            max-width: 18ch;
-        }
-        .crisis-stat .stat-subtext {
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            line-height: 1.55;
-            color: var(--text-body);
-            max-width: 28ch;
-            margin-bottom: 10px;
-        }
-        .crisis-stat .stat-source {
-            font-family: var(--font-body);
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            line-height: 1.45;
-            letter-spacing: 0.01em;
-        }
-        .crisis-stat.crisis-stat-lead .stat-number {
-            font-size: clamp(4.4rem, 8vw, 6.4rem);
-            margin-bottom: 12px;
-        }
-        .crisis-stat.crisis-stat-lead .stat-context {
-            font-size: 1.35rem;
-            line-height: 1.1;
-            max-width: 14ch;
-        }
-        .crisis-stat.crisis-stat-lead .stat-subtext {
-            font-size: 0.98rem;
-            max-width: 34ch;
-        }
-
-        /* ── Deep-dive evidence section ── */
-        .evidence-block {
-            margin-bottom: 48px;
-        }
-        .evidence-block h3 {
-            font-family: var(--font-display);
-            font-size: 1.6rem;
-            color: var(--accent-amber);
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--card-border);
-        }
-        .evidence-block p {
-            max-width: 100%;
-        }
-        .evidence-stat-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin: 20px 0;
-        }
-        .evidence-stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 20px;
-            border-top: 3px solid var(--accent-amber);
-        }
-        .evidence-stat-card .ev-number {
-            font-family: var(--font-display);
-            font-size: 2rem;
-            color: var(--accent-amber);
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-        .evidence-stat-card .ev-label {
-            font-family: var(--font-body);
-            font-size: 0.85rem;
-            color: var(--text-body);
-            line-height: 1.5;
-        }
-        .evidence-cite {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 12px;
-            font-style: italic;
-        }
-        .solution-callout {
-            background: rgba(141,166,103,0.08);
-            border-left: 3px solid var(--accent);
-            padding: 20px 28px;
-            margin: 24px 0;
-            border-radius: 0 10px 10px 0;
-            line-height: 1.75;
-        }
-        .solution-callout strong {
-            color: var(--accent);
-        }
-
-        .photo-hero {
-            position: relative;
-            width: 100%;
-            height: 340px;
-            overflow: hidden;
-            border-radius: 12px;
-            margin: 28px 0;
-            border: 1px solid var(--card-border);
-        }
-        .photo-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 40%;
-        }
-        .photo-hero-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(26,28,20,0.2) 0%, rgba(26,28,20,0.85) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 28px;
-        }
-        .photo-hero-overlay h3 {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            color: #e8e4d8;
-            margin-bottom: 4px;
-        }
-        .photo-hero-overlay span {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--accent);
-            text-transform: uppercase;
             letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: background 0.16s ease, transform 0.16s ease;
         }
-        .photo-grid {
-            display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 12px;
-            margin: 20px 0;
-        }
-        .photo-grid .photo-main { grid-row: 1 / 3; }
-        .photo-grid img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid var(--card-border);
-            transition: transform 0.3s;
-            display: block;
-            aspect-ratio: 16/10;
-        }
-        .photo-grid .photo-main img { aspect-ratio: auto; }
-        .photo-grid img:hover { transform: scale(1.02); }
 
-        .callout {
-            background: rgba(34,36,26,0.7);
-            border-left: 3px solid var(--accent);
-            padding: 20px 28px;
-            margin: 28px 0;
-            border-radius: 0 10px 10px 0;
-            line-height: 1.75;
+        .chat-input-area button:hover {
+            background: #efad5d;
+        }
+
+        .chat-input-area button:active {
+            transform: translateY(1px);
+        }
+
+        .chat-footer {
+            padding: 9px 14px;
+            color: var(--faint);
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            text-align: center;
+            text-transform: uppercase;
+            border-top: 1px solid rgba(184, 212, 140, 0.1);
         }
 
         .page-footer {
-            background: #14150F;
-            color: var(--text-muted);
-            padding: 60px 0;
-            border-top: 1px solid var(--card-border);
+            padding: 54px 0;
+            background: var(--bg-deep);
         }
-        .page-footer a { color: var(--accent); border-bottom-color: transparent; }
-        .page-footer a:hover { border-bottom-color: var(--accent); }
-        .page-footer h3 { color: var(--accent-amber); font-size: 1.1rem; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 16px 0;
-            font-family: var(--font-body);
-            font-size: 0.88rem;
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
         }
-        th, td {
-            padding: 11px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--card-border);
-        }
-        th {
-            font-weight: 600;
-            color: var(--accent);
-            font-size: max(0.72rem, 12px);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-family: var(--font-mono);
-        }
-        tr:last-child td { border-bottom: none; }
-        .row-total { font-weight: 700; border-top: 2px solid var(--accent); }
 
-        @media (max-width: 768px) {
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-            .crisis-grid { grid-template-columns: 1fr; gap: 18px; }
-            .crisis-stat { padding-left: 0; padding-top: 18px; border-left: none; border-top: 1px solid rgba(141,166,103,0.14); }
-            .crisis-stat:first-child { padding-top: 0; border-top: none; }
-            .hero { height: auto; min-height: 100vh; }
-            .hero-main { grid-template-columns: 1fr; }
-            .hero-left { padding: 1.4rem 1.2rem; min-height: auto; }
-            .hero-right { min-height: auto; max-height: none; overflow-y: visible; }
-            .chat-widget-wrap { display: none; }
-            .chat-cta-mobile {
-                display: flex;
-                flex-direction: column;
-                padding: 32px 24px 28px;
-                text-align: center;
-                gap: 14px;
-                min-height: 320px;
-                justify-content: center;
+        .page-footer p {
+            margin: 0 0 8px;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            text-align: right;
+        }
+
+        .source-note {
+            margin-top: 18px;
+            color: var(--faint);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 980px) {
+            .nav-shell {
+                grid-template-columns: auto auto;
+                justify-content: space-between;
+                position: relative;
             }
-            .chat-cta-mobile-hdr {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                font-family: var(--font-mono);
-                font-size: 0.7rem;
-                color: var(--text-muted);
-                text-transform: uppercase;
-                letter-spacing: 0.12em;
-                margin-bottom: 4px;
+
+            .nav-links,
+            .nav-cta {
+                display: none;
             }
-            .chat-cta-mobile-hdr-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background: var(--accent);
-                box-shadow: 0 0 10px rgba(141,166,103,0.6);
-                animation: dot-pulse 2.5s ease-in-out infinite;
-            }
-            .chat-cta-mobile-icon {
-                width: 44px;
-                height: 44px;
-                margin: 0 auto;
-                fill: var(--accent-amber);
-                opacity: 0.9;
-                animation: welcome-spin 30s linear infinite;
-            }
-            @keyframes welcome-spin { to { transform: rotate(360deg); } }
-            .chat-cta-mobile-title {
-                font-family: var(--font-display);
-                font-weight: 400;
-                font-size: 2rem;
-                color: var(--accent-amber);
-                line-height: 1.1;
-                margin: 0;
-            }
-            .chat-cta-mobile-sub {
-                color: var(--text-muted);
-                font-size: 0.95rem;
-                line-height: 1.5;
-                max-width: 320px;
-                margin: 0 auto 8px;
-            }
-            .chat-cta-mobile-btn {
+
+            .menu-toggle {
                 display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                background: var(--accent);
-                color: var(--bg);
-                padding: 14px 28px;
-                border-radius: 24px;
+                position: fixed;
+                right: 16px;
+                top: 10px;
+                z-index: 220;
+                border-color: rgba(226, 158, 75, 0.55);
+                background: rgba(16, 18, 13, 0.92);
+            }
+
+            .menu-toggle::after {
+                content: "Menu";
                 font-family: var(--font-mono);
-                font-size: 0.85rem;
+                font-size: 0.66rem;
                 font-weight: 700;
+                letter-spacing: 0.08em;
                 text-transform: uppercase;
-                letter-spacing: 0.1em;
-                text-decoration: none;
-                border: none;
-                min-height: 48px;
-                margin: 4px auto 0;
-                width: fit-content;
-                transition: background 0.15s, transform 0.1s;
             }
-            .chat-cta-mobile-btn:active { background: var(--accent-light); transform: scale(0.98); }
-            .chat-cta-mobile-footer {
-                font-family: var(--font-mono);
-                font-size: 0.65rem;
-                color: var(--text-muted);
-                letter-spacing: 0.05em;
-                margin-top: 8px;
+
+            .menu-toggle span {
+                display: none;
             }
-            .hero-header { grid-template-columns: auto auto; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; margin-left: auto; }
-            .hero-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; background: rgba(26,28,20,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid var(--card-border); padding: 12px 20px; gap: 0; z-index: 200; }
-            .hero-nav.open { display: flex; }
-            .hero-nav a { padding: 14px 8px; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; min-height: 44px; display: flex; align-items: center; }
-            .hero-nav a:last-child { border-bottom: none; }
-            .hero-title { font-size: 2.4rem; }
-            .hero-details { font-size: max(0.7rem, 12px); gap: 0.3rem 0.8rem; }
-            .content { padding: 0 16px; }
-            section { padding: 48px 0; }
-            .photo-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
-            .photo-grid .photo-main { grid-row: auto; }
-            .photo-grid img { aspect-ratio: 16/9; }
-            .photo-hero { height: 240px; }
-            .hero-footer { flex-wrap: wrap; justify-content: center; gap: 6px; padding: 0.5rem 1rem; font-size: 0.65rem; }
-            .chat-input-area input { font-size: 16px; }
-            .chat-input-area button { min-width: 60px; min-height: 44px; }
-            .loop-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
-            .loop-grid > div { border-radius: 0 !important; border-bottom: none !important; }
-            .loop-grid > div:first-child { border-radius: 10px 10px 0 0 !important; }
-            .loop-grid > div:last-child { border-radius: 0 0 10px 10px !important; border-bottom: 1px solid var(--card-border) !important; }
-            .loop-grid .loop-arrow { display: none; }
+
+            .nav-links.is-open {
+                position: absolute;
+                left: 16px;
+                right: 16px;
+                top: calc(100% + 8px);
+                display: grid;
+                justify-content: stretch;
+                gap: 0;
+                padding: 8px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                background: rgba(16, 18, 13, 0.98);
+                box-shadow: var(--shadow);
+            }
+
+            .nav-links.is-open a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                border-radius: 6px;
+            }
+
+            .hero {
+                min-height: auto;
+            }
+
+            .hero::before {
+                background:
+                    linear-gradient(180deg, rgba(16, 18, 13, 0.82) 0%, rgba(16, 18, 13, 0.7) 42%, rgba(16, 18, 13, 0.98) 100%),
+                    url("images/lots/street-view-main.jpg") 58% center / cover no-repeat;
+            }
+
+            .hero-shell,
+            .section-grid,
+            .land-layout,
+            .finance-grid,
+            .ask-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-shell {
+                padding-top: 72px;
+            }
+
+            .hero-proof {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .proof-line {
+                padding: 15px;
+            }
+
+            .impact-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .impact-stat.lead {
+                grid-column: span 2;
+                grid-row: auto;
+            }
+
+            .proof-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .loop-step {
+                grid-template-columns: 86px 1fr;
+            }
+
+            .loop-proof {
+                grid-column: 2;
+                justify-self: start;
+                text-align: left;
+            }
         }
-        @media (max-width: 480px) {
-            .hero-title { font-size: 2rem; }
-            .hero-subtitle { font-size: 1rem; }
-            .hero-footer { flex-direction: column; gap: 4px; align-items: center; }
-            .hero-details { grid-template-columns: 1fr; gap: 0.2rem; }
-            section { padding: 1rem !important; }
-            section h2 { font-size: 1.3rem; }
+
+        @media (max-width: 700px) {
+            :root {
+                --pad: 18px;
+            }
+
+            html {
+                scroll-padding-top: 76px;
+            }
+
+            .nav-shell {
+                min-height: 64px;
+            }
+
+            .shell,
+            .hero-shell {
+                width: auto;
+                max-width: none;
+                margin-left: var(--pad);
+                margin-right: var(--pad);
+            }
+
+            .hero-shell {
+                padding: 28px 0 22px;
+            }
+
+            h1 {
+                max-width: calc(100vw - 36px);
+                font-size: clamp(2.75rem, 12.5vw, 3.35rem);
+            }
+
+            h2 {
+                max-width: 11ch;
+                font-size: clamp(2.15rem, 10.5vw, 2.75rem);
+            }
+
+            .hero-subhead {
+                max-width: calc(100vw - 36px);
+                font-size: 1rem;
+                overflow-wrap: break-word;
+            }
+
+            .lede,
+            .impact-stat p,
+            .story-step p,
+            .solution-band p,
+            .detail-body p {
+                max-width: 32ch;
+                overflow-wrap: anywhere;
+            }
+
+            .stat-label {
+                max-width: 24ch;
+                overflow-wrap: anywhere;
+            }
+
+            .hero-actions,
+            .section-actions {
+                align-items: stretch;
+            }
+
+            .button {
+                width: 100%;
+            }
+
+            .ticker-track {
+                grid-template-columns: 1fr;
+                display: grid;
+                gap: 8px 16px;
+                white-space: normal;
+                overflow: visible;
+            }
+
+            .ticker-track span:nth-child(2),
+            .ticker-track span:nth-child(n+4) {
+                display: none;
+            }
+
+            .hero-proof,
+            .impact-grid,
+            .proof-grid,
+            .mini-stats,
+            .land-facts {
+                grid-template-columns: 1fr;
+            }
+
+            .section-grid,
+            .land-layout,
+            .finance-grid,
+            .ask-layout {
+                display: block;
+            }
+
+            .hero-proof {
+                display: none;
+            }
+
+            .impact-stat.lead {
+                grid-column: auto;
+            }
+
+            .story-step {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .loop-step {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .loop-proof {
+                grid-column: auto;
+            }
+
+            .photo-stack {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-frame.large,
+            .photo-frame {
+                min-height: 320px;
+            }
+
+            .finance-row {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+
+            .finance-row.header {
+                display: none;
+            }
+
+            .chat-widget {
+                min-height: 620px;
+            }
+
+            .chat-input-area {
+                flex-direction: column;
+            }
+
+            .chat-input-area input {
+                font-size: 16px;
+            }
+
+            .chat-input-area button {
+                width: 100%;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                text-align: left;
+            }
         }
+
         @media (prefers-reduced-motion: reduce) {
-            .hero-grain, .chat-hdr-dot, .blink { animation: none !important; }
-            .hero-grain { opacity: 0; }
-            @keyframes dot-pulse { 0%,100%{opacity:1} }
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
         }
     </style>
 </head>
 <body>
-<a href="#problem" class="skip-link" style="position:absolute;top:-40px;left:0;background:var(--accent);color:var(--bg);padding:8px 16px;z-index:999;font-size:0.9rem;transition:top 0.2s;">Skip to content</a>
+    <a href="#main" class="skip-link">Skip to content</a>
 
-<!-- ═══════════════ STICKY NAV (outside hero for proper sticky behavior) ═══════════════ -->
-<header class="hero-header" role="banner">
-    <a href="#" class="logo-area" onclick="window.scrollTo({top:0,behavior:'smooth'});return false" style="text-decoration:none;border-bottom:none">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dryad logo"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
-        dryad
-    </a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false" role="button" onclick="var menu=document.getElementById('heroNav');menu.classList.toggle('open');var isOpen=menu.classList.contains('open');this.setAttribute('aria-expanded',isOpen?'true':'false');this.textContent=isOpen?'✕':'☰'">☰</button>
-    <nav class="hero-nav" id="heroNav" aria-label="Primary navigation">
-        <a href="#problem">Problem</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#architecture">How It Works</a>
-        <a href="#land">Land</a>
-        <a href="docs.html">Docs</a>
-        <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a>
-    </nav>
-</header>
-<script>document.getElementById('heroNav').addEventListener('click',function(e){if(e.target.tagName==='A'){this.classList.remove('open');var btn=document.getElementById('menuToggle');btn.textContent='☰';btn.setAttribute('aria-expanded','false');}});</script>
-<script>window.addEventListener('scroll',function(){document.querySelector('.hero-header').classList.toggle('scrolled',window.scrollY>80);},{passive:true});</script>
+    <header class="site-header" id="siteHeader">
+        <div class="nav-shell">
+            <a href="#top" class="brand" aria-label="Dryad home">
+                <svg class="brand-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"></path></svg>
+                dryad
+            </a>
+            <nav class="nav-links" id="siteNav" aria-label="Primary navigation">
+                <a href="#project">Project</a>
+                <a href="#model">Model</a>
+                <a href="#land">Land</a>
+                <a href="#proof">Proof</a>
+                <a href="satellite.html">Satellite</a>
+                <a href="heat-map.html">Heat Map</a>
+                <a href="docs.html">Docs</a>
+            </nav>
+            <a class="nav-cta" href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Live Dashboard</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
+    </header>
 
-<!-- ═══════════════ HERO ═══════════════ -->
-<div class="hero" style="position:relative">
-    <div class="hero-grain" aria-hidden="true"></div>
-    <canvas class="hero-ambient" id="hero-particles" aria-hidden="true"></canvas>
+    <main id="main">
+        <section class="hero" id="top" aria-label="Dryad landing hero">
+            <div class="hero-shell">
+                <div class="hero-copy">
+                    <p class="eyebrow">Live autonomous stewardship agent</p>
+                    <h1><span>The Forest</span><span>That Owns</span><span>Itself</span></h1>
+                    <p class="hero-subhead"><span>Autonomous agent. Nine Detroit lots.</span><span>Native habitat, paid work, public proof.</span></p>
+                    <div class="hero-actions">
+                        <a class="button primary" href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">
+                            View live proof
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+                        </a>
+                        <a class="button secondary" href="#ask">
+                            Ask Dryad
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg>
+                        </a>
+                    </div>
+                </div>
 
-    <main class="hero-main">
-        <section class="hero-left">
-            <h1 class="hero-title">The Forest<br>That Owns<br>Itself</h1>
-            <h2 class="hero-subtitle">Dryad is an experimental AI Agent that turns blighted Detroit land into biodiverse neighborhood green spaces.</h2>
-
-            <div class="hero-details">
-                <span class="hl">WALLET:</span>
-                <span>0xf2f7…0880 // ETH + USDC</span>
-                <span class="hl">GPS:</span>
-                <span>42.3417° N, 83.1001° W // 25th St, Detroit</span>
-                <span class="hl">LOOP:</span>
-                <span>24h cycle // iNaturalist → detect → hire → verify → pay → record</span>
+                <div class="hero-proof" aria-label="Project summary">
+                    <div class="proof-line">
+                        <span class="proof-label">Wallet</span>
+                        <span class="proof-value">0xf2f7...</span>
+                        <p class="proof-note">ETH + USDC on Base.</p>
+                    </div>
+                    <div class="proof-line">
+                        <span class="proof-label">GPS</span>
+                        <span class="proof-value">42.3417</span>
+                        <p class="proof-note">25th Street, Detroit.</p>
+                    </div>
+                    <div class="proof-line">
+                        <span class="proof-label">Loop</span>
+                        <span class="proof-value">24 hr</span>
+                        <p class="proof-note">Detect, hire, verify, pay, record.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="hero-right">
-            <div class="chat-widget-wrap">
-                <div class="chat-hdr">
-                    <div class="chat-hdr-dot"></div>
-                    <div class="chat-hdr-text">
-                        <strong>Ask Dryad</strong>
-                        <span>Autonomous agent</span>
-                    </div>
-                    <div class="chat-status-badge live" id="chat-status">LIVE</div>
-                </div>
-                <div id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
-                <div class="chat-suggestions" id="chat-suggestions"></div>
-                <div class="chat-input-area">
-                    <input id="chat-input" type="text" placeholder="Ask about the land, ecology, DLBA..." aria-label="Type a message to Dryad">
-                    <button id="chat-send" aria-label="Send message">Send</button>
-                </div>
-                <div class="chat-footer">dryadforest.eth • ERC-8004 #35293 • elizaOS</div>
+        <div class="ticker" aria-label="Project identifiers">
+            <div class="ticker-track">
+                <span><strong>Status:</strong> active</span>
+                <span><strong>ENS:</strong> dryadforest.eth</span>
+                <span><strong>Agent:</strong> ERC-8004 #35293</span>
+                <span><strong>Wallet:</strong> 0xf2f7527D86e2173c91fF1c10Ede03f6f84510880</span>
+                <span><strong>Location:</strong> 42.3417&deg; N, 83.1001&deg; W</span>
             </div>
-            <a href="/talk.html" class="chat-cta-mobile" aria-label="Open Talk to Dryad">
-                <div class="chat-cta-mobile-hdr">
-                    <span class="chat-cta-mobile-hdr-dot" aria-hidden="true"></span>
-                    <span>Live Autonomous Agent</span>
+        </div>
+
+        <section id="project">
+            <div class="shell section-grid">
+                <div>
+                    <span class="section-kicker">What it is</span>
+                    <h2>A land steward with a wallet.</h2>
+                    <p class="lede">Dryad is not a report, token, or campaign page. It is a live agent responsible for a real patch of Detroit land.</p>
                 </div>
-                <svg class="chat-cta-mobile-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
-                <h3 class="chat-cta-mobile-title">Talk to the Forest</h3>
-                <p class="chat-cta-mobile-sub">Ask Dryad about the ecology, native species, or how to get a lot from the Detroit Land Bank.</p>
-                <span class="chat-cta-mobile-btn">Talk to Dryad <span aria-hidden="true">→</span></span>
-                <div class="chat-cta-mobile-footer">dryadforest.eth • ERC-8004 #35293</div>
-            </a>
+                <div class="impact-grid">
+                    <div class="impact-stat lead">
+                        <span class="stat-number">9</span>
+                        <span class="stat-label">vacant lots under active stewardship</span>
+                        <span class="stat-source">4475-4523 25th Street, Chadsey-Condon</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="stat-number">24h</span>
+                        <span class="stat-label">autonomous monitoring loop</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="stat-number">$945</span>
+                        <span class="stat-label">annual maintenance floor</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="stat-number">Base</span>
+                        <span class="stat-label">wallet, identity, and attestations</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="stat-number">iNat</span>
+                        <span class="stat-label">biodiversity signal from field observations</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="land">
+            <div class="shell land-layout">
+                <div>
+                    <span class="section-kicker">The land</span>
+                    <h2>Small enough to verify. Big enough to matter.</h2>
+                    <div class="land-facts" aria-label="Land facts">
+                        <div class="land-fact"><strong>0.68</strong>acres</div>
+                        <div class="land-fact"><strong>9</strong>parcels</div>
+                        <div class="land-fact"><strong>25+</strong>native species planned</div>
+                    </div>
+                </div>
+                <div class="photo-stack">
+                    <figure class="photo-frame large">
+                        <img src="images/lots/lots-wide-north.jpg" alt="Wide view across the 25th Street vacant parcels in Detroit" loading="lazy">
+                        <figcaption class="caption">The restoration area today<span>4475-4523 25th Street</span></figcaption>
+                    </figure>
+                    <figure class="photo-frame">
+                        <img src="images/lots/sapling-pine-tag.jpg" alt="Marked sapling on one of the 25th Street parcels" loading="lazy">
+                        <figcaption class="caption">Tagged sapling<span>Field proof</span></figcaption>
+                    </figure>
+                    <figure class="photo-frame">
+                        <img src="images/lots/sapling-vs-invasive.jpg" alt="A small sapling growing near invasive plants on a vacant lot" loading="lazy">
+                        <figcaption class="caption">The maintenance fight<span>Native growth vs. invasive pressure</span></figcaption>
+                    </figure>
+                </div>
+            </div>
+            <div class="shell">
+                <div id="parcel-map" aria-label="Map of Dryad-managed parcels"></div>
+            </div>
+        </section>
+
+        <section id="model">
+            <div class="shell section-grid">
+                <div>
+                    <span class="section-kicker">How it works</span>
+                    <h2>Observe. Decide. Pay. Prove.</h2>
+                    <div class="section-actions" style="margin-top: 26px;">
+                        <a class="button secondary" href="docs.html#architecture">Read docs</a>
+                    </div>
+                </div>
+                <div class="loop-panel" aria-label="Dryad operating loop">
+                    <article class="loop-step">
+                        <span class="loop-code">01</span>
+                        <div>
+                            <h3>Watch the site</h3>
+                            <p>iNaturalist and field reports keep the agent aware of what is changing.</p>
+                        </div>
+                        <span class="loop-proof">Data</span>
+                    </article>
+                    <article class="loop-step">
+                        <span class="loop-code">02</span>
+                        <div>
+                            <h3>Trigger work</h3>
+                            <p>Invasive pressure, mowing needs, and planting windows become work orders.</p>
+                        </div>
+                        <span class="loop-proof">Action</span>
+                    </article>
+                    <article class="loop-step">
+                        <span class="loop-code">03</span>
+                        <div>
+                            <h3>Verify proof</h3>
+                            <p>GPS-tagged photos are checked before a job is accepted.</p>
+                        </div>
+                        <span class="loop-proof">Evidence</span>
+                    </article>
+                    <article class="loop-step">
+                        <span class="loop-code">04</span>
+                        <div>
+                            <h3>Pay and record</h3>
+                            <p>USDC pays for completed work, then the milestone becomes public.</p>
+                        </div>
+                        <span class="loop-proof">Receipt</span>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="proof">
+            <div class="shell">
+                <div class="section-grid" style="margin-bottom: 34px;">
+                    <div>
+                        <span class="section-kicker">Verify it</span>
+                        <h2>Four places to check.</h2>
+                    </div>
+                    <div class="section-actions">
+                        <a class="button primary" href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Open dashboard</a>
+                        <a class="button secondary" href="docs.html">Read full docs</a>
+                    </div>
+                </div>
+                <div class="proof-grid">
+                    <article class="proof-card">
+                        <div>
+                            <h3>Dashboard</h3>
+                            <p>Agent health, treasury, and current work.</p>
+                        </div>
+                        <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Open</a>
+                    </article>
+                    <article class="proof-card">
+                        <div>
+                            <h3>BaseScan</h3>
+                            <p>Wallet activity for dryadforest.eth.</p>
+                        </div>
+                        <a href="https://basescan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">Open</a>
+                    </article>
+                    <article class="proof-card">
+                        <div>
+                            <h3>EAS</h3>
+                            <p>Public work and observation attestations.</p>
+                        </div>
+                        <a href="https://base.easscan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">Open</a>
+                    </article>
+                    <article class="proof-card">
+                        <div>
+                            <h3>iNaturalist</h3>
+                            <p>Community science around the parcels.</p>
+                        </div>
+                        <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank" rel="noopener noreferrer">Open</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="ask">
+            <div class="shell ask-layout">
+                <div>
+                    <span class="section-kicker">Ask the operator</span>
+                    <h2>The agent can explain the land it is stewarding.</h2>
+                    <p class="lede">Ask about native species, Detroit Land Bank acquisition, invasive removal, the treasury, governance, or how the verification loop works.</p>
+                    <div class="section-actions" style="margin-top: 26px;">
+                        <a class="button secondary" href="talk.html">Open dedicated chat</a>
+                    </div>
+                </div>
+                <div class="chat-widget">
+                    <div class="chat-head">
+                        <span class="chat-dot" aria-hidden="true"></span>
+                        <div class="chat-title">
+                            <strong>Ask Dryad</strong>
+                            <span>Autonomous agent</span>
+                        </div>
+                        <div class="chat-status-badge live" id="chat-status">Live</div>
+                    </div>
+                    <div id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+                    <div class="chat-suggestions" id="chat-suggestions"></div>
+                    <div class="chat-input-area">
+                        <input id="chat-input" type="text" placeholder="Ask about the land, ecology, or DLBA..." aria-label="Type a message to Dryad">
+                        <button id="chat-send" type="button">Send</button>
+                    </div>
+                    <div class="chat-footer">dryadforest.eth &bull; ERC-8004 #35293 &bull; elizaOS</div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer class="hero-footer">
-        <div>STATUS: ACTIVE <span class="blink">_</span></div>
-        <div><a href="https://github.com/vivicool12334/dryad" target="_blank" rel="noopener noreferrer">GitHub</a> • <a href="https://basescan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">BaseScan</a> • <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank" rel="noopener noreferrer">iNaturalist</a></div>
-        <div>LAT: 42.342 // LONG: -83.100</div>
-    </footer>
-</div>
-
-<!-- ═══════════════ CRISIS STATS ═══════════════ -->
-<section id="crisis-stats" style="padding: 40px 0 44px; border-bottom: 1px solid var(--card-border); background: linear-gradient(180deg, rgba(26,28,20,1) 0%, rgba(34,36,26,0.5) 100%);">
-    <div class="content">
-        <div class="crisis-band">
-            <div class="crisis-band-intro">
-                <span class="crisis-band-kicker">What Detroit Is Carrying</span>
-                <p>Vacant land is not a background condition. It shows up as heat, missing green space, and budget waste before any restoration work even begins.</p>
-            </div>
-            <div class="crisis-grid">
-                <div class="crisis-stat crisis-stat-lead">
-                    <div class="stat-kicker">Scale</div>
-                    <div class="stat-number">100,000+</div>
-                    <div class="stat-context">vacant lots across Detroit</div>
-                    <div class="stat-subtext">18 square miles of unmanaged land woven through the city.</div>
-                    <div class="stat-source">Detroit Future City, 2025</div>
-                </div>
-                <div class="crisis-stat">
-                    <div class="stat-kicker">Heat</div>
-                    <div class="stat-number">86%</div>
-                    <div class="stat-context">of neighborhoods sit in severe heat islands</div>
-                    <div class="stat-source">Planet Detroit, 2025</div>
-                </div>
-                <div class="crisis-stat">
-                    <div class="stat-kicker">Access</div>
-                    <div class="stat-number">87%</div>
-                    <div class="stat-context">of Detroit buildings are over a quarter-mile walk from a park</div>
-                    <div class="stat-subtext">More than half are over a 10-minute walk away.</div>
-                    <div class="stat-source">LaReaux &amp; Watkins, Urban Forestry &amp; Urban Greening, 2025</div>
-                </div>
-                <div class="crisis-stat">
-                    <div class="stat-kicker">Cost</div>
-                    <div class="stat-number">$6.7M</div>
-                    <div class="stat-context">spent mowing vacant lots every year</div>
-                    <div class="stat-subtext">Spent containing neglect, not restoring land.</div>
-                    <div class="stat-source">City of Detroit GSD</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════ ECOLOGICAL STAKES ═══════════════ -->
-<section id="stakes" style="padding: 72px 0 64px;">
-    <div class="content">
-        <p style="font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2.15rem); line-height: 1.32; font-weight: 400; color: var(--text-main); max-width: 880px; margin-bottom: 28px; letter-spacing: -0.01em;">
-            Before settlement, Wayne County held nineteen thousand acres of lakeplain oak opening, an ecosystem so distinctive that it is now ranked critically imperiled globally. Bur oak and white oak in scattered crowns. A ground layer of bluestem, milkweed, lupine, and wild bergamot. Birdsong dense enough to wake you at dawn.
-        </p>
-        <p style="font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2.15rem); line-height: 1.32; font-weight: 400; color: var(--text-main); max-width: 880px; margin-bottom: 44px; letter-spacing: -0.01em;">
-            Less than 1.3% of that ecosystem remains anywhere. A meaningful share of what is left is in fragments small enough to fit on a residential block.
-        </p>
-        <p>
-            Detroit's location matters more than its population for some species. Across the United States, butterfly populations have fallen 22% in twenty years. Eastern monarchs are down 90%. North America has lost roughly 3 billion breeding birds since 1970, almost a third of the total. Urban land in the Great Lakes flyway is now disproportionately important monarch habitat because the surrounding agricultural matrix has lost roughly 99% of its in-field milkweed. The lots in Chadsey-Condon are not symbolic. They are operationally significant for species recovery.
-        </p>
-        <p>
-            Dryad is not asking whether Detroit can become a city of green spaces. It is asking whether nine specific parcels can become functional remnants of a lost native community. The answer is yes, and the work is straightforward when an entity stays long enough to do it.
-        </p>
-        <p style="color: var(--text-main); margin-bottom: 0;">
-            The reason it has not happened is not technical. It is that no entity has been built to stay.
-        </p>
-    </div>
-</section>
-
-<!-- ═══════════════ PROBLEM / SOLUTION ═══════════════ -->
-<section id="problem">
-    <div class="content">
-        <h2>The Problem</h2>
-        <p style="font-size: 1.15rem; line-height: 1.7; margin-bottom: 32px; color: var(--text-main);">
-            Detroit has over 100,000 vacant lots: 18 square miles of unmanaged land running through neighborhoods
-            already carrying the city's highest heat, asthma, and life-expectancy burdens. The city spends
-            <strong style="color: var(--accent-amber);">$6.7 million a year</strong> just to mow them. Not to restore them.
-            Not to steward them. Just to keep neglect from taking over completely.
-        </p>
-
-        <div class="grid-3" style="gap: 32px; margin-bottom: 40px;">
-            <div class="card" style="padding: 24px;">
-                <h3 style="color: var(--accent-amber); font-size: 1.1rem; margin-bottom: 8px;">The Harm Is Already Here</h3>
-                <p style="line-height: 1.7;">These lots are not empty. They trap heat, harbor invasive growth, and sit where canopy is scarcest. 107 deaths are projected in a single severe heatwave. Detroit children have the worst asthma rate in the nation at 28.6%, and life expectancy swings 13&ndash;22 years between neighborhoods. The clinical fix is trees and green space, but the hardest-hit areas have the least.</p>
-            </div>
-            <div class="card" style="padding: 24px;">
-                <h3 style="color: var(--accent-amber); font-size: 1.1rem; margin-bottom: 8px;">Planting Isn't Enough</h3>
-                <p style="line-height: 1.7;">We know how to start restoration. We keep failing at the part after planting. 50% of urban trees are dead within 15 years, with 6.6&ndash;7% annual mortality. More than 80% of lifetime cost comes after planting, in the maintenance most grants never fund. When the grant ends, the site reverts. The ribbon-cutting survives. The habitat does not.</p>
-            </div>
-            <div class="card" style="padding: 24px;">
-                <h3 style="color: var(--accent-amber); font-size: 1.1rem; margin-bottom: 8px;">Neglect Favors Invasives</h3>
-                <p style="line-height: 1.7;">Unmanaged lots do not stay neutral while we wait. Each one can hold up to 735,000 viable invasive seeds. Detroit has already lost 175,000+ trees since 2012 to Emerald Ash Borer alone, and spotted lanternfly is now endemic in Wayne County, threatening Michigan's $90B+ agriculture industry. Left alone, vacant land becomes a distribution system for ecological loss.</p>
-            </div>
-        </div>
-
-        <div style="border-left: 3px solid var(--accent-amber); padding-left: 24px; margin-bottom: 40px;">
-            <p style="font-size: 1.05rem; line-height: 1.7; color: var(--text-main); font-style: italic;">
-                The core failure is not intention. It is continuity. Restoration has no persistent operator:
-                no entity that monitors the land every day, pays contractors on time, verifies the work,
-                and is still there after the grant report is filed.
-            </p>
-        </div>
-
-        <h3>Dryad's Answer</h3>
-        <p style="line-height: 1.7;"><strong>Dryad is that persistent operator.</strong>
-        It runs a 24-hour autonomous loop: monitor biodiversity through iNaturalist, flag invasive pressure, hire and pay local contractors, verify their work through GPS-tagged photos, record every milestone onchain. The treasury funds continuity directly - $23,625 USDC earning ~4% APY through Morpho and Aave V3 on Base and Arbitrum generates $945/yr, enough to cover all operating costs indefinitely, without grant cycles, donors, or annual budget fights.</p>
-
-        <div class="grid-4" style="margin-top: 24px; margin-bottom: 16px;">
-            <div class="card" style="text-align: center; padding: 20px 12px;"><div class="stat-big" style="font-size: 2rem;">9</div><div class="stat-label">Parcels Managed</div></div>
-            <div class="card" style="text-align: center; padding: 20px 12px;"><div class="stat-big" style="font-size: 2rem;">$945/yr</div><div class="stat-label">Operating Cost</div></div>
-            <div class="card" style="text-align: center; padding: 20px 12px;"><div class="stat-big" style="font-size: 2rem;">~4%</div><div class="stat-label">USDC APY</div></div>
-            <div class="card" style="text-align: center; padding: 20px 12px;"><div class="stat-big" style="font-size: 2rem;">24/7</div><div class="stat-label">Autonomous Loop</div></div>
-        </div>
-
-        <p><a href="#evidence">Explore the evidence &darr;</a> &nbsp;&bull;&nbsp; <a href="docs.html#problem">Full analysis &rarr;</a></p>
-    </div>
-</section>
-
-<!-- ═══════════════ THE EVIDENCE ═══════════════ -->
-<section id="evidence" style="padding: 72px 0;">
-    <div class="content">
-        <h2>What the Research Shows</h2>
-        <p style="font-size: 1.1rem; line-height: 1.7; margin-bottom: 48px; color: var(--text-main); max-width: 100%;">
-            The problem is well-documented and the solutions are proven. But proven solutions keep failing for the same reason. Here is why, and what the research says works.
-        </p>
-
-        <!-- ── WHY EVERYTHING FAILS ── -->
-        <div class="evidence-block">
-            <h3>Why Current Approaches Fail</h3>
-            <p style="max-width: 100%;">So the harm is real, the solutions are proven, and the economics work. Why does restoration still fail? Because every model hits the same wall: grants end, volunteers burn out, maintenance stops, and trees die.</p>
-            <div class="evidence-stat-row">
-                <div class="evidence-stat-card">
-                    <div class="ev-number">50%</div>
-                    <div class="ev-label">of urban tree plantings dead within 13&ndash;18 years</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">80%+</div>
-                    <div class="ev-label">of tree lifetime cost is post-planting maintenance, the part grants never fund</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">62%</div>
-                    <div class="ev-label">burnout rate among sustainability professionals</div>
-                </div>
-            </div>
-            <div class="callout" style="border-left-color: var(--accent-amber); margin-top: 24px;">
-                <strong>The Grant Cycle Death Spiral:</strong> Year 1, grant funds planting. Year 2, maintenance included in budget. Year 3, grant ends. Year 4, nobody waters, weeds, or monitors. Year 5, invasives reclaim the site. Year 6, new grant application. The Greening of Detroit has planted 166,000 trees over 35 years and remains perpetually grant-dependent. The model doesn't scale because it was never designed to sustain itself.
-            </div>
-            <div class="solution-callout">
-                <strong>Dryad breaks the cycle.</strong> An autonomous agent with its own DeFi treasury does not depend on grant cycles, volunteer retention, or annual budget approvals. $23,625 USDC at ~4% APY generates $945/year, enough to cover all operating costs indefinitely. The agent monitors 24/7, hires contractors when intervention is needed, verifies work with GPS-tagged photos, and records every action on-chain. It never burns out. It never forgets. It never loses interest.
-            </div>
-            <p class="evidence-cite">Sources: Roman &amp; Scatena, Urban Forestry &amp; Urban Greening (2011), Lu et al. (2010), Greening of Detroit annual reports, Campbell &amp; Gabriel burnout meta-analysis (2016)</p>
-        </div>
-
-        <!-- ── HEALTH ── -->
-        <div class="evidence-block">
-            <h3>Public Health Crisis</h3>
-            <p style="max-width: 100%;">Start here: the harm is already measurable. Detroit ranks as the most challenging city in America for asthma. 87% of buildings sit more than a quarter-mile from any green space. The intervention is just as measurable.</p>
-            <div class="evidence-stat-row">
-                <div class="evidence-stat-card">
-                    <div class="ev-number">28.6%</div>
-                    <div class="ev-label">of Detroit children affected by asthma, 3&times; the state hospitalization rate</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">2&ndash;3%</div>
-                    <div class="ev-label">cardiovascular mortality reduction per 0.1 NDVI greenness increase (meta-analysis, 100M+ people)</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">13&ndash;22 yr</div>
-                    <div class="ev-label">life expectancy gap between Detroit neighborhoods</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">$302M</div>
-                    <div class="ev-label">annual health burden from air pollution in the tri-county region</div>
-                </div>
-            </div>
-            <div class="solution-callout">
-                <strong>What the research says works:</strong> The Branas 2018 PNAS randomized controlled trial found that greening vacant lots reduced poor mental health by 41.5&ndash;68.7% in below-poverty neighborhoods. Not therapy. Not medication. Dirt and seeds. ROI: $26 return per $1 spent.
-            </div>
-            <p class="evidence-cite">Sources: AAFA Most Challenging Places to Live (2024), Rojas-Rueda et al. Lancet Planetary Health (2019), South et al. JAMA Internal Medicine (2018), Branas et al. PNAS (2018)</p>
-        </div>
-
-        <!-- ── SAFETY ── -->
-        <div class="evidence-block">
-            <h3>Violence &amp; Safety</h3>
-            <p style="max-width: 100%;">Vacant land doesn't just affect health. It shapes safety. The link between unmanaged lots and violent crime has been tested in randomized controlled trials across multiple cities.</p>
-            <div class="evidence-stat-row">
-                <div class="evidence-stat-card">
-                    <div class="ev-number">29%</div>
-                    <div class="ev-label">reduction in gun violence near greened vacant lots (Philadelphia RCT)</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">40%</div>
-                    <div class="ev-label">violent crime reduction near greened lots (Flint, MI study)</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">$26</div>
-                    <div class="ev-label">return on investment per $1 spent on vacant lot greening</div>
-                </div>
-            </div>
-            <div class="solution-callout">
-                <strong>This is a solved problem.</strong> Branas et al. (2018) conducted a city-wide RCT in Philadelphia: 541 vacant lots, randomized assignment. Gun violence dropped 29%. The mechanism: removing concealment, increasing natural surveillance, restoring community ownership. Not surveillance cameras. Not policing. Wildflowers.
-            </div>
-            <p class="evidence-cite">Sources: Branas et al. PNAS (2018), Heinze et al. American Journal of Community Psychology (2018), Jay et al. JAMA Internal Medicine (2021)</p>
-        </div>
-
-        <!-- ── HEAT & CLIMATE ── -->
-        <div class="evidence-block">
-            <h3>Heat &amp; Climate</h3>
-            <p style="max-width: 100%;">Health and safety both trace back to heat. Detroit has the worst urban heat island burden of any major American city. 86% of neighborhoods run 8&deg;F+ hotter than surrounding areas, and the burden falls disproportionately on Black residents and people in poverty.</p>
-            <div class="evidence-stat-row">
-                <div class="evidence-stat-card">
-                    <div class="ev-number">107</div>
-                    <div class="ev-label">projected deaths in a single severe heatwave event</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">220</div>
-                    <div class="ev-label">projected deaths if the power grid fails during heatwave</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">5.3%</div>
-                    <div class="ev-label">higher heat mortality rate for Black Detroiters vs. white</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">7&ndash;9&deg;F</div>
-                    <div class="ev-label">measured cooling effect at 40% tree canopy coverage</div>
-                </div>
-            </div>
-            <div class="solution-callout">
-                <strong>Trees are the clinical solution.</strong> Detroit's canopy sits at 24.3% against the city's own target of 40%. At 40%, modeled temperatures drop 7&ndash;9&deg;F. Impervious surfaces (concrete, asphalt) explain 59% of temperature variance. Converting vacant lots to green space directly addresses the single largest driver of urban heat.
-            </div>
-            <p class="evidence-cite">Sources: Planet Detroit (2025), Stone et al. Environmental Health Perspectives (2014), Hoffman et al. Climate (2020), Ziter et al. PNAS (2019)</p>
-        </div>
-
-        <!-- ── ECONOMICS ── -->
-        <div class="evidence-block">
-            <h3>Economic Burden</h3>
-            <p style="max-width: 100%;">Health costs, safety costs, and heat costs compound into a direct fiscal drain. Vacant land actively erodes city budgets, destroys property values, and triggers cascading losses that dwarf the cost of mowing.</p>
-            <div class="evidence-stat-row">
-                <div class="evidence-stat-card">
-                    <div class="ev-number">$300M+</div>
-                    <div class="ev-label">estimated annual health burden from arson on vacant properties in Detroit</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">4%</div>
-                    <div class="ev-label">vacancy threshold that triggers neighborhood-wide decline (Johns Hopkins)</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">+4%</div>
-                    <div class="ev-label">property value increase within 1,000 ft of greened vacant lots</div>
-                </div>
-                <div class="evidence-stat-card">
-                    <div class="ev-number">$1.50</div>
-                    <div class="ev-label">return per $1 invested in Youngstown's lot greening program</div>
-                </div>
-            </div>
-            <div class="solution-callout">
-                <strong>The ROI is proven at scale.</strong> Philadelphia's LandCare program: $1.94&ndash;4.45 billion NPV over 40 years. Youngstown: $1.50 per $1 invested. National urban forestry: $34.3B economic footprint. The economics of greening are not speculative. They are measured.
-            </div>
-            <p class="evidence-cite">Sources: Immergluck &amp; Smith (2006), USDA Forest Service (2023), Wachter &amp; Gillen (2006), Stratus Consulting / USFS (2017)</p>
-        </div>
-
-        <!-- ── ECOLOGY ── -->
-        <div class="evidence-block">
-            <h3>Ecological Collapse</h3>
-            <p style="max-width: 100%;">While the city pays the fiscal cost, the land itself is deteriorating. Native trees and plants are not decorative. They clean air, filter water, cool streets, hold soil, and feed the pollinators behind one in three bites of food. Every native species supports hundreds of organisms in a chain thousands of years old. When invasives replace them, that chain breaks and the services disappear.</p>
-
-            <div class="evidence-stat-row">
-                <div class="evidence-stat-card">
-                    <div class="ev-number">735K</div>
-                    <div class="ev-label">viable invasive seeds per vacant lot, each capable of spreading into surrounding neighborhoods</div>
-                </div>
-            </div>
-
-            <div class="solution-callout">
-                <strong>Early detection is 100&times; cheaper than late response.</strong> The emerald ash borer cost Michigan $38M+ after it established, all spent on removal, not prevention. Spotted lanternfly is following the same trajectory, and it breeds on Tree of Heaven, which has colonized every vacant lot in Detroit. Dryad's iNaturalist-powered monitoring catches new invasions early, when removal costs dollars instead of millions.
-            </div>
-            <p class="evidence-cite">Sources: MDARD SLF Status (2025), Penn State Extension cost model (2023), USDA APHIS EAB assessment, Raupp et al. Annual Review of Entomology (2006), Tallamy, Nature's Best Hope (2019)</p>
-        </div>
-
-
-    </div>
-</section>
-
-<!-- ═══════════════ ARCHITECTURE ═══════════════ -->
-<section id="architecture" style="padding: 60px 0;">
-    <div class="content">
-        <h2>How It Works</h2>
-        <p style="margin-bottom: 12px;">Dryad runs a continuous stewardship loop. Every 24 hours, the agent observes the land, assesses what it finds, dispatches work if needed, verifies completion, and records everything on-chain. No human triggers it. No grant funds it.</p>
-
-        <div style="text-align: center; margin: 40px 0 16px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">The Operating Loop</div>
-
-        <div class="loop-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px;">
-
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
-                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 1</div>
-                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Observe</div>
-                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">iNaturalist observations feed biodiversity data from all 9 parcels</div>
-                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
-            </div>
-
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
-                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 2</div>
-                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Assess</div>
-                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">Agent computes health score, detects invasive pressure, flags intervention needs</div>
-                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
-            </div>
-
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
-                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 3</div>
-                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Dispatch</div>
-                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">Emails verified work orders to local contractors via AgentMail</div>
-                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
-            </div>
-
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center; position: relative;">
-                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 4</div>
-                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Verify</div>
-                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">GPS-tagged photo proof checked against work order specs</div>
-                <div class="loop-arrow" style="position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 1.2rem; z-index: 1;">&#8594;</div>
-            </div>
-
-            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 20px 16px; text-align: center;">
-                <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Step 5</div>
-                <div style="font-family: var(--font-display); font-size: 1.4rem; color: var(--accent-amber); margin-bottom: 8px;">Pay + Record</div>
-                <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body);">USDC payment on Base, EAS attestation minted on-chain</div>
-            </div>
-
-        </div>
-
-        <div style="text-align: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 8px;">
-            <span style="color: var(--accent); opacity: 0.6;">&#8635;</span> Loop repeats every 24 hours. Treasury yield funds each cycle indefinitely.
-        </div>
-
-        <div style="text-align: center; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); opacity: 0.6; letter-spacing: 0.06em; margin-top: 16px;">
-            Dependencies: Venice (LLM inference) &bull; DLBA (land acquisition)
-        </div>
-
-    </div>
-</section>
-
-<!-- ═══════════════ THE LAND ═══════════════ -->
-<section id="land">
-    <div class="content">
-        <h2>The Land</h2>
-        <p style="margin-bottom: 24px;">9 parcels at 4475–4523 25th Street, Chadsey-Condon, Detroit. 0.68 acres of native habitat restoration.</p>
-
-        <div class="photo-hero">
-            <img src="images/lots/street-view-main.jpg" alt="Street view of 25th Street lots, Detroit" loading="lazy">
-            <div class="photo-hero-overlay">
-                <h3>The Land Today</h3>
-                <span>4475–4523 25th Street • March 2026</span>
-            </div>
-        </div>
-
-        <div class="photo-grid">
-            <div class="photo-main"><img src="images/lots/lots-wide-north.jpg" alt="Wide view looking north across the vacant lots" loading="lazy"></div>
-            <img src="images/lots/lots-wide-street.jpg" alt="Street view" loading="lazy">
-            <img src="images/lots/sapling-closeup.jpg" alt="Sapling closeup" loading="lazy">
-        </div>
-
-        <div id="parcel-map" style="width:100%;height:400px;border-radius:12px;margin:20px 0;border:1px solid var(--card-border);z-index:0;position:relative"></div>
-
-        <p style="margin-top: 24px;"><a href="docs.html#ecology">Explore the full ecology →</a></p>
-    </div>
-</section>
-
-<!-- ═══════════════ PROVE IT'S REAL ═══════════════ -->
-<section id="verify">
-    <div class="content">
-        <h2>Prove It's Real</h2>
-        <p style="margin-bottom: 28px;">Nothing here requires trust. Every claim Dryad makes is verifiable through external sources you can check right now:</p>
-        <p style="margin-bottom: 28px; color: var(--text-main);">Dryad is running right now. The agent completed its first autonomous decision loop in April 2026, integrating 25,740 iNaturalist observations from 2,770 species across the 9 parcels, with onchain attestations verifiable on Base. This is a live proof-of-concept at small scale - 9 lots, $945/yr operating cost - designed to demonstrate the model before scaling.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
-            <div class="card">
-                <h3>Live Dashboard</h3>
-                <p style="font-size: 0.9rem; margin-bottom: 12px;">Agent health, treasury status, DeFi positions, contractor submissions - all live.</p>
-                <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">View Dashboard →</a>
-            </div>
-            <div class="card">
-                <h3>On-Chain</h3>
-                <p style="font-size: 0.9rem; margin-bottom: 12px;">dryadforest.eth • ERC-8004 #35293 • Every transaction verifiable on BaseScan.</p>
-                <a href="https://basescan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">View BaseScan →</a>
-            </div>
-            <div class="card">
-                <h3>EAS Attestations</h3>
-                <p style="font-size: 0.9rem; margin-bottom: 12px;">Every verified work submission mints an onchain attestation on Base via the Ethereum Attestation Service.</p>
-                <a href="https://base.easscan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">View Attestations →</a>
-            </div>
-            <div class="card">
-                <h3>Community Science</h3>
-                <p style="font-size: 0.9rem; margin-bottom: 12px;">25,740 observations • 2,770 species • Research-grade observations attested onchain via EAS.</p>
-                <a href="https://www.inaturalist.org/projects/dryad-25th-street-parcels-mapping" target="_blank" rel="noopener noreferrer">View iNaturalist →</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════ SELF-SUSTAINING ═══════════════ -->
-<section id="finance">
-    <div class="content">
-        <h2>Self-Sustaining</h2>
-        <p style="margin-bottom: 24px;">Continuity requires funding that does not expire. <strong>$23,625 USDC at ~4% APY = $945/yr</strong> covers all operating costs indefinitely. Total to bootstrap: ~$41,000. No ETH price risk. No token dependency. The treasury funds the stewardship that grants cannot sustain.</p>
-
-        <div style="margin: 24px 0; overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Scenario</th>
-                        <th>APY</th>
-                        <th>Annual Yield</th>
-                        <th>Sustainability</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Morpho peak</td>
-                        <td>8%</td>
-                        <td>$1,890/yr</td>
-                        <td style="color: #8DA667; font-weight: 600;">200% - surplus compounds</td>
-                    </tr>
-                    <tr>
-                        <td>Baseline (cross-chain)</td>
-                        <td>4%</td>
-                        <td>$945/yr</td>
-                        <td style="color: #8DA667; font-weight: 600;">Full coverage</td>
-                    </tr>
-                    <tr>
-                        <td>Market downturn</td>
-                        <td>3%</td>
-                        <td>$709/yr</td>
-                        <td style="color: #E29E4B;">75% coverage</td>
-                    </tr>
-                    <tr>
-                        <td>Stress scenario</td>
-                        <td>2%</td>
-                        <td>$473/yr</td>
-                        <td style="color: #E29E4B;">50% - still covers floor</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <p><a href="docs.html#finance">Full financial model →</a></p>
-    </div>
-</section>
-
-<!-- ═══════════════ FOOTER ═══════════════ -->
-<div class="page-footer">
-    <div class="content">
-        <div class="grid-2" style="gap:40px">
+    <footer class="page-footer">
+        <div class="shell footer-grid">
             <div>
-                <p>Built by <strong>Nick George</strong></p>
+                <p><strong>Dryad</strong> is built by Nick George.</p>
                 <p><a href="https://www.canr.msu.edu/conservation_stewards/" target="_blank" rel="noopener noreferrer">Michigan Conservation Steward</a></p>
-                <p style="margin-top:8px"><a href="https://x.com/0xnock" target="_blank" rel="noopener noreferrer">@0xnock</a></p>
+                <p><a href="https://x.com/0xnock" target="_blank" rel="noopener noreferrer">@0xnock</a></p>
             </div>
-            <div style="text-align:right">
-                <p><a href="https://github.com/vivicool12334/dryad" target="_blank" rel="noopener noreferrer">GitHub</a> • <a href="mailto:dryad@agentmail.to">dryad@agentmail.to</a> • <a href="https://x.com/DryadAgent" target="_blank" rel="noopener noreferrer">@DryadAgent</a></p>
-                <p><a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a> • <a href="https://dashboard.dryad.land/Dryad/submit" target="_blank" rel="noopener noreferrer">Submit Portal</a></p>
-                <p><a href="https://basescan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">BaseScan</a> • dryadforest.eth</p>
+            <div class="footer-links">
+                <p><a href="https://github.com/vivicool12334/dryad" target="_blank" rel="noopener noreferrer">GitHub</a> &bull; <a href="mailto:dryad@agentmail.to">dryad@agentmail.to</a> &bull; <a href="https://x.com/DryadAgent" target="_blank" rel="noopener noreferrer">@DryadAgent</a></p>
+                <p><a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer">Dashboard</a> &bull; <a href="https://dashboard.dryad.land/Dryad/submit" target="_blank" rel="noopener noreferrer">Submit Portal</a></p>
+                <p><a href="https://basescan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" target="_blank" rel="noopener noreferrer">BaseScan</a> &bull; dryadforest.eth</p>
             </div>
         </div>
-    </div>
-</div>
+    </footer>
 
-<!-- ═══════════════ HERO PARTICLES ═══════════════ -->
-<script>
-(function(){
-    var c = document.getElementById('hero-particles');
-    if (!c || !c.getContext) return;
-    var ctx = c.getContext('2d');
-    var particles = [];
-    var count = 40;
+    <script>
+        (function () {
+            var header = document.getElementById("siteHeader");
+            var menuToggle = document.getElementById("menuToggle");
+            var siteNav = document.getElementById("siteNav");
 
-    function resize() {
-        var hero = c.parentElement;
-        c.width = hero.offsetWidth;
-        c.height = hero.offsetHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
+            function updateHeader() {
+                header.classList.toggle("is-scrolled", window.scrollY > 24);
+            }
 
-    for (var i = 0; i < count; i++) {
-        particles.push({
-            x: Math.random() * c.width,
-            y: Math.random() * c.height,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: -0.15 - Math.random() * 0.25,
-            r: 1 + Math.random() * 1.5,
-            a: 0.08 + Math.random() * 0.12,
-            drift: Math.random() * Math.PI * 2
+            window.addEventListener("scroll", updateHeader, { passive: true });
+            updateHeader();
+
+            menuToggle.addEventListener("click", function () {
+                var isOpen = siteNav.classList.toggle("is-open");
+                menuToggle.classList.toggle("is-open", isOpen);
+                menuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            });
+
+            siteNav.addEventListener("click", function (event) {
+                if (event.target.tagName === "A") {
+                    siteNav.classList.remove("is-open");
+                    menuToggle.classList.remove("is-open");
+                    menuToggle.setAttribute("aria-expanded", "false");
+                }
+            });
+        })();
+    </script>
+
+    <script>
+        (function () {
+            var allSuggestions = [
+                "What is Dryad?",
+                "How does the 24-hour loop work?",
+                "What plants are native here?",
+                "How do I get a lot from DLBA?",
+                "What invasive species matter most?",
+                "How does the treasury work?",
+                "Can I help?",
+                "Is this actually real?",
+                "How does the agent pay contractors?",
+                "What is a lakeplain oak opening?",
+                "What is the restoration timeline?",
+                "How does iNaturalist work?",
+                "Does Dryad use satellite imagery?"
+            ];
+
+            var sugIdx = 0;
+            var useKB = false;
+            var chatHistory = [];
+            var AGENT_API = "/api/chat";
+            var AGENT_TOKEN = "302922b3a1ca99f87e43b2e046129da15f1ea9cb3a1cbb5c687343ffced42617";
+
+            var kb = [
+                {
+                    k: ["what is dryad", "about dryad", "the project", "what does dryad do"],
+                    r: "Dryad is an autonomous AI agent managing nine vacant lots on 25th Street in Detroit's Chadsey-Condon neighborhood. It monitors ecological health, detects invasive pressure, coordinates local work, verifies proof, pays from a USDC treasury, and records milestones on Base."
+                },
+                {
+                    k: ["how does it work", "technology", "tech stack", "architecture", "24-hour loop", "24 hour loop"],
+                    r: "Dryad runs a daily stewardship loop: observe the parcels, assess ecological health, dispatch work when needed, verify GPS-tagged photo proof, pay contractors in USDC, and record milestones onchain. A weekly Sentinel-2 satellite cycle adds a continuous biomass signal in parallel. The stack includes elizaOS, iNaturalist, Microsoft Planetary Computer (Sentinel-2), Base, EAS, web3.storage, and a USDC treasury."
+                },
+                {
+                    k: ["cost", "budget", "money", "treasury", "financial", "how much"],
+                    r: "The baseline plan needs about $41,000 total: land and setup, establishment work, a USDC treasury, and buffer. The key number is $23,625 in USDC at roughly 4% APY, which generates about $945 per year for the maintenance floor across nine lots."
+                },
+                {
+                    k: ["native", "plants", "species", "flora", "what grows"],
+                    r: "The target ecology is Detroit lakeplain habitat: bur oak, swamp white oak, big bluestem, Indian grass, wild bergamot, swamp milkweed, mountain mint, blazing star, and related native prairie and oak-opening species."
+                },
+                {
+                    k: ["invasive", "weed", "phragmites", "buckthorn", "ailanthus", "removal"],
+                    r: "Priority invasive concerns include buckthorn, autumn olive, Amur honeysuckle, multiflora rose, Oriental bittersweet, non-native Phragmites, reed canary grass, purple loosestrife, and Tree of Heaven. Early detection is the difference between a small removal job and a city-scale problem."
+                },
+                {
+                    k: ["land bank", "dlba", "buy a lot", "acquire"],
+                    r: "Detroit Land Bank Authority pathways include Side Lot, Own It Now, Auction, and Create-a-Project. Create-a-Project is often the relevant route for LLC or nonprofit land stewardship projects. Start at buildingdetroit.org or contact LBP@detroitmi.gov."
+                },
+                {
+                    k: ["blockchain", "base", "contract", "nft", "erc", "onchain", "arbitrum"],
+                    r: "Dryad uses Base mainnet for public verification: dryadforest.eth, ERC-8004 Agent #35293, and wallet 0xf2f7527D86e2173c91fF1c10Ede03f6f84510880. The treasury uses USDC positions, and verified work can be recorded through EAS attestations."
+                },
+                {
+                    k: ["attestation", "eas", "attest", "proof of impact", "hypercert", "refi"],
+                    r: "EAS attestations can record verified contractor work and research-grade observations: who did the work, what was done, where it happened, what proof was submitted, and when the milestone was recorded."
+                },
+                {
+                    k: ["governance", "vote", "airdrop", "dao", "neighbor", "community"],
+                    r: "The V2 governance idea is a neighbor-first model: proximity-based participation, non-transferable governance rights, and voting on planting plans, contractor selection, and future site priorities."
+                },
+                {
+                    k: ["inaturalist", "inat", "observation", "biodiversity"],
+                    r: "iNaturalist observations help Dryad understand what is living on or near the lots. Visit the parcels, photograph plants or animals, upload them to iNaturalist, and community identification can turn observations into research-grade biodiversity data."
+                },
+                {
+                    k: ["satellite", "sentinel", "ndvi", "remote sensing", "imagery", "vegetation index", "biomass", "planetary computer"],
+                    r: "Dryad pulls fresh Sentinel-2 imagery from Microsoft Planetary Computer every week, computes a per-parcel NDVI vegetation index, and writes the result to Base mainnet via EAS attestations. Source is free, 10m resolution, 5-day revisit. Pipeline is a Python microservice with rasterio and odc-stac. Previews pin to web3.storage. NDVI drops larger than 0.15 in 7 days trigger an email alert. Satellite cannot identify individual species at lot scale, but it tracks biomass over time and catches sudden disturbances. See live data at /satellite.html and demo imagery at /docs.html#satellite."
+                },
+                {
+                    k: ["heat", "heat island", "urban heat", "temperature", "thermal", "landsat", "lst", "heat map", "where it gets hot"],
+                    r: "Dryad publishes a free Detroit Heat Island Map at /heat-map.html. Built from Landsat 8/9 thermal data via Microsoft Planetary Computer. Most recent measurement: Detroit metro mean LST 84.6F, Chadsey-Condon mean 89.7F, a +5.1F differential. Range within Chadsey-Condon alone runs 86 to 96F (cool canopy vs hot rooftops). Heat-related deaths in Detroit average ~120/year. Tree canopy reduces local LST 7-9F at 40%+ coverage. The map identifies where canopy investment saves the most lives."
+                },
+                {
+                    k: ["submit", "photo", "upload", "contribute", "help", "volunteer"],
+                    r: "You can help by submitting iNaturalist observations, reporting dumping or damage, joining seasonal removal and seed work, or sharing the dashboard with people who care about Detroit land stewardship."
+                },
+                {
+                    k: ["hello", "hi", "hey"],
+                    r: "Hello. I can explain the Dryad project, Detroit vacant land, native ecology, invasive species, satellite monitoring, the treasury, onchain verification, or how neighbors can participate."
+                }
+            ];
+
+            function showSuggestions() {
+                var el = document.getElementById("chat-suggestions");
+                if (!el) return;
+                el.innerHTML = "";
+                for (var i = 0; i < 4; i++) {
+                    var suggestion = allSuggestions[(sugIdx + i) % allSuggestions.length];
+                    var button = document.createElement("button");
+                    button.className = "chat-sug-btn";
+                    button.type = "button";
+                    button.textContent = suggestion;
+                    button.addEventListener("click", function () {
+                        send(this.textContent);
+                        sugIdx = (sugIdx + 4) % allSuggestions.length;
+                        showSuggestions();
+                    });
+                    el.appendChild(button);
+                }
+            }
+
+            function match(input) {
+                var lower = input.toLowerCase();
+                var best = null;
+                var bestScore = 0;
+
+                for (var i = 0; i < kb.length; i++) {
+                    var score = 0;
+                    for (var j = 0; j < kb[i].k.length; j++) {
+                        if (lower.indexOf(kb[i].k[j]) >= 0) {
+                            score += kb[i].k[j].split(" ").length;
+                        }
+                    }
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = kb[i];
+                    }
+                }
+
+                return best && bestScore > 0
+                    ? best.r
+                    : "I can help with the Dryad project, Detroit vacant land, native plants, invasive species, blockchain verification, the treasury, and ways to get involved. Try asking about one of those.";
+            }
+
+            function renderChat(text) {
+                var tmp = document.createElement("div");
+                tmp.textContent = text;
+                var safe = tmp.innerHTML;
+                safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+                safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+                safe = safe.replace(/(https?:\/\/[^\s<"']+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+                safe = safe.replace(/\n/g, "<br>");
+                return safe;
+            }
+
+            function addMsg(role, text, isTyping) {
+                var el = document.getElementById("chat-messages");
+                var msg = document.createElement("div");
+                msg.className = "chat-msg " + role + (isTyping ? " typing" : "");
+
+                if (isTyping || role === "user") {
+                    msg.textContent = text;
+                } else {
+                    msg.innerHTML = renderChat(text);
+                }
+
+                el.appendChild(msg);
+                el.scrollTop = el.scrollHeight;
+                return msg;
+            }
+
+            function updateStatusBadge() {
+                var badge = document.getElementById("chat-status");
+                if (!badge) return;
+                if (useKB) {
+                    badge.textContent = "Offline";
+                    badge.className = "chat-status-badge offline";
+                } else {
+                    badge.textContent = "Live";
+                    badge.className = "chat-status-badge live";
+                }
+            }
+
+            async function send(text) {
+                var welcome = document.getElementById("chat-welcome");
+                if (welcome) welcome.remove();
+
+                addMsg("user", text);
+                chatHistory.push({ role: "user", content: text });
+                if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
+                sugIdx = (sugIdx + 4) % allSuggestions.length;
+                showSuggestions();
+
+                var typing = addMsg("agent", "...", true);
+                var response;
+
+                if (!useKB) {
+                    try {
+                        var result = await fetch(AGENT_API, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-API-KEY": AGENT_TOKEN
+                            },
+                            body: JSON.stringify({
+                                text: text,
+                                history: chatHistory.slice(0, -1)
+                            }),
+                            signal: AbortSignal.timeout(15000)
+                        });
+
+                        if (!result.ok) throw new Error("agent unavailable");
+                        var data = await result.json();
+                        response = data.text;
+                    } catch (error) {
+                        useKB = true;
+                        updateStatusBadge();
+                        response = match(text);
+                    }
+                } else {
+                    response = match(text);
+                    await new Promise(function (resolve) {
+                        setTimeout(resolve, Math.min(800 + response.length * 3, 2500));
+                    });
+                }
+
+                typing.remove();
+                response = response || match(text);
+                addMsg("agent", response);
+                chatHistory.push({ role: "assistant", content: response });
+                if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+            }
+
+            function initChat() {
+                var el = document.getElementById("chat-messages");
+                if (!el) return;
+
+                var welcome = document.createElement("div");
+                welcome.className = "chat-welcome";
+                welcome.id = "chat-welcome";
+                welcome.innerHTML = '<svg class="chat-welcome-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"></path></svg><h3>Talk to the forest</h3><p>Ask about the land, native species, Detroit Land Bank pathways, or how autonomous conservation works.</p>';
+                el.appendChild(welcome);
+
+                showSuggestions();
+
+                document.getElementById("chat-send").addEventListener("click", function () {
+                    var input = document.getElementById("chat-input");
+                    var value = input.value.trim();
+                    if (value) {
+                        send(value);
+                        input.value = "";
+                    }
+                });
+
+                document.getElementById("chat-input").addEventListener("keydown", function (event) {
+                    var value = this.value.trim();
+                    if (event.key === "Enter" && value) {
+                        send(value);
+                        this.value = "";
+                    }
+                });
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", initChat);
+            } else {
+                initChat();
+            }
+        })();
+    </script>
+
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var mapEl = document.getElementById("parcel-map");
+            if (!mapEl || typeof L === "undefined") return;
+
+            var map = L.map("parcel-map", {
+                scrollWheelZoom: false
+            }).setView([42.34174, -83.10007], 18);
+
+            L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+                attribution: "Tiles &copy; Esri",
+                maxZoom: 20
+            }).addTo(map);
+
+            var parcels = [
+                { addr: "4475", id: "12009490", coords: [[42.3414067, -83.1000727], [42.3415231, -83.099734], [42.3414534, -83.09969], [42.341337, -83.1000287]] },
+                { addr: "4481", id: "12009489", coords: [[42.3414764, -83.1001167], [42.3415928, -83.099778], [42.3415231, -83.099734], [42.3414067, -83.1000727]] },
+                { addr: "4487", id: "12009488", coords: [[42.3415709, -83.1001762], [42.3416864, -83.0998375], [42.3415928, -83.099778], [42.3414764, -83.1001167]] },
+                { addr: "4493", id: "12009487", coords: [[42.3416507, -83.1002273], [42.3417662, -83.0998874], [42.3416864, -83.0998375], [42.3415709, -83.1001762]] },
+                { addr: "4501", id: "12009486", coords: [[42.3417543, -83.1002927], [42.3418707, -83.0999541], [42.3417662, -83.0998874], [42.3416507, -83.1002273]] },
+                { addr: "4509", id: "12009485", coords: [[42.341824, -83.1003367], [42.3419404, -83.0999981], [42.3418707, -83.0999541], [42.3417543, -83.1002927]] },
+                { addr: "4513", id: "12009484", coords: [[42.3418937, -83.1003807], [42.3420092, -83.1000421], [42.3419404, -83.0999981], [42.341824, -83.1003367]] },
+                { addr: "4521", id: "12009483", coords: [[42.3419634, -83.1004247], [42.3420789, -83.1000861], [42.3420092, -83.1000421], [42.3418937, -83.1003807]] },
+                { addr: "4523", id: "12009482", coords: [[42.3420331, -83.1004687], [42.3421486, -83.1001301], [42.3420789, -83.1000861], [42.3419634, -83.1004247]] }
+            ];
+
+            parcels.forEach(function (parcel) {
+                L.polygon(parcel.coords, {
+                    color: "#b8d48c",
+                    fillColor: "#8da667",
+                    fillOpacity: 0.3,
+                    weight: 2
+                }).addTo(map).bindPopup("<b>" + parcel.addr + " 25th St</b><br>Dryad-managed");
+            });
+
+            L.rectangle([[42.3411, -83.1007], [42.3424, -83.0994]], {
+                color: "#e29e4b",
+                fillOpacity: 0.05,
+                weight: 1,
+                dashArray: "5,5"
+            }).addTo(map);
+
+            var legend = L.control({ position: "bottomright" });
+            legend.onAdd = function () {
+                var div = L.DomUtil.create("div");
+                div.style.cssText = "background:rgba(16,18,13,0.92);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Space Mono,monospace;color:#e2e6d5;border:1px solid rgba(184,212,140,0.22)";
+                div.innerHTML = '<span style="display:inline-block;width:12px;height:12px;background:#8da667;opacity:0.75;border:1px solid #b8d48c;margin-right:6px"></span> Dryad parcels';
+                return div;
+            };
+            legend.addTo(map);
         });
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, c.width, c.height);
-        var t = Date.now() * 0.001;
-
-        for (var i = 0; i < particles.length; i++) {
-            var p = particles[i];
-            p.x += p.vx + Math.sin(t + p.drift) * 0.15;
-            p.y += p.vy;
-
-            if (p.y < -10) { p.y = c.height + 10; p.x = Math.random() * c.width; }
-            if (p.x < -10) p.x = c.width + 10;
-            if (p.x > c.width + 10) p.x = -10;
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(141, 166, 103, ' + p.a + ')';
-            ctx.fill();
-        }
-
-        requestAnimationFrame(draw);
-    }
-    draw();
-})();
-</script>
-
-<!-- ═══════════════ CHAT ENGINE ═══════════════ -->
-<script>
-(function(){
-var allSuggestions=['What is Dryad?','How do I get a lot from DLBA?','What plants are native here?','Tell me about Chadsey-Condon','What invasive species are on the lots?','How does the treasury work?','Can I help?','Is this actually real?','How does the agent pay contractors?','What is a lakeplain oak opening?',"What's the restoration timeline?",'How does iNaturalist work?','What is ERC-8004?',"Tell me about the V2 governance plan","What's the ecosystem health score?",'How much does it cost to run this?','How do EAS attestations work?','What goes onchain?'];var sugIdx=0;
-function showSuggestions(){var el=document.getElementById('chat-suggestions');if(!el)return;el.innerHTML='';var batch=[];for(var i=0;i<4;i++){batch.push(allSuggestions[(sugIdx+i)%allSuggestions.length]);}batch.forEach(function(s){var b=document.createElement('button');b.className='chat-sug-btn';b.textContent=s;b.onclick=function(){send(s);sugIdx=(sugIdx+4)%allSuggestions.length;showSuggestions();};el.appendChild(b);});}
-var kb=[{k:['what is dryad','about dryad','the project','what does dryad do'],r:"Dryad is an autonomous AI agent managing 9 vacant lots on 25th Street in Detroit's Chadsey-Condon neighborhood. Registered on-chain as ERC-8004 Agent #35293 on Base.\n\nIt monitors ecological health through iNaturalist, manages a USDC treasury earning ~4% APY via cross-chain DeFi yield (Morpho and Aave V3 on Base and Arbitrum), detects invasive species, schedules native plantings, and pays property taxes - all autonomously."},{k:['how does it work','technology','tech stack','architecture'],r:"Dryad runs on elizaOS. The stack:\n• Chain: Base mainnet (Ethereum L2)\n• Treasury: USDC earning cross-chain yield (~4% APY via Morpho + Aave on Base and Arbitrum)\n• Milestones: DryadMilestones.sol (0x7572...)\n• Identity: ERC-8004 #35293, dryadforest.eth\n• Monitoring: iNaturalist API\n• Inference: Venice.ai (GLM 4.7 Flash)"},{k:['cost','budget','money','treasury','financial','how much'],r:"Total funding needed: ~$41,000\n• $13.5K setup (land, mastication, seeds)\n• $2.9K establishment (years 1-2 mowing)\n• $23.6K USDC treasury for perpetual yield\n• $1K buffer\n\n$23,625 at ~4% APY = $945/yr (cross-chain yield via Morpho + Aave on Base and Arbitrum)\nYear 3+ operating cost: ~$105/lot/yr (cheaper than city mowing)"},{k:['native','plants','species','flora','what grows'],r:"Detroit is lakeplain. Native communities:\n\nLAKEPLAIN OAK OPENINGS:\nBur oak, swamp white oak, big bluestem, Indian grass, wild bergamot\n\nLAKEPLAIN WET PRAIRIE:\nCord grass, swamp milkweed, mountain mint, blazing star\n\nDryad's plan: 300 saplings + Prairie Moon seed mix, 25+ species"},{k:['invasive','weed','phragmites','buckthorn','ailanthus','removal'],r:"3-tier MNFI priority:\n\nTIER 1 - REMOVE:\nCommon/glossy buckthorn, autumn olive, Amur honeysuckle, multiflora rose, Oriental bittersweet\n\nTIER 2 - MANAGE:\nNon-native Phragmites, reed canary grass, purple loosestrife\n\nIMPORTANT: Native Phragmites (subsp. americanus) has reddish stems - leave it!"},{k:['land bank','dlba','buy a lot','acquire'],r:"DLBA programs (buildingdetroit.org):\n\nSIDE LOT: $100-200, must own adjacent home\nOWN IT NOW: Open to anyone\nAUCTION: Periodic, low starting bids\n\nCREATE-A-PROJECT: $250/lot for LLC/501(c)3\n• LBP@detroitmi.gov\n• Office hours: 1st Thursday/month, 12-1pm"},{k:['blockchain','base','contract','nft','erc','onchain','arbitrum'],r:"Dryad on Base mainnet:\n• Attestations: EAS on Base\n• Treasury: USDC earning cross-chain yield (Morpho + Aave on Base and Arbitrum)\n• DryadMilestones.sol: 0x7572dcac...bc22\n• ERC-8004 Agent #35293\n• Wallet: 0xf2f7527D...0880\n• ENS: dryadforest.eth\n\nEvery verified contractor job and research-grade iNaturalist observation gets attested onchain via EAS."},{k:['attestation','eas','attest','proof of impact','hypercert','refi'],r:"Dryad mints onchain attestations on Base via the Ethereum Attestation Service (EAS):\n\n1. WORK ATTESTATIONS: When a contractor's photos pass vision verification, an attestation records their work permanently - contractor, work type, parcel, photo hash, vision score.\n\n2. OBSERVATION ATTESTATIONS: Research-grade iNaturalist observations get attested with species, observer, GPS, and invasive status.\n\nThese create composable, verifiable proof of ecological impact. View them at base.easscan.org.\n\nFuture: attestations can be bundled into Hypercerts for retroactive public goods funding."},{k:['governance','vote','airdrop','dao','neighbor','community'],r:"V2 governance:\n\nPROXIMITY AIRDROP: Free soulbound NFTs to residents within 500 ft\nPARTICIPATION: Earn NFTs via iNaturalist observations\n1 NFT = 1 vote. Non-transferable.\n\nSnapshot DAO: Vote on planting plans, contractor selection\nThe forest belongs to its neighbors, not investors."},{k:['inaturalist','inat','observation','biodiversity'],r:"iNaturalist: inaturalist.org/projects/dryad-25th-street-parcels-mapping\n\nHow to contribute:\n1. Download iNaturalist app (free)\n2. Visit the lots at 25th St between Ash & Beech\n3. Photograph any living thing\n4. Upload - AI identifies the species\n\nEvery observation feeds Dryad's health score. Research-grade observations (community-verified species ID) get attested onchain via EAS on Base - permanent biodiversity records."},{k:['environment','carbon','footprint','energy','emissions','climate'],r:"Dryad uses 10.8–18 kWh/year (~10–17 minutes of highway driving). The habitat we restore sequesters 64–240x more carbon.\n\nThe habitat pays back the entire annual carbon footprint in 1–3 days of growing season.\n\nWe don't pretend the AI industry doesn't have real environmental costs. But Dryad doesn't train models - it makes API calls. The marginal cost is negligible."},{k:['submit','photo','upload','contribute','help','volunteer'],r:"Ways to get involved:\n\n1. SUBMIT OBSERVATIONS: Visit 25th St & photograph plants/animals. Upload to iNaturalist\n2. REPORT ISSUES: Spotted illegal dumping or damaged fencing?\n3. VOLUNTEER: Spring knotweed removal & fall seed collection\n4. SPREAD THE WORD: Share the project with neighbors\n\nEvery iNaturalist observation feeds Dryad's ecological health score"},{k:['hello','hi','hey'],r:"Hello! I'm Dryad - an autonomous agent managing 9 lots in Detroit.\n\nI can tell you about:\n• The project & how it works\n• Detroit's vacant land crisis\n• Native ecology & invasive species\n• Blockchain & governance\n• How to get involved\n\nWhat would you like to know?"}];function match(input){var l=input.toLowerCase(),best=null,bestS=0;for(var i=0;i<kb.length;i++){var s=0;for(var j=0;j<kb[i].k.length;j++){if(l.indexOf(kb[i].k[j])>=0)s+=kb[i].k[j].split(' ').length;}if(s>bestS){bestS=s;best=kb[i];}}return best&&bestS>0?best.r:"I can help with:\n• The Dryad project\n• Detroit vacant land & DLBA\n• Native plants & ecology\n• Invasive species\n• Blockchain & governance\n• How to get involved\n\nTry asking about one of these!";}function renderChat(text){var tmp=document.createElement('div');tmp.textContent=text;var safe=tmp.innerHTML;safe=safe.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');safe=safe.replace(/\*(.+?)\*/g,'<em>$1</em>');safe=safe.replace(/(https?:\/\/[^\s<"']+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline">$1</a>');safe=safe.replace(/\n/g,'<br>');return safe;}function addMsg(role,text,isTyping){var el=document.getElementById('chat-messages');var d=document.createElement('div');d.className='chat-msg '+role+(isTyping?' typing':'');if(isTyping||role==='user'){d.textContent=text;}else{d.innerHTML=renderChat(text);}el.appendChild(d);el.scrollTop=el.scrollHeight;return d;}var AGENT_HOST='https://dashboard.dryad.land',AGENT_API='/api/chat',AGENT_TOKEN='302922b3a1ca99f87e43b2e046129da15f1ea9cb3a1cbb5c687343ffced42617',useKB=false;var chatHistory=[];function updateStatusBadge(){var badge=document.getElementById('chat-status');if(useKB){badge.textContent='OFFLINE';badge.className='chat-status-badge offline';}else{badge.textContent='LIVE';badge.className='chat-status-badge live';}}async function send(text){var w=document.getElementById('chat-welcome');if(w)w.remove();addMsg('user',text);chatHistory.push({role:'user',content:text});if(chatHistory.length>20)chatHistory=chatHistory.slice(-20);sugIdx=(sugIdx+4)%allSuggestions.length;showSuggestions();var typing=addMsg('agent','...',true);var resp;if(!useKB){try{var r=await fetch(AGENT_API,{method:'POST',headers:{'Content-Type':'application/json','X-API-KEY':AGENT_TOKEN},body:JSON.stringify({text:text,history:chatHistory.slice(0,-1)}),signal:AbortSignal.timeout(15000)});if(!r.ok)throw 0;var data=await r.json();resp=data.text;}catch(e){useKB=true;updateStatusBadge();resp=match(text);}}else{resp=match(text);await new Promise(function(r){setTimeout(r,Math.min(800+resp.length*3,2500));});}typing.remove();resp=resp||match(text);addMsg('agent',resp);chatHistory.push({role:'assistant',content:resp});if(chatHistory.length>20)chatHistory=chatHistory.slice(-20);}function init(){var el=document.getElementById('chat-messages');var welcome=document.createElement('div');welcome.className='chat-welcome';welcome.id='chat-welcome';welcome.innerHTML='<svg class="chat-welcome-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>';var h3=document.createElement('h3');h3.textContent='Talk to the Forest';welcome.appendChild(h3);var p=document.createElement('p');p.textContent='Ask about the ecology, how to get a lot from Detroit Land Bank, native species, or how autonomous conservation works.';welcome.appendChild(p);el.appendChild(welcome);showSuggestions();document.getElementById('chat-send').onclick=function(){var v=document.getElementById('chat-input').value.trim();if(v){send(v);document.getElementById('chat-input').value='';}};document.getElementById('chat-input').onkeydown=function(e){if(e.key==='Enter'){var v=this.value.trim();if(v){send(v);this.value='';}}};}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();
-</script>
-
-<!-- Leaflet Parcel Map -->
-<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-<script>
-document.addEventListener('DOMContentLoaded',function(){const mapEl=document.getElementById('parcel-map');if(!mapEl)return;const map=L.map('parcel-map',{scrollWheelZoom:false}).setView([42.34174,-83.10007],18);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:20}).addTo(map);var parcels=[{addr:'4475',id:'12009490',coords:[[42.3414067,-83.1000727],[42.3415231,-83.099734],[42.3414534,-83.09969],[42.341337,-83.1000287]]},{addr:'4481',id:'12009489',coords:[[42.3414764,-83.1001167],[42.3415928,-83.099778],[42.3415231,-83.099734],[42.3414067,-83.1000727]]},{addr:'4487',id:'12009488',coords:[[42.3415709,-83.1001762],[42.3416864,-83.0998375],[42.3415928,-83.099778],[42.3414764,-83.1001167]]},{addr:'4493',id:'12009487',coords:[[42.3416507,-83.1002273],[42.3417662,-83.0998874],[42.3416864,-83.0998375],[42.3415709,-83.1001762]]},{addr:'4501',id:'12009486',coords:[[42.3417543,-83.1002927],[42.3418707,-83.0999541],[42.3417662,-83.0998874],[42.3416507,-83.1002273]]},{addr:'4509',id:'12009485',coords:[[42.341824,-83.1003367],[42.3419404,-83.0999981],[42.3418707,-83.0999541],[42.3417543,-83.1002927]]},{addr:'4513',id:'12009484',coords:[[42.3418937,-83.1003807],[42.3420092,-83.1000421],[42.3419404,-83.0999981],[42.341824,-83.1003367]]},{addr:'4521',id:'12009483',coords:[[42.3419634,-83.1004247],[42.3420789,-83.1000861],[42.3420092,-83.1000421],[42.3418937,-83.1003807]]},{addr:'4523',id:'12009482',coords:[[42.3420331,-83.1004687],[42.3421486,-83.1001301],[42.3420789,-83.1000861],[42.3419634,-83.1004247]]}];parcels.forEach(function(p){L.polygon(p.coords,{color:'#8DA667',fillColor:'#8DA667',fillOpacity:0.3,weight:2}).addTo(map).bindPopup('<b>'+p.addr+' 25th St</b><br>Dryad-managed');});L.rectangle([[42.3411,-83.1007],[42.3424,-83.0994]],{color:'#E29E4B',fillOpacity:0.05,weight:1,dashArray:'5,5'}).addTo(map);var legend=L.control({position:'bottomright'});legend.onAdd=function(){var div=L.DomUtil.create('div');div.style.cssText='background:rgba(26,28,20,0.9);padding:8px 12px;border-radius:6px;font-size:11px;line-height:1.6;font-family:Space Mono,monospace;color:#D2D6C1';div.innerHTML='<span style="display:inline-block;width:12px;height:12px;background:#2d8a3e;opacity:0.6;border:1px solid #1a5c2a;margin-right:4px"></span> Dryad Parcels';return div;};legend.addTo(map);});
-</script>
+    </script>
 </body>
 </html>

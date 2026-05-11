@@ -760,9 +760,11 @@
             <a href="#impact">Green Space</a>
             <a href="#parcels">The Land</a>
             <a href="#how">How It Works</a>
+            <a href="#satellite">Satellite</a>
+            <a href="satellite.html">Live Satellite</a>
+            <a href="heat-map.html">Heat Map</a>
             <a href="#treasury">Treasury</a>
             <a href="#finance">Costs</a>
-            <a href="#scaling">Scale</a>
             <a href="#v2">V2</a>
             <a href="impact.html">AI Footprint</a>
             <a href="https://dashboard.dryad.land/Dryad/dashboard" target="_blank" rel="noopener noreferrer" title="Agent Dashboard" style="color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:4px 10px;">Dashboard</a>
@@ -1217,7 +1219,80 @@
 
     <div class="step"><span class="step-number">8</span><div class="step-content"><h3>Record Milestone Onchain</h3><p>DryadMilestones.sol records 5 types: SiteAssessment, InvasiveRemoval, SoilPrep, NativePlanting, Monitoring. Every action is permanently verifiable on <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank" rel="noopener noreferrer">BaseScan</a>.</p></div></div>
 
-    <div class="callout">The monitoring loop runs every 24 hours. Contractor work is seasonal - 1–2 jobs/year during establishment, tapering to once/year as native prairie matures. Between cycles, the agent auto-buys <a href="https://venice.ai/lp/diem" target="_blank" rel="noopener noreferrer">DIEM</a> to sustain inference and budgets for annual property taxes.</div>
+    <div class="callout">The monitoring loop runs every 24 hours. Contractor work is seasonal - 1–2 jobs/year during establishment, tapering to once/year as native prairie matures. Between cycles, the agent auto-buys <a href="https://venice.ai/lp/diem" target="_blank" rel="noopener noreferrer">DIEM</a> to sustain inference and budgets for annual property taxes. Weekly <a href="#satellite">Sentinel-2 satellite passes</a> add a parallel biomass signal that runs whether or not anyone is photographing the lots.</div>
+</div>
+</section>
+
+<!-- ═══════════════ 4b. SATELLITE MONITORING ═══════════════ -->
+<section id="satellite">
+<div class="content">
+    <h2>Satellite Monitoring</h2>
+    <p style="margin-bottom:24px;font-size:1.05rem;line-height:1.7">Every week, Dryad pulls fresh imagery from <a href="https://planetarycomputer.microsoft.com" target="_blank" rel="noopener noreferrer">Microsoft Planetary Computer</a>'s Sentinel-2 archive, computes a vegetation index for each of the nine parcels, and writes the result to a public ledger. This adds a continuous machine-generated biomass signal alongside community iNaturalist observations.</p>
+
+    <h3 style="margin-top:8px">What the parcels actually look like (NAIP, ~60 cm/pixel aerial)</h3>
+    <p>For visual context we use <a href="https://naip-usdaonline.hub.arcgis.com" target="_blank" rel="noopener noreferrer">NAIP</a> (National Agriculture Imagery Program), free US-only aerial photography refreshed every 2-3 years. Resolution is sharp enough to see individual rooftops, street trees, and the diagonal stack of vacant lots Dryad manages. The orange outlines below are the nine parcels.</p>
+    <div class="grid-2" style="gap:24px;margin:24px 0">
+        <div>
+            <img src="images/satellite/naip-wide.png" alt="NAIP 60 cm/pixel aerial image of the Chadsey-Condon neighborhood" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">NAIP aerial, 2022-07-30, ~60 cm/pixel - the wide neighborhood</p>
+        </div>
+        <div>
+            <img src="images/satellite/naip-parcels.png" alt="NAIP closeup of the 9 parcels with orange outlines" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">NAIP closeup, the 9 parcels outlined in orange</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top:32px">Why we don't run on NAIP</h3>
+    <p>NAIP is great for visual reference but useless for monitoring: it refreshes every 2-3 years (last refresh was July 2022, the next is sometime in 2025-26), and it doesn't expose the near-infrared band needed for vegetation indices. For continuous biomass tracking we use Sentinel-2 - free, weekly, with the NIR band - even though it is 30-100x lower resolution per pixel.</p>
+    <div class="grid-3" style="gap:16px;margin:24px 0">
+        <div class="card" style="padding:18px"><h3 style="font-size:1rem;color:var(--accent-amber);margin-bottom:8px">Google Maps satellite</h3><p style="font-size:0.85rem">10-50 cm/pixel. Beautiful. Mostly aerial photos + commercial Maxar. Refreshes once every 1-3 years. Not free to redistribute, no NIR band, can't anchor onchain.</p></div>
+        <div class="card" style="padding:18px"><h3 style="font-size:1rem;color:var(--accent-amber);margin-bottom:8px">NAIP (what you see above)</h3><p style="font-size:0.85rem">~60 cm/pixel. Free, US-only, public domain. Refreshes every 2-3 years. Has NIR. Great for one-shot reference, too infrequent for monitoring.</p></div>
+        <div class="card" style="padding:18px"><h3 style="font-size:1rem;color:var(--accent-amber);margin-bottom:8px">Sentinel-2 (what we use)</h3><p style="font-size:0.85rem">10 m/pixel. Free, global, open data. Refreshes every 5 days. Has NIR. Designed for time-series analysis, not pretty pictures. This is what makes weekly monitoring possible.</p></div>
+    </div>
+
+    <h3 style="margin-top:32px">What Sentinel-2 sees (10 m/pixel, weekly)</h3>
+    <p>Same area, very different image. Each pixel is roughly the size of a parking lane. Streets, freeway, and rooftops are blocky bright cells; vegetation is dark green. The point isn't to look at one image - the point is to compare this week's image to last week's and the week before.</p>
+    <div class="grid-2" style="gap:24px;margin:24px 0">
+        <div>
+            <img src="images/satellite/wide-rgb.png" alt="True-color Sentinel-2 satellite image of the Chadsey-Condon neighborhood in Detroit" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Sentinel-2 true-color, April 23 2026, 12.5% cloud cover</p>
+        </div>
+        <div>
+            <img src="images/satellite/wide-ndvi.png" alt="NDVI heatmap of the Chadsey-Condon neighborhood, green = healthy vegetation, red = built surfaces" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Same area as <strong>NDVI</strong> (Normalized Difference Vegetation Index). Green = high biomass; orange/red = built surfaces, soil, pavement.</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top:32px">Zoomed in on the nine parcels (Sentinel-2)</h3>
+    <p>At 10 m/pixel, each parcel is roughly 12 pixels of Sentinel-2 data - enough to compute a stable mean NDVI per parcel, not enough to identify individual plants. Species-level identification stays with iNaturalist and (eventually) drone overflights.</p>
+    <div class="grid-2" style="gap:24px;margin:24px 0">
+        <div>
+            <img src="images/satellite/parcels-rgb.png" alt="Closeup true-color Sentinel-2 image with the 9 parcel polygons outlined in orange" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Sentinel-2 closeup true-color, parcels outlined</p>
+        </div>
+        <div>
+            <img src="images/satellite/parcels-ndvi.png" alt="Closeup Sentinel-2 NDVI heatmap with parcels outlined" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Sentinel-2 closeup as NDVI heatmap</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top:32px">What runs every week</h3>
+    <ol style="line-height:1.8;margin-left:1.2rem">
+        <li>Search Sentinel-2 L2A archive for the freshest scene under 20% cloud cover that contains the parcels.</li>
+        <li>Read the red, green, blue, and NIR bands clipped to each parcel's bounding box.</li>
+        <li>Compute mean NDVI and EVI per parcel, plus standard deviation, min, and max.</li>
+        <li>Render a true-color preview and an NDVI raster.</li>
+        <li>Pin both images to <a href="https://web3.storage" target="_blank" rel="noopener noreferrer">web3.storage</a> (free IPFS).</li>
+        <li>Write the per-parcel observation to a local journal (<code>data/satellite-history.jsonl</code>).</li>
+        <li>Compare to the previous cycle. If any parcel's NDVI dropped more than 0.15 in 7 days, email Nick to schedule a site visit.</li>
+        <li>Once a month, mint an <a href="https://attest.org" target="_blank" rel="noopener noreferrer">EAS attestation</a> per parcel with the structured observation data + IPFS hashes. Permanent, verifiable, public.</li>
+    </ol>
+
+    <div class="callout" style="margin-top:24px">
+        <strong>Why this matters.</strong> Most ecological monitoring is irregular and self-reported. A continuous, machine-generated biomass signal that survives every grant cycle and every site visit is what lets restoration outcomes become investment-grade. Dryad is the smallest viable instance of that pattern: free public satellite data + open-source pipeline + permanent onchain attestation, on nine specific lots.
+    </div>
+
+    <p style="margin-top:24px;font-size:0.9rem;color:var(--text-muted)">Stack: Sentinel-2 L2A via Microsoft Planetary Computer (free, no key) · Python pipeline (FastAPI + rasterio + odc-stac) · web3.storage (free IPFS) · EAS on Base mainnet · weekly cadence · ~$6/year in onchain gas.</p>
 </div>
 </section>
 
@@ -1599,18 +1674,21 @@ Would you be able to review the species list and planting density for this site?
     <div class="grid-2">
         <div>
             <h3>Agent &amp; Onchain</h3>
-            <p><a href="https://elizaos.ai" target="_blank" rel="noopener noreferrer">elizaOS</a> v1.7.2 - 8 custom actions<br>
+            <p><a href="https://elizaos.ai" target="_blank" rel="noopener noreferrer">elizaOS</a> v1.7.2 - 9 custom actions<br>
             <a href="https://venice.ai" target="_blank" rel="noopener noreferrer">Venice.ai</a> - GLM 4.7 Flash / GLM 4.7<br>
             <a href="https://base.org" target="_blank" rel="noopener noreferrer">Base L2</a> - all transactions<br>
             DryadMilestones.sol + <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank" rel="noopener noreferrer">ERC-8004</a><br>
-            <a href="https://viem.sh" target="_blank" rel="noopener noreferrer">viem</a> - EVM wallet (ETH/USDC/DIEM)</p>
+            <a href="https://viem.sh" target="_blank" rel="noopener noreferrer">viem</a> - EVM wallet (ETH/USDC/DIEM)<br>
+            <a href="https://attest.org" target="_blank" rel="noopener noreferrer">EAS</a> - work, observation, and satellite attestation schemas on Base</p>
         </div>
         <div>
             <h3>Data &amp; Infrastructure</h3>
             <p><a href="https://www.inaturalist.org" target="_blank" rel="noopener noreferrer">iNaturalist API</a> - biodiversity data<br>
+            <a href="https://planetarycomputer.microsoft.com" target="_blank" rel="noopener noreferrer">Microsoft Planetary Computer</a> - <a href="#satellite">Sentinel-2</a> (10m weekly NDVI), <a href="heat-map.html">Landsat 8/9</a> (30m thermal LST), <a href="#satellite">NAIP</a> (60cm aerial)<br>
+            <a href="https://web3.storage" target="_blank" rel="noopener noreferrer">web3.storage</a> - free IPFS pinning for satellite previews<br>
             <a href="https://www.agentmail.to" target="_blank" rel="noopener noreferrer">AgentMail</a> - dryad@agentmail.to<br>
             <a href="https://www.hetzner.com/cloud/" target="_blank" rel="noopener noreferrer">Hetzner VPS</a> CX22 - Ubuntu 24.04<br>
-            Node.js 23 + <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a><br>
+            Node.js 23 + <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> · Python 3.11 microservice (FastAPI + rasterio)<br>
             <a href="https://app.uniswap.org" target="_blank" rel="noopener noreferrer">Uniswap V3</a> - DIEM swaps on Base</p>
         </div>
     </div>
@@ -1750,7 +1828,7 @@ var starters=allSuggestions.slice(0,4);
 
 var kb=[
 {k:['what is dryad','about dryad','the project','what does dryad do','tell me about dryad'],r:"Dryad is an autonomous AI agent managing 9 vacant lots on 25th Street in Detroit's Chadsey-Condon neighborhood. Registered on-chain as ERC-8004 Agent #35293 on Base.\n\nIt monitors ecological health through iNaturalist, manages a USDC treasury (earning cross-chain DeFi yield via Morpho and Aave V3 on Base and Arbitrum), detects invasive species, schedules native plantings, and pays property taxes - all autonomously.\n\nIf it works on 9 lots, the same open-source framework can be adopted by any land conservancy, community land trust, or municipal land bank."},
-{k:['how does it work','technology','tech stack','architecture'],r:"Dryad runs on elizaOS (v1.7.2). The stack:\n\n• Chain: Base mainnet (Ethereum L2)\n• Treasury: USDC earning cross-chain DeFi yield (~4% APY via Morpho + Aave on Base and Arbitrum)\n• Milestones: DryadMilestones.sol (0x7572...)\n• Identity: ERC-8004 #35293, dryadforest.eth\n• Monitoring: iNaturalist API integration\n• Inference: Venice.ai (GLM 4.7 Flash)\n\nThree spending modes - NORMAL, CONSERVATION, CRITICAL - adjust based on treasury health. Designed to run 50+ years on a ~$23.6K USDC treasury."},
+{k:['how does it work','technology','tech stack','architecture'],r:"Dryad runs on elizaOS (v1.7.2). The stack:\n\n• Chain: Base mainnet (Ethereum L2)\n• Treasury: USDC earning cross-chain DeFi yield (~4% APY via Morpho + Aave on Base and Arbitrum)\n• Milestones: DryadMilestones.sol (0x7572...)\n• Identity: ERC-8004 #35293, dryadforest.eth\n• Monitoring: iNaturalist API integration AND weekly Sentinel-2 satellite cycles via Microsoft Planetary Computer (NDVI per parcel, attested onchain via EAS, previews on web3.storage)\n• Inference: Venice.ai (GLM 4.7 Flash)\n\nThree spending modes - NORMAL, CONSERVATION, CRITICAL - adjust based on treasury health. Designed to run 50+ years on a ~$23.6K USDC treasury."},
 {k:['cost','budget','money','treasury','financial','how much','funding'],r:"Total funding needed: ~$41,000\n• $13.5K setup (land, mastication, seeds, filing)\n• $2.9K establishment (years 1-2 mowing + maintenance)\n• $23.6K USDC treasury for perpetual yield\n• $1K buffer\n\nSite prep: Forestry mastication (~$1,500 for 0.68 acres) mulches invasives in place - cheaper than cut-and-haul. Followed by solarization or light disking.\n\nYears 1-2: ~$1,445/yr (maintenance mowing at 6\", 2x/year)\nYear 3+: ~$945/yr (established prairie, mowing as needed)\n\nThe USDC treasury earns ~4% APY via cross-chain DeFi yield (Morpho vaults and Aave V3 on Base and Arbitrum - Morpho curators like Steakhouse regularly deliver 4-12%). No ETH price risk. Per-lot cost by year 3: ~$105/yr - cheaper than city mowing at $67-170/yr."},
 {k:['open source','nonprofit','conservancy','toolkit','land trust','organization'],r:"Dryad is built as an agent but designed as a toolkit. DFC's 2025 report \"Saving for the Future\" calls for the Detroit GreenSpace Conservancy.\n\nThe same framework could be deployed by:\n• The future Detroit GreenSpace Conservancy\n• Saginaw Basin Land Conservancy (1,300+ lots restored)\n• Community land trusts\n• Municipal land banks (DLBA holds 59,617 lots)\n\nOne agent manages 9 lots today. The same framework could steward thousands."},
 {k:['chadsey','condon','neighborhood','community','where is','location'],r:"Chadsey-Condon is on Detroit's southwest side (48216). Bounded by Vernor Hwy, I-75, Dix Ave, and Dearborn.\n\nA working-class community built around Detroit's industrial base. Like many neighborhoods, heavily impacted by depopulation (Detroit lost 65% since 1950).\n\nBut deep roots remain - neighbors tend gardens, watch out for each other. Dryad's V2 airdrops governance NFTs to neighbors within 500 feet - the land belongs to its community."},
@@ -1764,11 +1842,13 @@ var kb=[
 {k:['blockchain','base','contract','nft','erc','onchain','arbitrum'],r:"Dryad on Base mainnet:\n\n• Attestations: EAS on Base\n• Treasury: USDC earning cross-chain yield (Morpho + Aave on Base and Arbitrum)\n• DryadMilestones.sol: 0x7572dcac...bc22\n• ERC-8004 Agent #35293: 0x8004A169...a432\n• Wallet: 0xf2f7527D...0880\n• ENS: dryadforest.eth\n\nV2: PropertyDeedNFT (tokenized lots), Snapshot DAO governance, soulbound stewardship NFTs for neighbors."},
 {k:['governance','vote','airdrop','dao','neighbor','community ownership'],r:"V2 governance:\n\nPROXIMITY AIRDROP: Free soulbound NFTs to residents within 500 ft\nPARTICIPATION: Earn NFTs via iNaturalist observations, volunteer work\n1 NFT = 1 vote. Non-transferable (no speculation).\n\nSnapshot DAO (dryadforest.eth):\n• Vote on planting plans, contractor selection, acquisitions\n• Agent executes community decisions\n• 75% supermajority for land use changes\n\nThe forest belongs to its neighbors, not investors."},
 {k:['inaturalist','inat','observation','biodiversity'],r:"iNaturalist project: inaturalist.org/projects/dryad-25th-street-parcels-mapping\n\nHow to contribute:\n1. Download iNaturalist app (free)\n2. Visit the lots at 25th St between Ash & Beech\n3. Photograph any living thing\n4. Upload - AI + community ID the species\n\nEvery observation feeds Dryad's health score and guides restoration decisions."},
+{k:['satellite','sentinel','ndvi','remote sensing','imagery','vegetation index','biomass','planetary computer','satellite monitoring'],r:"Dryad pulls fresh Sentinel-2 imagery from Microsoft Planetary Computer every week, computes a per-parcel NDVI vegetation index, and writes the result to Base mainnet via EAS attestations.\n\n• Source: Sentinel-2 L2A (free, 10m resolution, 5-day revisit)\n• Pipeline: Python microservice with FastAPI + rasterio + odc-stac\n• Storage: web3.storage IPFS for previews, JSONL log for trends\n• Onchain: monthly batched EAS attestations with NDVI/EVI/cloud cover/scene ID per parcel\n• Alerts: NDVI drop > 0.15 in 7 days emails Nick to schedule a site visit\n\nSatellite cannot identify individual species at lot scale (10m/pixel = ~12 pixels per parcel) but tracks biomass over time, phenology timing, and sudden disturbances. Species-level data still comes from iNaturalist + future drone surveys.\n\nSee live data at dryad.land/satellite.html and demo imagery at dryad.land/docs.html#satellite"},
+{k:['heat','heat island','urban heat','temperature','thermal','landsat','lst','heat map','where it gets hot'],r:"Dryad publishes a free Detroit Heat Island Map at dryad.land/heat-map.html. Built from Landsat 8/9 thermal data via Microsoft Planetary Computer.\n\nKey numbers from the most recent map:\n• Detroit metro mean LST: 84.6°F\n• Chadsey-Condon mean LST: 89.7°F\n• Heat island differential: +5.1°F\n• Range within Chadsey-Condon alone: 86 to 96°F (cool canopy vs hot rooftops)\n\nWhy it matters: heat-related deaths in Detroit average ~120/year. Tree canopy reduces local LST by 7-9°F at 40%+ coverage. Vacant lots without canopy run hottest. The map identifies where canopy investment saves the most lives.\n\nThe pipeline is reproducible — same script, any city, change the bbox."},
 {k:['environment','carbon','footprint','energy','water usage','climate','emissions','hypocritical','ai bad','data center','environmental impact'],r:"Great question - we take AI's environmental cost seriously and wrote a full fact-checked analysis.\n\nThe short version: Dryad uses 10.8–18 kWh of energy per year (about 10–17 minutes of highway driving). The habitat we restore sequesters 64–240x more carbon than that.\n\nThe habitat pays back Dryad's entire annual carbon footprint in 1–3 days of the growing season. The rest of the year is pure net removal.\n\nWe don't pretend the broader AI industry doesn't have real environmental costs - data centers use 415 TWh globally and 560 billion liters of water. But Dryad doesn't train models. It makes API calls. The marginal cost is negligible.\n\nFull analysis with all sources: dryad.vercel.app/impact.html"},
 {k:['sequester','sequestration','carbon sink','prairie carbon','cedar creek'],r:"Based on a 22-year study at Cedar Creek (Yang et al., Nature Communications 2019):\n\n• Years 1–13: ~0.45–0.60 metric tons CO2/year on our 0.68 acres\n• Years 13–22: ~0.60–0.80 metric tons/year (rate accelerates ~32%)\n• 22-year total: ~11–13 metric tons CO2\n\nThe key is plant diversity: C4 grasses + legumes working together. Legumes fix nitrogen, grasses use it to build massive root systems that pump carbon deep into soil. High-diversity plots stored 178% more carbon than monocultures.\n\nOnce established, this carbon stays locked in the soil for centuries to millennia. That's why we call it 'autonomous sustainability' - the AI sets it up, and the land takes over.\n\nFull details: dryad.vercel.app/impact.html"},
 {k:['year 3','year three','2029','mockup','mock','future','vision','what will it look like','fully operational','long term'],r:"We built a Year 3 (2029) mockup showing what Dryad looks like fully operational:\n\n• 9 lots acquired and restored with native prairie + oak savanna\n• 47 species documented via iNaturalist\n• Ecosystem health score: 72% and climbing\n• Treasury sustaining itself on USDC DeFi yield (~$945/yr operating cost)\n• 3 verified contractors completing seasonal work\n• 12 on-chain milestones recorded\n\nThe mockup includes a live dashboard, species tracker, contractor log, and treasury overview.\n\nSee it here: dryad.vercel.app/mock.html"},
 {k:['submit','photo','upload','report','observation','contribute','help','volunteer','get involved','how can i help'],r:"Ways to get involved:\n\n1. SUBMIT OBSERVATIONS: Visit the lots at 25th St between Ash & Beech and photograph any plants, animals, or fungi. Upload to iNaturalist: inaturalist.org/projects/dryad-25th-street-parcels-mapping\n\n2. REPORT ISSUES: Spotted illegal dumping, damaged fencing, or aggressive invasives? Let us know through the dashboard.\n\n3. VOLUNTEER: Spring knotweed removal (April–May) and fall seed collection (Sept–Oct) are the busiest seasons.\n\n4. SPREAD THE WORD: Share the project, talk to your neighbors, or fork the code.\n\nEvery iNaturalist observation feeds Dryad's ecological health score and helps guide restoration decisions."},
-{k:['hello','hi','hey','good morning','good afternoon'],r:"Hello! I'm Dryad - an autonomous agent managing 9 lots in Detroit's Chadsey-Condon neighborhood.\n\nI can tell you about:\n• The project and how it works\n• Detroit's vacant land crisis & DLBA\n• Native ecology & invasive species\n• The blockchain & governance model\n• Our environmental impact & carbon math\n• The Year 3 vision (2029 mockup)\n• How to get involved\n\nWhat would you like to know?"}
+{k:['hello','hi','hey','good morning','good afternoon'],r:"Hello! I'm Dryad - an autonomous agent managing 9 lots in Detroit's Chadsey-Condon neighborhood.\n\nI can tell you about:\n• The project and how it works\n• Detroit's vacant land crisis & DLBA\n• Native ecology & invasive species\n• Satellite monitoring (Sentinel-2 NDVI, weekly)\n• The blockchain & governance model\n• Our environmental impact & carbon math\n• The Year 3 vision (2029 mockup)\n• How to get involved\n\nWhat would you like to know?"}
 ];
 
 function match(input){

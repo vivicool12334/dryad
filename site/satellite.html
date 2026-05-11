@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Monitoring - Dryad</title>
+    <meta name="description" content="Live Sentinel-2 NDVI time-series for the 9 Dryad-managed parcels in Detroit's Chadsey-Condon neighborhood. Updated weekly. Onchain-attested.">
+    <meta name="theme-color" content="#1A1C14">
+    <meta property="og:title" content="Dryad - Satellite Monitoring">
+    <meta property="og:description" content="Weekly Sentinel-2 NDVI for 9 Detroit parcels, attested onchain.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://dryad.land/images/satellite/wide-ndvi.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E29E4B' d='M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1A1C14;
+            --bg-alt: #22241A;
+            --text-main: #D2D6C1;
+            --text-body: #c8ccb8;
+            --text-muted: rgba(210, 214, 193, 0.55);
+            --accent: #8DA667;
+            --accent-light: #a8c47a;
+            --accent-amber: #E29E4B;
+            --card-bg: #22241A;
+            --card-border: rgba(141, 166, 103, 0.2);
+            --font-display: 'Instrument Serif', serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-body: 'Manrope', system-ui, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--text-body);
+            font-family: var(--font-body); font-size: 1rem; line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::selection { background: var(--accent-amber); color: var(--bg); }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(26,28,20,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; text-transform: lowercase;
+            font-size: 1.4rem; color: var(--accent); text-decoration: none;
+        }
+        .logo svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: spin 30s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        nav { display: flex; gap: 1.5rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        nav a { color: var(--text-muted); text-decoration: none; }
+        nav a:hover { color: var(--accent); }
+
+        .content { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+        .hero { padding: 4rem 2rem 1.5rem; text-align: center; }
+        .eyebrow {
+            font-family: var(--font-mono); font-size: 0.75rem;
+            color: var(--accent); letter-spacing: 0.3em; text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(2.4rem, 6vw, 4.5rem); line-height: 1.05;
+            color: var(--text-main); margin-bottom: 1.2rem; letter-spacing: -0.02em;
+        }
+        .lede {
+            font-family: var(--font-body); font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+            max-width: 700px; margin: 0 auto 2rem;
+            color: var(--text-body); line-height: 1.6;
+        }
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono); font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--accent); padding: 5px 12px;
+            background: rgba(141,166,103,0.1); border: 1px solid var(--accent); border-radius: 12px;
+        }
+        .live-badge::before {
+            content: ''; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 10px rgba(141,166,103,0.6);
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        section { padding: 2.5rem 0; border-top: 1px solid var(--card-border); }
+        section h2 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(1.7rem, 3vw, 2.4rem);
+            color: var(--text-main); margin-bottom: 1rem; line-height: 1.2;
+        }
+        .section-eyebrow {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--accent); letter-spacing: 0.3em; text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px; margin: 24px 0;
+        }
+        .stat {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-left: 3px solid var(--accent);
+            padding: 18px 20px; border-radius: 4px;
+        }
+        .stat-num {
+            font-family: var(--font-display); font-size: 2.2rem;
+            color: var(--accent); line-height: 1; margin-bottom: 6px;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-body); }
+        .stat-source {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+            margin-top: 8px; letter-spacing: 0.05em;
+        }
+
+        .table-wrap { overflow-x: auto; margin: 16px 0; }
+        table {
+            width: 100%; border-collapse: collapse;
+            font-family: var(--font-mono); font-size: 0.85rem;
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 4px;
+        }
+        th, td {
+            padding: 10px 14px; text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+        th {
+            background: rgba(141,166,103,0.06); color: var(--accent);
+            text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700;
+        }
+        td { color: var(--text-body); }
+        tr:last-child td { border-bottom: none; }
+
+        #ndvi-chart {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 4px; padding: 18px; margin: 16px 0;
+            min-height: 360px;
+        }
+
+        .empty-state {
+            text-align: center; padding: 40px 20px;
+            font-style: italic; color: var(--text-muted);
+        }
+
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(141,166,103,0.4); }
+        a:hover { color: var(--accent-light); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+        .map-figure { margin: 1rem 0; }
+        .map-figure img {
+            width: 100%; border: 1px solid var(--card-border); border-radius: 6px; display: block;
+        }
+        .map-figure figcaption {
+            font-size: 0.85rem; color: var(--text-muted);
+            margin-top: 0.6rem; text-align: center; font-style: italic;
+        }
+
+        footer {
+            border-top: 1px solid var(--card-border);
+            padding: 2.5rem 2rem; margin-top: 3rem; text-align: center;
+            font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);
+        }
+        footer .footer-links {
+            display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+            dryad
+        </a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/heat-map.html">Heat Map</a>
+            <a href="/talk.html">Talk to Dryad</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="eyebrow">SATELLITE · SENTINEL-2 · WEEKLY · ONCHAIN</div>
+        <h1>The forest, from orbit</h1>
+        <p class="lede">Every week, Dryad pulls fresh Sentinel-2 imagery for nine vacant lots in Detroit, computes a vegetation index per parcel, and writes the result to a public ledger. This page is the live record.</p>
+        <div class="live-badge"><span id="live-status">Loading...</span></div>
+    </div>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">01 · This week</div>
+            <h2>Latest cycle</h2>
+            <div class="stat-grid" id="latest-stats">
+                <!-- populated by JS -->
+            </div>
+            <p id="latest-summary" class="empty-state">Reading from local ledger...</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">02 · Trend</div>
+            <h2>Per-parcel NDVI over time</h2>
+            <p>Each line is one parcel. Higher NDVI = denser vegetation. The natural pattern is a spring greenup, peak in mid-summer, decline through fall, dormancy through winter. Anomalies (sudden drops &gt; 0.15 in 7 days) are flagged automatically and emailed to the operator.</p>
+            <div id="ndvi-chart">
+                <div class="empty-state" id="chart-empty">Cycles accumulate here over time. With one cycle on file you see a snapshot. With multiple cycles you see the seasonal pattern.</div>
+                <canvas id="ndvi-canvas" style="display:none;width:100%;max-height:400px"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">03 · The image</div>
+            <h2>What the satellite saw most recently</h2>
+            <div class="grid-2">
+                <div class="map-figure">
+                    <img src="images/satellite/wide-ndvi.png" alt="Most recent NDVI heatmap of the Chadsey-Condon area">
+                    <figcaption>NDVI heatmap, ~2.6 km wide. Green = healthy vegetation, orange/red = built surfaces.</figcaption>
+                </div>
+                <div class="map-figure">
+                    <img src="images/satellite/parcels-ndvi.png" alt="Closeup NDVI with the 9 parcels outlined">
+                    <figcaption>Closeup with the 9 parcels outlined. ~12 pixels per parcel at Sentinel-2 10 m/pixel.</figcaption>
+                </div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-muted)">For full methodology and the resolution tradeoffs vs Google Maps, see <a href="/docs.html#satellite">docs.html#satellite</a>.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">04 · Cycles</div>
+            <h2>Recent cycles</h2>
+            <div class="table-wrap">
+                <table id="cycle-table">
+                    <thead>
+                        <tr>
+                            <th>Cycle</th>
+                            <th>Captured</th>
+                            <th>Cloud %</th>
+                            <th>Mean NDVI</th>
+                            <th>Anomalies</th>
+                            <th>Scene</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cycle-tbody">
+                        <tr><td colspan="6" class="empty-state">No cycles loaded yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">dryad.land</a>
+            <a href="/docs.html#satellite">Methodology</a>
+            <a href="/heat-map.html">Heat Map</a>
+            <a href="https://base.easscan.org/address/0xf2f7527D86e2173c91fF1c10Ede03f6f84510880" rel="noopener noreferrer">EAS attestations</a>
+            <a href="https://github.com/vivicool12334/dryad" rel="noopener noreferrer">GitHub</a>
+        </div>
+        <div>Sentinel-2 L2A via Microsoft Planetary Computer · pinned to web3.storage · attested on Base · monthly batched</div>
+    </footer>
+
+<script>
+// ─── Load cycle history from a JSON endpoint or fall back to a static snapshot ───
+// In production the agent exposes /api/satellite-history; for this static page we
+// fetch a JSON snapshot at /satellite-history.json (regenerated whenever a cycle runs).
+async function loadHistory() {
+    try {
+        const res = await fetch('/satellite-history.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('no history file yet');
+        const cycles = await res.json();
+        return Array.isArray(cycles) ? cycles : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function fmtDate(iso) {
+    if (!iso) return '?';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toISOString().slice(0, 10);
+}
+
+function meanValid(observations) {
+    const valid = observations.filter(o => !o.error && Number.isFinite(o.ndvi_mean));
+    if (valid.length === 0) return null;
+    return valid.reduce((s, o) => s + o.ndvi_mean, 0) / valid.length;
+}
+
+function renderLatestStats(latest) {
+    const el = document.getElementById('latest-stats');
+    if (!latest) {
+        el.innerHTML = '<div class="stat"><div class="stat-num">—</div><div class="stat-label">No cycles yet</div><div class="stat-source">Run the agent and wait for the first weekly trigger</div></div>';
+        return;
+    }
+    const valid = latest.observations.filter(o => !o.error);
+    const ndvi = meanValid(latest.observations);
+    const cloud = valid[0]?.cloud_cover ?? 0;
+    const captureDate = fmtDate(valid[0]?.capture_datetime);
+    el.innerHTML = `
+        <div class="stat">
+            <div class="stat-num">${ndvi != null ? ndvi.toFixed(3) : '—'}</div>
+            <div class="stat-label">Mean NDVI across the 9 parcels</div>
+            <div class="stat-source">Higher = denser vegetation</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">${valid.length}/${latest.observations.length}</div>
+            <div class="stat-label">Parcels imaged successfully</div>
+            <div class="stat-source">${cloud.toFixed(1)}% cloud cover</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">${captureDate}</div>
+            <div class="stat-label">Capture date</div>
+            <div class="stat-source">${valid[0]?.satellite ?? 'Sentinel-2'}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">${latest.errors?.length ?? 0}</div>
+            <div class="stat-label">Errors this cycle</div>
+            <div class="stat-source">Cycle ID ${latest.cycle_id}</div>
+        </div>
+    `;
+    document.getElementById('latest-summary').style.display = 'none';
+}
+
+function renderTable(cycles) {
+    const tbody = document.getElementById('cycle-tbody');
+    if (cycles.length === 0) return;
+    const rows = cycles.slice(-12).reverse().map(cycle => {
+        const valid = cycle.observations.filter(o => !o.error);
+        const ndvi = meanValid(cycle.observations);
+        const cloud = valid[0]?.cloud_cover ?? 0;
+        const captureDate = fmtDate(valid[0]?.capture_datetime);
+        const sceneShort = (valid[0]?.scene_id || '').slice(0, 28);
+        return `
+            <tr>
+                <td>${cycle.cycle_id}</td>
+                <td>${captureDate}</td>
+                <td>${cloud.toFixed(1)}</td>
+                <td>${ndvi != null ? ndvi.toFixed(3) : '—'}</td>
+                <td>—</td>
+                <td title="${valid[0]?.scene_id || ''}">${sceneShort}…</td>
+            </tr>
+        `;
+    }).join('');
+    tbody.innerHTML = rows;
+}
+
+function renderChart(cycles) {
+    const empty = document.getElementById('chart-empty');
+    const canvas = document.getElementById('ndvi-canvas');
+    if (cycles.length < 2) return;  // need at least 2 cycles to draw a meaningful line
+
+    empty.style.display = 'none';
+    canvas.style.display = 'block';
+
+    // Plain canvas line chart, no chart library to keep this dependency-free
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width = canvas.offsetWidth * 2;  // retina
+    const h = canvas.height = 400 * 2;
+    ctx.scale(2, 2);
+    const W = w / 2, H = h / 2;
+
+    // Collect series: per parcel, [{x: timestamp, y: ndvi}]
+    const seriesByParcel = {};
+    for (const cycle of cycles) {
+        for (const obs of cycle.observations) {
+            if (obs.error || !Number.isFinite(obs.ndvi_mean)) continue;
+            const key = obs.parcel_address;
+            if (!seriesByParcel[key]) seriesByParcel[key] = [];
+            seriesByParcel[key].push({
+                x: new Date(obs.capture_datetime).getTime(),
+                y: obs.ndvi_mean,
+            });
+        }
+    }
+    const allPoints = Object.values(seriesByParcel).flat();
+    if (allPoints.length === 0) return;
+
+    const xMin = Math.min(...allPoints.map(p => p.x));
+    const xMax = Math.max(...allPoints.map(p => p.x));
+    const yMin = 0;
+    const yMax = 1;
+    const padL = 50, padR = 14, padT = 14, padB = 28;
+
+    function xScale(x) { return padL + ((x - xMin) / (xMax - xMin || 1)) * (W - padL - padR); }
+    function yScale(y) { return padT + (1 - (y - yMin) / (yMax - yMin)) * (H - padT - padB); }
+
+    // Background
+    ctx.fillStyle = '#22241A';
+    ctx.fillRect(0, 0, W, H);
+
+    // Axes
+    ctx.strokeStyle = 'rgba(141,166,103,0.2)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = yScale(i * 0.25);
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(W - padR, y);
+        ctx.stroke();
+        ctx.fillStyle = '#c8ccb8';
+        ctx.font = '11px "Space Mono", monospace';
+        ctx.fillText((i * 0.25).toFixed(2), 6, y + 4);
+    }
+
+    // Lines (one per parcel)
+    const palette = ['#8DA667', '#a8c47a', '#E29E4B', '#4B8FE2', '#a26769', '#84B59F', '#c0d684', '#d4a36b', '#7e9e6f'];
+    let i = 0;
+    for (const [parcel, points] of Object.entries(seriesByParcel)) {
+        points.sort((a, b) => a.x - b.x);
+        ctx.strokeStyle = palette[i % palette.length];
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+            const x = xScale(p.x), y = yScale(p.y);
+            if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        // Dots
+        ctx.fillStyle = palette[i % palette.length];
+        for (const p of points) {
+            ctx.beginPath();
+            ctx.arc(xScale(p.x), yScale(p.y), 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        i++;
+    }
+
+    // x labels
+    ctx.fillStyle = '#c8ccb8';
+    ctx.font = '11px "Space Mono", monospace';
+    const xStart = new Date(xMin).toISOString().slice(0, 10);
+    const xEnd = new Date(xMax).toISOString().slice(0, 10);
+    ctx.fillText(xStart, padL, H - 8);
+    ctx.fillText(xEnd, W - padR - 70, H - 8);
+}
+
+(async function main() {
+    const cycles = await loadHistory();
+    const latest = cycles[cycles.length - 1] || null;
+    document.getElementById('live-status').textContent =
+        cycles.length === 0 ? 'WAITING FOR FIRST CYCLE' :
+        cycles.length === 1 ? `1 CYCLE ON FILE (${fmtDate(cycles[0].cycle_at)})` :
+        `${cycles.length} CYCLES ON FILE · LATEST ${fmtDate(latest.cycle_at)}`;
+    renderLatestStats(latest);
+    renderTable(cycles);
+    renderChart(cycles);
+})();
+</script>
+</body>
+</html>
