@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Cities and Land Banks - Dryad</title>
+    <meta name="description" content="The maintenance layer Side Lot is missing. Dryad converts blighted vacant parcels into measurable property-value uplift for surrounding homeowners, autonomously, on parcels too small for any city program to bother with.">
+    <meta name="theme-color" content="#1A1C14">
+    <meta property="og:title" content="For Cities and Land Banks - Dryad">
+    <meta property="og:description" content="A 13% lift in surrounding home values. A 9% drop in crime. Side Lot transferred ownership but produced no significant uplift. Dryad fills the maintenance gap.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://dryad.land/images/og-cover.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E29E4B' d='M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1A1C14;
+            --bg-alt: #22241A;
+            --text-main: #D2D6C1;
+            --text-body: #c8ccb8;
+            --text-muted: rgba(210, 214, 193, 0.55);
+            --accent: #8DA667;
+            --accent-light: #a8c47a;
+            --accent-amber: #E29E4B;
+            --hot: #E54A1F;
+            --card-bg: #22241A;
+            --card-border: rgba(141, 166, 103, 0.2);
+            --font-display: 'Instrument Serif', serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-body: 'Manrope', system-ui, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text-body);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::selection { background: var(--accent-amber); color: var(--bg); }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(26,28,20,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; text-transform: lowercase;
+            font-size: 1.4rem; color: var(--accent);
+            text-decoration: none;
+        }
+        .logo svg { width: 22px; height: 22px; fill: var(--accent-amber); animation: spin 30s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        nav { display: flex; gap: 1.5rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        nav a { color: var(--text-muted); text-decoration: none; }
+        nav a:hover { color: var(--accent); }
+
+        .content { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+        .hero { padding: 4rem 2rem 2rem; text-align: center; }
+        .eyebrow {
+            font-family: var(--font-mono); font-size: 0.75rem;
+            color: var(--accent-amber); letter-spacing: 0.3em; text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(2.4rem, 6vw, 4.5rem); line-height: 1.05;
+            color: var(--text-main); margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        .lede {
+            font-family: var(--font-body); font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+            max-width: 760px; margin: 0 auto 2.5rem;
+            color: var(--text-body); line-height: 1.6;
+        }
+        section { padding: 3rem 0; border-top: 1px solid var(--card-border); }
+        section h2 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(1.7rem, 3vw, 2.4rem);
+            color: var(--text-main); margin-bottom: 1rem; line-height: 1.2;
+        }
+        section h3 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: 1.4rem; color: var(--text-main);
+            margin-top: 1.5rem; margin-bottom: 0.6rem;
+        }
+        section p { margin-bottom: 1rem; max-width: 820px; }
+        .section-eyebrow {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--accent); letter-spacing: 0.3em; text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px; margin: 24px 0;
+        }
+        .stat {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-left: 3px solid var(--accent);
+            padding: 18px 20px; border-radius: 4px;
+        }
+        .stat.amber { border-left-color: var(--accent-amber); }
+        .stat.hot { border-left-color: var(--hot); }
+        .stat-num {
+            font-family: var(--font-display); font-size: 2.2rem;
+            color: var(--accent); line-height: 1; margin-bottom: 6px;
+        }
+        .stat.amber .stat-num { color: var(--accent-amber); }
+        .stat.hot .stat-num { color: var(--hot); }
+        .stat-label { font-size: 0.85rem; color: var(--text-body); margin-bottom: 4px; }
+        .stat-source {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+            margin-top: 8px; letter-spacing: 0.05em;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 720px) { .grid-3 { grid-template-columns: 1fr; } }
+        .card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 4px; padding: 22px;
+        }
+        .card h3 { margin-top: 0; }
+        .card .card-eyebrow {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--accent-amber); margin-bottom: 0.4rem;
+        }
+
+        .callout {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-left: 3px solid var(--accent-amber);
+            padding: 18px 22px; margin: 24px 0; border-radius: 4px;
+            color: var(--text-main);
+        }
+        .callout .pull {
+            font-family: var(--font-display);
+            font-size: 1.3rem; line-height: 1.4;
+            color: var(--text-main); margin-bottom: 0.6rem;
+        }
+        .callout .attr {
+            font-family: var(--font-mono); font-size: 0.75rem;
+            color: var(--text-muted); letter-spacing: 0.05em;
+        }
+
+        .compare {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+            margin: 24px 0;
+        }
+        @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+        .compare .col {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 22px; border-radius: 4px;
+        }
+        .compare .col.gap { border-left: 3px solid var(--hot); }
+        .compare .col.fill { border-left: 3px solid var(--accent); }
+        .compare .col h3 { margin-top: 0; font-size: 1.2rem; }
+        .compare .col ul { margin: 0.5rem 0 0 1.2rem; padding: 0; font-size: 0.92rem; }
+        .compare .col li { margin-bottom: 0.4rem; }
+
+        .cta {
+            background: linear-gradient(180deg, rgba(141,166,103,0.05), rgba(141,166,103,0.12));
+            border: 1px solid var(--card-border); border-radius: 6px;
+            padding: 32px; text-align: center; margin: 32px 0 16px;
+        }
+        .cta h2 { margin-bottom: 0.6rem; }
+        .cta p { max-width: 640px; margin: 0 auto 1.5rem; }
+        .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-block;
+            font-family: var(--font-mono); font-size: 0.78rem;
+            text-transform: uppercase; letter-spacing: 0.15em;
+            padding: 12px 22px; border-radius: 3px;
+            text-decoration: none; border: 1px solid var(--accent);
+            color: var(--accent); border-bottom: 1px solid var(--accent);
+        }
+        .btn:hover { background: var(--accent); color: var(--bg); }
+        .btn.solid { background: var(--accent-amber); border-color: var(--accent-amber); color: var(--bg); }
+        .btn.solid:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(141,166,103,0.4); }
+        a:hover { color: var(--accent-light); }
+        .btn { border-bottom-color: currentColor; }
+        .btn.solid { border-bottom-color: var(--accent-amber); }
+
+        ul.plain { list-style: none; padding: 0; margin: 1rem 0; }
+        ul.plain li {
+            padding: 10px 0; border-bottom: 1px solid var(--card-border);
+            font-size: 0.95rem;
+        }
+        ul.plain li:last-child { border-bottom: none; }
+        ul.plain li strong { color: var(--accent-amber); font-weight: 500; font-family: var(--font-mono); font-size: 0.85em; letter-spacing: 0.05em; }
+
+        footer {
+            border-top: 1px solid var(--card-border);
+            padding: 2.5rem 2rem; margin-top: 3rem; text-align: center;
+            font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);
+        }
+        footer .footer-links {
+            display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        footer a { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z"/></svg>
+            dryad
+        </a>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/cities.html">For Cities</a>
+            <a href="/heat-map.html">Heat Map</a>
+            <a href="/satellite.html">Satellite</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/talk.html">Talk</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="eyebrow">FOR CITIES · LAND BANKS · COUNCIL MEMBERS</div>
+        <h1>The maintenance layer Side Lot is missing.</h1>
+        <p class="lede">Detroit transferred 10,000+ vacant lots to neighbors through the Side Lot Program. A 2025 study found it produced no statistically significant uplift in adjacent home values, because it transferred ownership without funding maintenance. Dryad provides the maintenance layer, autonomously, on parcels too small for any city program to bother with.</p>
+        <div class="cta-buttons">
+            <a href="#how" class="btn solid">How it works</a>
+            <a href="/talk.html" class="btn">Talk to the agent</a>
+        </div>
+    </div>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">01 · The problem in one number set</div>
+            <h2>Blighted lots cost neighbors. Cared-for ones pay them.</h2>
+            <p>The peer-reviewed urban-greening literature is unusually clear, and the most rigorous evidence in the field is a Penn-led randomized controlled trial. Property values move in measurable, predictable directions depending on whether vacant lots are abandoned, transferred without care, or actively maintained.</p>
+
+            <div class="stat-grid">
+                <div class="stat hot">
+                    <div class="stat-num">-20%</div>
+                    <div class="stat-label">Drag on adjacent home values from a single blighted vacant lot</div>
+                    <div class="stat-source">Columbus, OH · multi-city literature</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">+13%</div>
+                    <div class="stat-label">Six-year cumulative lift on homes within 1,000 ft of greened lots</div>
+                    <div class="stat-source">Branas et al. RCT · Penn IUR</div>
+                </div>
+                <div class="stat amber">
+                    <div class="stat-num">+$12.8K</div>
+                    <div class="stat-label">Sale-price uplift per street tree, including 100 ft spillover</div>
+                    <div class="stat-source">Donovan & Butry · USFS PNW</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">$2 - $5</div>
+                    <div class="stat-label">Returned per $1 invested in urban tree care</div>
+                    <div class="stat-source">USFS · Arbor Day Foundation</div>
+                </div>
+            </div>
+
+            <p>The Voicu &amp; Been (NYU Furman) work on community gardens adds a critical detail: the largest property-value gains land in the lowest-income neighborhoods. In Chadsey-Condon, that means the literature predicts the strongest uplift effects, not the weakest. <a href="/docs/research/property-values-trees-greenspace-2026.md">Full research brief with citations.</a></p>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">02 · The Side Lot gap</div>
+            <h2>What works, and what doesn't, in Detroit.</h2>
+            <p>A 2025 study in <em>Sustainable Cities and Society</em> evaluated Detroit Land Bank programs from 2011 to 2020. The findings are diagnostic. The Auction program significantly increased adjacent housing values. The Side Lot program showed positive direct effects offset by negative indirect effects, netting no statistically significant change. The interventions documented in the property-value literature that <em>do</em> reliably raise values - Branas RCT, Philadelphia LandCare, Voicu/Been community gardens - share one feature in common: <strong>sustained planting and maintenance, not one-time transfer</strong>.</p>
+
+            <div class="compare">
+                <div class="col gap">
+                    <div class="card-eyebrow" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--hot);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.4rem">The gap</div>
+                    <h3>What Side Lot leaves on the table</h3>
+                    <ul>
+                        <li>Transfers ownership for $100; no funding for maintenance after the deed changes hands.</li>
+                        <li>10,000+ lots transferred. 2025 study: no statistically significant uplift in adjacent values.</li>
+                        <li>No mechanism for the city to verify which lots stay maintained, regress to blight, or get cleared again.</li>
+                        <li>Excludes neighbors who can't take on the labor or liability of an extra parcel.</li>
+                        <li>Doesn't reach the parcels too small or too constrained for individual ownership to be appealing.</li>
+                    </ul>
+                </div>
+                <div class="col fill">
+                    <div class="card-eyebrow" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--accent);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.4rem">What Dryad provides</div>
+                    <h3>The maintenance layer</h3>
+                    <ul>
+                        <li>Autonomous AI agent owns the parcels. Funds its own labor, planting, and recurring care from a transparent on-chain treasury.</li>
+                        <li>Weekly satellite monitoring (Sentinel-2) verifies vegetation health on every parcel; anomalies trigger contractor alerts.</li>
+                        <li>Every dollar deployed and every observation cycle is attested on Base for public audit.</li>
+                        <li>No new burden on neighbors. No annual budget fight. No grant-cycle gap.</li>
+                        <li>Pilot: 9 parcels in Chadsey-Condon. Model: scalable to thousands of parcels city-wide.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="callout">
+                <p class="pull">"The interventions that raise values all involve sustained care, not one-time transfer. Dryad is the maintenance layer Side Lot is missing."</p>
+                <p class="attr">FROM THE DRYAD RESEARCH BRIEF · MAY 2026</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="how">
+        <div class="content">
+            <div class="section-eyebrow">03 · How the math compounds</div>
+            <h2>What 9 parcels look like in dollars.</h2>
+            <p>The arithmetic on a single Dryad lot in Chadsey-Condon, using conservative estimates from the published literature:</p>
+
+            <ul class="plain">
+                <li><strong>10 - 15 homes</strong> within the 100-ft Donovan/Butry spillover radius of each parcel</li>
+                <li><strong>4 - 6 mature trees</strong> planted per parcel over the first three years</li>
+                <li><strong>~$5,700 in spillover value per tree</strong> to nearby homes (Portland 2010 dollars, conservatively unindexed)</li>
+                <li><strong>$22,800 - $34,200 per parcel</strong> in neighbor home-value uplift from trees alone</li>
+                <li><strong>Plus 4 - 13% surrounding home-value lift</strong> over 6 years from cleaning + greening + maintenance (Branas RCT)</li>
+                <li><strong>Across 9 parcels: $200K - $1M+ in surrounding home value uplift</strong> over 5 - 10 years, before counting cooling, crime reduction, energy savings, or stormwater benefits</li>
+            </ul>
+
+            <p>That uplift accrues directly to existing Chadsey-Condon homeowners and, eventually, the city's tax rolls. It is not a transfer payment; it is value created by sustained ecological care of land that was previously a tax-base liability.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">04 · Co-benefits the literature already priced in</div>
+            <h2>What else moves when the lots get cared for.</h2>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-eyebrow">CRIME · Branas RCT</div>
+                    <h3>-9.2% all crime</h3>
+                    <p style="font-size:0.9rem;margin:0">In greened-lot clusters at 18 months. Burglary fell 13.7%. Self-reported depression among nearby residents fell sharply. Lower crime is itself a property-value mechanism.</p>
+                </div>
+                <div class="card">
+                    <div class="card-eyebrow">HEAT · USFS / EPA</div>
+                    <h3>-5 to -10°F</h3>
+                    <p style="font-size:0.9rem;margin:0">Mature canopy lowers local Land Surface Temperature by 5-10°F, cuts AC use by ~30%, and addresses the heat-island disamenity that already depresses values in low-canopy neighborhoods. <a href="/heat-map.html">See Detroit's heat map.</a></p>
+                </div>
+                <div class="card">
+                    <div class="card-eyebrow">STORMWATER · i-Tree</div>
+                    <h3>~150,000 gal</h3>
+                    <p style="font-size:0.9rem;margin:0">Per mature tree intercepted over 30 years. Reduces flooding, lowers utility surcharges, defers grey-infrastructure spend - benefits the city captures directly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="section-eyebrow">05 · For a city partner</div>
+            <h2>What we're asking for.</h2>
+            <p>Dryad already operates 9 parcels independently. The pilot doesn't depend on a city contract. But several things would make the next phase faster and more useful to Detroit:</p>
+
+            <ul class="plain">
+                <li><strong>INTRODUCTIONS</strong> to Detroit Land Bank Authority, the Office of Sustainability, and the Detroit Tree Equity Partnership. We want to be a known operator, not a surprise.</li>
+                <li><strong>DATA SHARING</strong> on Side Lot transfer outcomes, parcel-level vacancy data, and existing canopy assessments, so we can target the next 50 - 100 parcels where Dryad has the largest predicted impact.</li>
+                <li><strong>POLICY ALIGNMENT</strong> on path-to-ownership rules for autonomous entities, so future parcels can be acquired through the same channels existing nonprofits already use.</li>
+                <li><strong>A PILOT PARTNERSHIP</strong> co-evaluating the next 9 to 25 parcels against a matched set of Side Lot parcels, with property-value, canopy, and LST as the metrics.</li>
+            </ul>
+
+            <p>Nothing here requires the city to spend money. Dryad's treasury covers acquisition, labor, planting, and maintenance. The ask is administrative and informational, in exchange for a partner that converts blight into measurable uplift on parcels the city has already given up on.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="content">
+            <div class="cta">
+                <h2>Talk to us, or talk to the agent.</h2>
+                <p>Dryad is real, deployed, and verifiable. The treasury is on Base. The satellite monitoring is live. The agent can answer questions about its own operations, the underlying research, or specific parcels.</p>
+                <div class="cta-buttons">
+                    <a href="/talk.html" class="btn solid">Ask Dryad anything</a>
+                    <a href="/docs.html" class="btn">Read the technical docs</a>
+                    <a href="mailto:hello@dryad.land" class="btn">Email a human</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">dryad.land</a>
+            <a href="/cities.html">For Cities</a>
+            <a href="/heat-map.html">Heat Map</a>
+            <a href="/satellite.html">Satellite</a>
+            <a href="/docs.html">Docs</a>
+            <a href="/talk.html">Talk</a>
+            <a href="https://github.com/vivicool12334/dryad" rel="noopener noreferrer">GitHub</a>
+        </div>
+        <div>For Cities and Land Banks · backed by the urban-greening property-value literature · operated by an autonomous agent on Base</div>
+    </footer>
+</body>
+</html>
