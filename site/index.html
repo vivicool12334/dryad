@@ -170,6 +170,20 @@
             color: var(--text);
         }
 
+        .qa-section h3 {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+            line-height: 1.25;
+            margin: 2rem 0 0.5rem;
+            letter-spacing: -0.003em;
+            color: var(--text);
+        }
+
+        .qa-section h3:first-of-type {
+            margin-top: 0.5rem;
+        }
+
         footer {
             max-width: var(--measure);
             margin: 5rem auto 0;
@@ -222,6 +236,28 @@
                 <h2>The economics</h2>
                 <p>The mowing line item never goes away on its own. A lawn keeps growing. Native meadows are different: once established, they largely take care of themselves, and ongoing work shrinks to light cosmetic maintenance along sidewalks and edges. Restored parcels are also easier for Detroit homeowners to acquire and keep up through existing side-lot programs, which moves them off the city's books entirely.</p>
                 <p>Maintaining Dryad's first nine lots through the establishment period costs about $945 a year. A small treasury, funded by grants and direct contributions, is invested to cover ongoing work as it grows. Payments release only when a job is verified.</p>
+            </section>
+
+            <section class="qa-section">
+                <h2>Common questions</h2>
+
+                <h3>Won't this just look like an overgrown lot?</h3>
+                <p>The first year of a native meadow looks scrappy. That's part of why people leave vacant lots alone in the first place. Dryad keeps clear edges along sidewalks and curbs, marks and identifies what's growing, and posts signage on the parcel that explains the work in progress. By year three the meadow reads as intentional. By year five it reads as prairie.</p>
+
+                <h3>Why does this need to be an AI agent?</h3>
+                <p>Coordinating restoration across thousands of small parcels is more expensive than the restoration itself. Each lot has different soil, sun, drainage, and invasive pressure. The agent applies the same ecological decision framework to every parcel and dispatches local contractors to do the physical work. The coordination overhead is what kills these projects at small-parcel scale; removing it is what makes the per-lot cost feasible.</p>
+
+                <h3>What happens if the meadow fails?</h3>
+                <p>Native restoration is biological and uncertain. Plants die, droughts happen, invasives return. The work is reversible at any point: a parcel that isn't establishing can be mowed back to lawn. The agent monitors via satellite NDVI and field observations and adjusts the plan when something isn't working, including re-seeding or changing species selection. The Penn RCT covered parcels with similar variability and still produced the lifted home values and the crime drop at scale.</p>
+
+                <h3>Whose land are you actually working on?</h3>
+                <p>The landowner uses Dryad. The agent doesn't acquire parcels; it works on the owner's behalf. The nine parcels at 25th Street are held by an LLC that uses the agent for restoration. The same model works for any owner of vacant urban land: a city, a land bank, a homeowner with an adjacent side lot, or a private investor pooling small parcels.</p>
+
+                <h3>What if a contractor submits bad work or lies?</h3>
+                <p>Photos go through three automatic checks before any payment moves. The EXIF GPS has to place the camera within about 100 meters of the parcel. The timestamp has to be recent. A vision model scores the photo against a checklist specific to the work type: invasive removal expects cut stumps and cleared brush, planting expects new growth at the right density, and obviously blurry or stock images get flagged. Only photos passing all three trigger an on-chain attestation, and only attested work releases payment. Each contractor's pass-rate is logged in the public submission record; that record will eventually filter dispatch automatically. Today that filtering is manual.</p>
+
+                <h3>What if nobody takes pictures of the plants?</h3>
+                <p>The agent doesn't rely on community photos for its primary signal. Sentinel-2 satellite imagery is pulled weekly and per-parcel vegetation indices are computed automatically; a drop greater than 0.15 in a seven-day window triggers action without anyone needing to upload anything. A hard-coded ecological calendar tells the agent what to expect each month (knotweed breaks dormancy in early spring, buckthorn is easiest to identify in fall, prairie burns happen in specific windows), so it can act on time even with no fresh observations. iNaturalist contributions and neighbor reports are enrichment on top of those, not the foundation.</p>
             </section>
         </article>
     </main>
