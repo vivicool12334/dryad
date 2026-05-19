@@ -108,6 +108,8 @@
         .hero-photo img {
             width: 100%;
             height: auto;
+            max-height: 50vh;
+            object-fit: cover;
             border-radius: 2px;
         }
 
@@ -143,17 +145,25 @@
             margin: 0 0 1.25rem;
         }
 
-        .intro p {
-            font-size: 1rem;
-        }
-
         .actions {
             margin-top: 2rem;
             font-family: var(--font-display);
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 0.25rem 1.75rem;
+            gap: 0.5rem 2rem;
+        }
+
+        .actions a::after {
+            content: " \2192";
+            display: inline-block;
+            margin-left: 0.35rem;
+            color: var(--amber);
+            transition: transform 0.15s ease;
+        }
+
+        .actions a:hover::after {
+            transform: translateX(3px);
         }
 
         section {
@@ -258,7 +268,7 @@
                 <p>Photos go through three automatic checks before any payment moves. The EXIF GPS has to place the camera within about 100 meters of the parcel. The timestamp has to be recent. A vision model scores the photo against a checklist specific to the work type: invasive removal expects cut stumps and cleared brush, planting expects new growth at the right density, and obviously blurry or stock images get flagged. Only photos passing all three trigger a public, tamper-proof record of the verification, and only verified work releases payment. Each contractor's pass-rate is logged in the public submission record; that record will eventually filter dispatch automatically. Today that filtering is manual.</p>
 
                 <h3>What if nobody takes pictures of the plants?</h3>
-                <p>The agent doesn't rely on community photos for its primary signal. Sentinel-2 satellite imagery is pulled weekly and per-parcel vegetation indices are computed automatically; a drop greater than 0.15 in a seven-day window triggers action without anyone needing to upload anything. A hard-coded ecological calendar tells the agent what to expect each month (knotweed breaks dormancy in early spring, buckthorn is easiest to identify in fall, prairie burns happen in specific windows), so it can act on time even with no fresh observations. iNaturalist contributions and neighbor reports are enrichment on top of those, not the foundation.</p>
+                <p>The agent doesn't rely on community photos for its primary signal. Sentinel&#8209;2 satellite imagery is pulled weekly and per-parcel vegetation indices are computed automatically; a drop greater than 0.15 in a seven-day window triggers action without anyone needing to upload anything. A hard-coded ecological calendar tells the agent what to expect each month (knotweed breaks dormancy in early spring, buckthorn is easiest to identify in fall, prairie burns happen in specific windows), so it can act on time even with no fresh observations. iNaturalist contributions and neighbor reports are enrichment on top of those, not the foundation.</p>
             </section>
         </article>
     </main>
