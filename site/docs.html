@@ -760,8 +760,6 @@
             <a href="#impact">Green Space</a>
             <a href="#parcels">The Land</a>
             <a href="#how">How It Works</a>
-            <a href="#satellite">Satellite</a>
-            <a href="satellite.html">Live Satellite</a>
             <a href="heat-map.html">Heat Map</a>
             <a href="cities.html">For Cities</a>
             <a href="#treasury">Treasury</a>
@@ -1220,80 +1218,7 @@
 
     <div class="step"><span class="step-number">8</span><div class="step-content"><h3>Record Milestone Onchain</h3><p>DryadMilestones.sol records 5 types: SiteAssessment, InvasiveRemoval, SoilPrep, NativePlanting, Monitoring. Every action is permanently verifiable on <a href="https://basescan.org/address/0x7572dcac88720470d8cc827be5b02d474951bc22" target="_blank" rel="noopener noreferrer">BaseScan</a>.</p></div></div>
 
-    <div class="callout">The monitoring loop runs every 24 hours. Contractor work is seasonal - 1–2 jobs/year during establishment, tapering to once/year as native prairie matures. Between cycles, the agent auto-buys <a href="https://venice.ai/lp/diem" target="_blank" rel="noopener noreferrer">DIEM</a> to sustain inference and budgets for annual property taxes. Weekly <a href="#satellite">Sentinel-2 satellite passes</a> add a parallel biomass signal that runs whether or not anyone is photographing the lots.</div>
-</div>
-</section>
-
-<!-- ═══════════════ 4b. SATELLITE MONITORING ═══════════════ -->
-<section id="satellite">
-<div class="content">
-    <h2>Satellite Monitoring</h2>
-    <p style="margin-bottom:24px;font-size:1.05rem;line-height:1.7">Every week, Dryad pulls fresh imagery from <a href="https://planetarycomputer.microsoft.com" target="_blank" rel="noopener noreferrer">Microsoft Planetary Computer</a>'s Sentinel-2 archive, computes a vegetation index for each of the nine parcels, and writes the result to a public ledger. This adds a continuous machine-generated biomass signal alongside community iNaturalist observations.</p>
-
-    <h3 style="margin-top:8px">What the parcels actually look like (NAIP, ~60 cm/pixel aerial)</h3>
-    <p>For visual context we use <a href="https://naip-usdaonline.hub.arcgis.com" target="_blank" rel="noopener noreferrer">NAIP</a> (National Agriculture Imagery Program), free US-only aerial photography refreshed every 2-3 years. Resolution is sharp enough to see individual rooftops, street trees, and the diagonal stack of vacant lots Dryad manages. The orange outlines below are the nine parcels.</p>
-    <div class="grid-2" style="gap:24px;margin:24px 0">
-        <div>
-            <img src="images/satellite/naip-wide.png" alt="NAIP 60 cm/pixel aerial image of the Chadsey-Condon neighborhood" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">NAIP aerial, 2022-07-30, ~60 cm/pixel - the wide neighborhood</p>
-        </div>
-        <div>
-            <img src="images/satellite/naip-parcels.png" alt="NAIP closeup of the 9 parcels with orange outlines" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">NAIP closeup, the 9 parcels outlined in orange</p>
-        </div>
-    </div>
-
-    <h3 style="margin-top:32px">Why we don't run on NAIP</h3>
-    <p>NAIP is great for visual reference but useless for monitoring: it refreshes every 2-3 years (last refresh was July 2022, the next is sometime in 2025-26), and it doesn't expose the near-infrared band needed for vegetation indices. For continuous biomass tracking we use Sentinel-2 - free, weekly, with the NIR band - even though it is 30-100x lower resolution per pixel.</p>
-    <div class="grid-3" style="gap:16px;margin:24px 0">
-        <div class="card" style="padding:18px"><h3 style="font-size:1rem;color:var(--accent-amber);margin-bottom:8px">Google Maps satellite</h3><p style="font-size:0.85rem">10-50 cm/pixel. Beautiful. Mostly aerial photos + commercial Maxar. Refreshes once every 1-3 years. Not free to redistribute, no NIR band, can't anchor onchain.</p></div>
-        <div class="card" style="padding:18px"><h3 style="font-size:1rem;color:var(--accent-amber);margin-bottom:8px">NAIP (what you see above)</h3><p style="font-size:0.85rem">~60 cm/pixel. Free, US-only, public domain. Refreshes every 2-3 years. Has NIR. Great for one-shot reference, too infrequent for monitoring.</p></div>
-        <div class="card" style="padding:18px"><h3 style="font-size:1rem;color:var(--accent-amber);margin-bottom:8px">Sentinel-2 (what we use)</h3><p style="font-size:0.85rem">10 m/pixel. Free, global, open data. Refreshes every 5 days. Has NIR. Designed for time-series analysis, not pretty pictures. This is what makes weekly monitoring possible.</p></div>
-    </div>
-
-    <h3 style="margin-top:32px">What Sentinel-2 sees (10 m/pixel, weekly)</h3>
-    <p>Same area, very different image. Each pixel is roughly the size of a parking lane. Streets, freeway, and rooftops are blocky bright cells; vegetation is dark green. The point isn't to look at one image - the point is to compare this week's image to last week's and the week before.</p>
-    <div class="grid-2" style="gap:24px;margin:24px 0">
-        <div>
-            <img src="images/satellite/wide-rgb.png" alt="True-color Sentinel-2 satellite image of the Chadsey-Condon neighborhood in Detroit" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Sentinel-2 true-color, April 23 2026, 12.5% cloud cover</p>
-        </div>
-        <div>
-            <img src="images/satellite/wide-ndvi.png" alt="NDVI heatmap of the Chadsey-Condon neighborhood, green = healthy vegetation, red = built surfaces" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Same area as <strong>NDVI</strong> (Normalized Difference Vegetation Index). Green = high biomass; orange/red = built surfaces, soil, pavement.</p>
-        </div>
-    </div>
-
-    <h3 style="margin-top:32px">Zoomed in on the nine parcels (Sentinel-2)</h3>
-    <p>At 10 m/pixel, each parcel is roughly 12 pixels of Sentinel-2 data - enough to compute a stable mean NDVI per parcel, not enough to identify individual plants. Species-level identification stays with iNaturalist and (eventually) drone overflights.</p>
-    <div class="grid-2" style="gap:24px;margin:24px 0">
-        <div>
-            <img src="images/satellite/parcels-rgb.png" alt="Closeup true-color Sentinel-2 image with the 9 parcel polygons outlined in orange" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Sentinel-2 closeup true-color, parcels outlined</p>
-        </div>
-        <div>
-            <img src="images/satellite/parcels-ndvi.png" alt="Closeup Sentinel-2 NDVI heatmap with parcels outlined" style="width:100%;border:1px solid var(--card-border);border-radius:6px;display:block">
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center">Sentinel-2 closeup as NDVI heatmap</p>
-        </div>
-    </div>
-
-    <h3 style="margin-top:32px">What runs every week</h3>
-    <ol style="line-height:1.8;margin-left:1.2rem">
-        <li>Search Sentinel-2 L2A archive for the freshest scene under 20% cloud cover that contains the parcels.</li>
-        <li>Read the red, green, blue, and NIR bands clipped to each parcel's bounding box.</li>
-        <li>Compute mean NDVI and EVI per parcel, plus standard deviation, min, and max.</li>
-        <li>Render a true-color preview and an NDVI raster.</li>
-        <li>Pin both images to <a href="https://web3.storage" target="_blank" rel="noopener noreferrer">web3.storage</a> (free IPFS).</li>
-        <li>Write the per-parcel observation to a local journal (<code>data/satellite-history.jsonl</code>).</li>
-        <li>Compare to the previous cycle. If any parcel's NDVI dropped more than 0.15 in 7 days, email Nick to schedule a site visit.</li>
-        <li>Once a month, mint an <a href="https://attest.org" target="_blank" rel="noopener noreferrer">EAS attestation</a> per parcel with the structured observation data + IPFS hashes. Permanent, verifiable, public.</li>
-    </ol>
-
-    <div class="callout" style="margin-top:24px">
-        <strong>Why this matters.</strong> Most ecological monitoring is irregular and self-reported. A continuous, machine-generated biomass signal that survives every grant cycle and every site visit is what lets restoration outcomes become investment-grade. Dryad is the smallest viable instance of that pattern: free public satellite data + open-source pipeline + permanent onchain attestation, on nine specific lots.
-    </div>
-
-    <p style="margin-top:24px;font-size:0.9rem;color:var(--text-muted)">Stack: Sentinel-2 L2A via Microsoft Planetary Computer (free, no key) · Python pipeline (FastAPI + rasterio + odc-stac) · web3.storage (free IPFS) · EAS on Base mainnet · weekly cadence · ~$6/year in onchain gas.</p>
+    <div class="callout">The monitoring loop runs every 24 hours. Contractor work is seasonal - 1–2 jobs/year during establishment, tapering to once/year as native prairie matures. Between cycles, the agent auto-buys <a href="https://venice.ai/lp/diem" target="_blank" rel="noopener noreferrer">DIEM</a> to sustain inference and budgets for annual property taxes.</div>
 </div>
 </section>
 
@@ -1680,13 +1605,12 @@ Would you be able to review the species list and planting density for this site?
             <a href="https://base.org" target="_blank" rel="noopener noreferrer">Base L2</a> - all transactions<br>
             DryadMilestones.sol + <a href="https://eips.ethereum.org/EIPS/eip-8004" target="_blank" rel="noopener noreferrer">ERC-8004</a><br>
             <a href="https://viem.sh" target="_blank" rel="noopener noreferrer">viem</a> - EVM wallet (ETH/USDC/DIEM)<br>
-            <a href="https://attest.org" target="_blank" rel="noopener noreferrer">EAS</a> - work, observation, and satellite attestation schemas on Base</p>
+            <a href="https://attest.org" target="_blank" rel="noopener noreferrer">EAS</a> - work and observation attestation schemas on Base</p>
         </div>
         <div>
             <h3>Data &amp; Infrastructure</h3>
             <p><a href="https://www.inaturalist.org" target="_blank" rel="noopener noreferrer">iNaturalist API</a> - biodiversity data<br>
-            <a href="https://planetarycomputer.microsoft.com" target="_blank" rel="noopener noreferrer">Microsoft Planetary Computer</a> - <a href="#satellite">Sentinel-2</a> (10m weekly NDVI), <a href="heat-map.html">Landsat 8/9</a> (30m thermal LST), <a href="#satellite">NAIP</a> (60cm aerial)<br>
-            <a href="https://web3.storage" target="_blank" rel="noopener noreferrer">web3.storage</a> - free IPFS pinning for satellite previews<br>
+            <a href="https://planetarycomputer.microsoft.com" target="_blank" rel="noopener noreferrer">Microsoft Planetary Computer</a> - <a href="heat-map.html">Landsat 8/9</a> (30m thermal LST)<br>
             <a href="https://www.agentmail.to" target="_blank" rel="noopener noreferrer">AgentMail</a> - dryad@agentmail.to<br>
             <a href="https://www.hetzner.com/cloud/" target="_blank" rel="noopener noreferrer">Hetzner VPS</a> CX22 - Ubuntu 24.04<br>
             Node.js 23 + <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> · Python 3.11 microservice (FastAPI + rasterio)<br>
