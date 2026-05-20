@@ -248,6 +248,33 @@
 
         .toggle-body p:last-child { margin-bottom: 0; }
 
+        /* Always-visible problem list */
+        .problem-list {
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--rule);
+        }
+
+        .problem {
+            border-bottom: 1px solid var(--rule);
+            padding: 1.15rem 0;
+        }
+
+        .problem h3 {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+            line-height: 1.25;
+            margin: 0 0 0.4rem;
+            letter-spacing: -0.003em;
+            color: var(--text);
+        }
+
+        .problem p {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--body);
+        }
+
         footer {
             max-width: var(--measure);
             margin: 5rem auto 0;
@@ -285,39 +312,29 @@
                 <h1>Dryad</h1>
                 <p class="lede">Cities, land banks, and homeowners pay billions a year to keep weeds from taking over their land. Dryad autonomously turns these lands into green spaces that maintain themselves.</p>
 
-                <p class="intro-note">One project, several problems. Expand any of them:</p>
+                <p class="intro-note">One project, several problems:</p>
 
-                <div class="toggles">
-                    <details>
-                        <summary>Maintenance that never ends</summary>
-                        <div class="toggle-body">
-                            <p>Detroit alone spends roughly $6.72 million a year mowing more than 100,000 vacant parcels. American homeowners spend about $40 billion on lawn care across 40 million acres of turf. Mowing keeps land from getting worse. It never makes it better, and the bill comes due again next month.</p>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>Blight that spreads to the whole block</summary>
-                        <div class="toggle-body">
-                            <p>A neglected lot lowers neighboring property values and draws dumping, vandalism, and disinvestment. The cost lands on every neighbor, not just the owner. Greening the same lot reverses the effect.</p>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>Nobody knows how to heal it</summary>
-                        <div class="toggle-body">
-                            <p>Turning a lot into living habitat takes ecological knowledge most owners don't have: what's native, what's invasive, what to plant in what order, when to act and when to wait. Landscapers aren't trained for it, and an ecologist is too expensive to hire for a single small parcel.</p>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>Lawns and vacant lots are dead zones</summary>
-                        <div class="toggle-body">
-                            <p>Turf supports almost no native insects, and songbirds that once nested in suburban yards are down roughly 30 percent since 1970. Every mowed acre is habitat that could exist and doesn't.</p>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>Cities are overheating</summary>
-                        <div class="toggle-body">
-                            <p>Pavement and bare ground trap heat. Chadsey-Condon runs about 5 degrees hotter than the Detroit metro average, and heat kills roughly 120 people a year in the city. Meadow and canopy cool a neighborhood; mowed dirt bakes it.</p>
-                        </div>
-                    </details>
+                <div class="problem-list">
+                    <div class="problem">
+                        <h3>Maintenance that never ends</h3>
+                        <p>Detroit spends about $6.72 million a year mowing more than 100,000 vacant parcels; American homeowners spend roughly $40 billion on lawn care across 40 million acres of turf. Mowing keeps land from getting worse without ever making it better.</p>
+                    </div>
+                    <div class="problem">
+                        <h3>Blight that spreads to the whole block</h3>
+                        <p>A neglected lot lowers neighboring property values and draws dumping and disinvestment. The cost lands on every neighbor, not just the owner.</p>
+                    </div>
+                    <div class="problem">
+                        <h3>Nobody knows how to heal it</h3>
+                        <p>Turning a lot into living habitat takes ecological knowledge most owners don't have, and an ecologist is too expensive to hire for one small parcel.</p>
+                    </div>
+                    <div class="problem">
+                        <h3>Lawns and vacant lots are dead zones</h3>
+                        <p>Turf supports almost no native insects, and suburban songbirds are down roughly 30 percent since 1970. Every mowed acre is habitat that could exist and doesn't.</p>
+                    </div>
+                    <div class="problem">
+                        <h3>Cities are overheating</h3>
+                        <p>Pavement and bare ground trap heat. Chadsey-Condon runs about 5 degrees hotter than the Detroit metro average; meadow and canopy cool a neighborhood, while mowed dirt bakes it.</p>
+                    </div>
                 </div>
 
                 <p class="intro-note" style="margin-top:1.5rem">The first nine lots managed by Dryad are in Chadsey-Condon, Detroit, monitored daily, with a small treasury earmarked for the work. The first contractor jobs are the next step.</p>
@@ -337,20 +354,8 @@
             <section>
                 <h2>The economics</h2>
                 <p class="section-lead">How a recurring cost becomes a one-time investment.</p>
-                <div class="toggles">
-                    <details>
-                        <summary>Why mowing is a forever-cost and meadows aren't</summary>
-                        <div class="toggle-body">
-                            <p>The mowing line item never goes away on its own. A lawn keeps growing. Native meadows are different: once established, they largely take care of themselves, and ongoing work shrinks to light cosmetic maintenance along sidewalks and edges. Restored parcels are also easier for Detroit homeowners to acquire and keep up through existing side-lot programs, which moves them off the city's books entirely.</p>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>How the work gets funded</summary>
-                        <div class="toggle-body">
-                            <p>Maintaining Dryad's first nine lots through the establishment period costs about $945 a year. The current treasury is funded by grants and direct contributions and invested to cover ongoing work as it grows. Payments release only when a job is verified. As the model proves out, cities, land banks, and the landowners themselves become the natural long-term funders.</p>
-                        </div>
-                    </details>
-                </div>
+                <p>The mowing line item never goes away on its own. A lawn keeps growing. Native meadows are different: once established, they largely take care of themselves, and ongoing work shrinks to light cosmetic maintenance along sidewalks and edges. Restored parcels are also easier for Detroit homeowners to acquire and keep up through existing side-lot programs, which moves them off the city's books entirely.</p>
+                <p>Maintaining Dryad's first nine lots through the establishment period costs about $945 a year. The current treasury is funded by grants and direct contributions and invested to cover ongoing work as it grows. Payments release only when a job is verified. As the model proves out, cities, land banks, and the landowners themselves become the natural long-term funders.</p>
             </section>
 
             <section>
