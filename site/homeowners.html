@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For homeowners - Dryad</title>
+    <meta name="description" content="You don't have to mow your lawn forever. Dryad turns lawns into native meadows that eventually maintain themselves.">
+    <meta property="og:title" content="Dryad for homeowners">
+    <meta property="og:description" content="You don't have to mow your lawn forever. Dryad turns lawns into native meadows that eventually maintain themselves.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dryad.land/homeowners.html">
+    <meta property="og:image" content="https://dryad.land/images/lots/sapling-pine-flag.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#171912">
+    <link rel="canonical" href="https://dryad.land/homeowners.html">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23E29E4B' d='M12 2C10.5 2 9 3.5 9 5C9 6.5 10.5 8 12 8C13.5 8 15 6.5 15 5C15 3.5 13.5 2 12 2ZM6 10C4.5 10 3 11.5 3 13C3 14.5 4.5 16 6 16C7.5 16 9 14.5 9 13C9 11.5 7.5 10 6 10ZM18 10C16.5 10 15 11.5 15 13C15 14.5 16.5 16 18 16C19.5 16 21 14.5 21 13C21 11.5 19.5 10 18 10ZM12 16C10.5 16 9 17.5 9 19C9 20.5 10.5 22 12 22C13.5 22 15 20.5 15 19C15 17.5 13.5 16 12 16Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #171912;
+            --bg-deep: #10120d;
+            --text: #e2e6d5;
+            --body: #cfd4c0;
+            --muted: rgba(226, 230, 213, 0.72);
+            --faint: rgba(226, 230, 213, 0.54);
+            --rule: rgba(184, 212, 140, 0.18);
+            --green: #8da667;
+            --green-light: #b8d48c;
+            --amber: #e29e4b;
+            --font-display: "Instrument Serif", "EB Garamond", Georgia, serif;
+            --font-body: "Manrope", system-ui, sans-serif;
+            --measure: 38rem;
+        }
+
+        * { box-sizing: border-box; }
+
+        html {
+            font-size: 18px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at 16% 12%, rgba(141, 166, 103, 0.10), transparent 28rem),
+                radial-gradient(circle at 86% 36%, rgba(226, 158, 75, 0.07), transparent 30rem),
+                var(--bg);
+            color: var(--body);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 160px 160px;
+        }
+
+        ::selection {
+            background: var(--amber);
+            color: var(--bg-deep);
+        }
+
+        a {
+            color: var(--text);
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 4px;
+            text-decoration-color: rgba(184, 212, 140, 0.45);
+            transition: color 0.15s ease, text-decoration-color 0.15s ease;
+        }
+
+        a:hover {
+            color: var(--green-light);
+            text-decoration-color: var(--green-light);
+        }
+
+        a:focus-visible {
+            outline: 2px solid var(--amber);
+            outline-offset: 3px;
+        }
+
+        main {
+            max-width: var(--measure);
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            line-height: 1.02;
+            letter-spacing: -0.015em;
+            margin: 0 0 1.5rem;
+            color: var(--text);
+        }
+
+        .lede {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(1.5rem, 3.5vw, 2.125rem);
+            line-height: 1.22;
+            margin: 0 0 1.5rem;
+            color: var(--text);
+            letter-spacing: -0.005em;
+        }
+
+        p { margin: 0 0 1.25rem; }
+
+        .actions {
+            margin-top: 2rem;
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 2rem;
+        }
+
+        .actions a::after {
+            content: " \2192";
+            display: inline-block;
+            margin-left: 0.35rem;
+            color: var(--amber);
+            transition: transform 0.15s ease;
+        }
+
+        .actions a:hover::after {
+            transform: translateX(3px);
+        }
+
+        section { margin-top: 4rem; }
+
+        h2 {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            line-height: 1.1;
+            margin: 0 0 1.25rem;
+            letter-spacing: -0.005em;
+            color: var(--text);
+        }
+
+        footer {
+            max-width: var(--measure);
+            margin: 5rem auto 0;
+            padding: 2rem 1.5rem 4rem;
+            border-top: 1px solid var(--rule);
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+
+        footer p { margin: 0 0 0.75rem; }
+
+        footer .links a {
+            margin-right: 0.5rem;
+            display: inline-block;
+        }
+
+        @media (max-width: 480px) {
+            main { padding: 1.5rem 1.25rem 3rem; }
+            section { margin-top: 3rem; }
+            footer { margin-top: 3.5rem; padding-bottom: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <article>
+            <header class="intro">
+                <h1>You don't have to mow your lawn forever.</h1>
+                <p class="lede">Dryad turns lawns into native meadows that eventually maintain themselves. We're starting with urban vacant lots in Detroit; the same approach extends to your own property.</p>
+                <p>A typical American single-family lawn costs about $500 a year and 50 hours of weekend time to keep flat and green. A native planting takes two to three years to establish and then largely takes care of itself. After that, the only ongoing work is light cosmetic maintenance along sidewalks and paths.</p>
+                <p class="actions">
+                    <a href="talk.html">Talk to the agent</a>
+                    <a href="/">See what we're doing in Detroit</a>
+                </p>
+            </header>
+
+            <section>
+                <h2>The math on a lawn</h2>
+                <p>American homeowners spend roughly $40 billion a year on lawn care across about 40 million acres of turf. The average lawn uses more pesticides per acre than commercial agriculture, contributes nitrogen runoff to local waterways, and supports almost no native insect biomass. Songbirds that once nested in suburban yards have declined by roughly 30 percent since 1970, largely because there isn't enough left in a chemical-treated monoculture for their chicks to eat.</p>
+                <p>A native meadow on the same square footage stores more carbon, holds more water during heavy rain, requires no fertilizer or pesticide, and supports dozens of pollinator species. After establishment, it asks for less of your time and money each year, not more.</p>
+            </section>
+
+            <section>
+                <h2>What conversion looks like</h2>
+                <p>Year one is the most labor-intensive: a close mow, then a method for killing or suppressing the existing turf (smothering with cardboard and mulch, solarizing with clear plastic, or careful herbicide), then seeding or plug-planting with regionally appropriate natives. Year two and three are establishment: mowing two or three times a season to suppress annual weeds while the natives put down roots, with some hand-pulling of aggressive invasives. Year four onward is largely self-maintaining; you mow paths and edges if you want a tidy frame around the planting, and otherwise let the meadow do its thing.</p>
+                <p>The hardest part of the process isn't physical work. It's knowing what to plant in what order, what to expect each season, when to act, and when to leave things alone. Most homeowners don't have that knowledge, and most landscapers aren't trained for it.</p>
+            </section>
+
+            <section>
+                <h2>Where Dryad fits today</h2>
+                <p>Today Dryad is focused on urban vacant lots in Detroit. The agent's ecological knowledge is grounded in lakeplain ecosystems and Midwest invasives. The contractor workflow is local. We're proving the model on nine specific parcels before scaling outward.</p>
+                <p>If you're a homeowner who wants to start now, three things are useful and free: the public chat where you can ask the agent about plant identification, seasonal timing, and what's invasive in your area; the open-source code on GitHub if you want to fork the framework; and iNaturalist, where any observation you post helps build the ecological signal the agent runs on.</p>
+                <p>A homeowner-focused version of Dryad, with regional ecology, contractor matchmaking outside Detroit, and pricing scaled to a single lawn, is on the roadmap. If you want to be notified when it's available, or if you'd like to talk about a custom arrangement on your property, get in touch.</p>
+                <p class="actions">
+                    <a href="mailto:nick@dryad.land">Email Nick</a>
+                    <a href="talk.html">Ask the agent something</a>
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer>
+        <p>Built by Nick George, Michigan Conservation Steward. Open source.</p>
+        <p class="links">
+            <a href="/">Home</a>
+            <a href="docs.html">Documentation</a>
+            <a href="cities.html">For cities</a>
+            <a href="talk.html">Talk to the agent</a>
+            <a href="impact.html">Environmental impact</a>
+            <a href="heat-map.html">Heat map</a>
+        </p>
+    </footer>
+</body>
+</html>
