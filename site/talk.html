@@ -305,9 +305,9 @@
 
 <script>
 (function(){
-var AGENT_HOST = 'https://dashboard.dryad.land';
-var AGENT_API = AGENT_HOST + '/api/chat';
-var AGENT_TOKEN = '302922b3a1ca99f87e43b2e046129da15f1ea9cb3a1cbb5c687343ffced42617';
+// Same-origin Vercel proxy (site/api/chat.js) reaches the agent's public chat route.
+// No key here: anything in this file is public.
+var AGENT_API = '/api/chat';
 var useKB = false;
 var chatHistory = [];
 
@@ -420,7 +420,7 @@ async function send(text) {
         try {
             var r = await fetch(AGENT_API, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-API-KEY': AGENT_TOKEN },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: text, history: chatHistory.slice(0, -1) }),
                 signal: AbortSignal.timeout(15000),
             });
